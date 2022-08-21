@@ -1,0 +1,9 @@
+black
+flake8
+pre-commit
+pydata-sphinx-theme
+pytest
+pytest-cov
+pytest-xdist
+pytype
+sphinx

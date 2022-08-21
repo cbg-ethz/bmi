@@ -1,0 +1,30 @@
+[tool.black]
+include = '''
+/(
+     src
+   | scripts
+   | tests
+)/
+'''
+line-length = 120
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | docs
+)/
+'''
+
+[tool.pytest.ini_options]
+addopts = "--cov=src/cansig"
+testpaths = [
+    "tests",
+]
+
