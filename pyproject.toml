@@ -6,7 +6,7 @@ include = '''
    | tests
 )/
 '''
-line-length = 120
+line-length = 99
 exclude = '''
 /(
     \.git
@@ -23,7 +23,7 @@ exclude = '''
 '''
 
 [tool.pytest.ini_options]
-addopts = "--cov=src/cansig"
+addopts = "--cov=src/bmi"
 testpaths = [
     "tests",
 ]
