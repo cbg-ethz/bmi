@@ -1,0 +1,37 @@
+# This pipeline checks whether the package
+# installs properly, passes unit tests and whether
+# the code formatting is right.
+name: build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10"]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: psf/black@stable
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+          cache: "pip"
+      - name: Install the module
+        run: pip install ".[test]"
+      - name: Run unit tests
+        run: pytest
+      - name: Install code quality tools
+        run: pip install flake8 pytype
+      - name: Run Flake8 check
+        run: flake8
+      - name: Run pytype check
+        run: pytype
+

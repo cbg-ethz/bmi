@@ -1,3 +1,27 @@
+# Data files
+*.bz2
+*.csv
+*.json
+*.jsonl
+*.gz
+*.npy
+*.npz
+*.pickle
+*.pkl
+*.tar
+*.zip
+
+# Notebooks are not allowed by default
+*.nb
+*.ipynb
+
+# Editors
+.vscode/
+.idea/
+
+# Type checking
+.pytype/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
