@@ -16,3 +16,8 @@ Install the pre-commit hooks:
 
     $ pre-commit install
 
+At this stage it would be good to run unit tests:
+
+    $ pytest
+
+
