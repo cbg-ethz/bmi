@@ -5,6 +5,5 @@ https://setuptools.pypa.io/en/latest/setuptools.html
 """
 import setuptools
 
-
 if __name__ == "__main__":
     setuptools.setup()
