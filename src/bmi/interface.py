@@ -53,3 +53,7 @@ class IDistribution(Protocol):
         Should be equal to the sum of `dim_x` and `dim_y`.
         """
         raise NotImplementedError
+
+    def mutual_information(self) -> float:
+        """Mutual information MI(X; Y)."""
+        raise NotImplementedError
