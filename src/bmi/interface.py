@@ -1,5 +1,5 @@
 """Most important interfaces of the package."""
-from typing import Any, Protocol, Tuple
+from typing import Any, Protocol
 
 import numpy as np
 from numpy.typing import ArrayLike  # pytype: disable=import-error
@@ -24,7 +24,7 @@ class IMutualInformationPointEstimator(Protocol):
 class IDistribution(Protocol):
     """Interface for a distribution P(X, Y)."""
 
-    def sample(self, n_points: int, rng: Any) -> Tuple[np.ndarray, np.ndarray]:
+    def sample(self, n_points: int, rng: Any) -> tuple[np.ndarray, np.ndarray]:
         """Returns a sample from the joint distribution P(X, Y).
 
         Args:
