@@ -1,7 +1,11 @@
 black
 flake8
 isort
+jax
+jaxlib
+numpy
 pre-commit
+pydantic
 pydata-sphinx-theme
 pytest
 pytest-cov
