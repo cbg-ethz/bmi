@@ -8,12 +8,12 @@ from numpy.typing import ArrayLike  # pytype: disable=import-error
 class IMutualInformationPointEstimator(Protocol):
     """Interface for the mutual information estimator."""
 
-    def estimate(self, x_samples: ArrayLike, y_samples: ArrayLike) -> float:
-        """A point estimate of MI(X; Y) from a sample from P(X, Y) distribution.
+    def estimate(self, x: ArrayLike, y: ArrayLike) -> float:
+        """A point estimate of MI(X; Y) from an i.i.d sample from the P(X, Y) distribution.
 
         Args:
-            x_samples: shape (n_samples, dim_x)
-            y_samples: shape (n_samples, dim_y)
+            x: shape (n_samples, dim_x)
+            y: shape (n_samples, dim_y)
 
         Returns:
             mutual information estimate
