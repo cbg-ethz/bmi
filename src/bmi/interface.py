@@ -1,5 +1,6 @@
 """Most important interfaces of the package."""
 from typing import Any, Protocol
+from abc import abstractmethod
 
 import numpy as np
 from numpy.typing import ArrayLike  # pytype: disable=import-error
@@ -7,7 +8,8 @@ from numpy.typing import ArrayLike  # pytype: disable=import-error
 
 class IMutualInformationPointEstimator(Protocol):
     """Interface for the mutual information estimator."""
-
+    
+    @abstractmethod
     def estimate(self, x: ArrayLike, y: ArrayLike) -> float:
         """A point estimate of MI(X; Y) from an i.i.d sample from the P(X, Y) distribution.
 
@@ -24,6 +26,7 @@ class IMutualInformationPointEstimator(Protocol):
 class IDistribution(Protocol):
     """Interface for a distribution P(X, Y)."""
 
+    @abstractmethod
     def sample(self, n_points: int, rng: Any) -> tuple[np.ndarray, np.ndarray]:
         """Returns a sample from the joint distribution P(X, Y).
 
@@ -38,11 +41,13 @@ class IDistribution(Protocol):
         raise NotImplementedError
 
     @property
+    @abstractmethod
     def dim_x(self) -> int:
         """Dimension of the space in which the `X` variable is valued."""
         raise NotImplementedError
 
     @property
+    @abstractmethod
     def dim_y(self) -> int:
         """Dimension of the space in which the `Y` variable is valued."""
         raise NotImplementedError
@@ -52,8 +57,9 @@ class IDistribution(Protocol):
         """Dimension of the space in which the `(X, Y)` variable is valued.
         Should be equal to the sum of `dim_x` and `dim_y`.
         """
-        raise NotImplementedError
+        return self.dim_x + self.dim_y
 
+    @abstractmethod
     def mutual_information(self) -> float:
         """Mutual information MI(X; Y)."""
         raise NotImplementedError
