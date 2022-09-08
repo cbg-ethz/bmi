@@ -1,6 +1,6 @@
 """Most important interfaces of the package."""
-from typing import Any, Protocol
 from abc import abstractmethod
+from typing import Any, Protocol
 
 import numpy as np
 from numpy.typing import ArrayLike  # pytype: disable=import-error
@@ -8,7 +8,7 @@ from numpy.typing import ArrayLike  # pytype: disable=import-error
 
 class IMutualInformationPointEstimator(Protocol):
     """Interface for the mutual information estimator."""
-    
+
     @abstractmethod
     def estimate(self, x: ArrayLike, y: ArrayLike) -> float:
         """A point estimate of MI(X; Y) from an i.i.d sample from the P(X, Y) distribution.
@@ -23,7 +23,7 @@ class IMutualInformationPointEstimator(Protocol):
         raise NotImplementedError
 
 
-class IDistribution(Protocol):
+class ISampler(Protocol):
     """Interface for a distribution P(X, Y)."""
 
     @abstractmethod
