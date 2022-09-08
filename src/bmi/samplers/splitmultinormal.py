@@ -42,7 +42,7 @@ class _Multinormal:
             samples, shape (n_samples, dim)
         """
         return random.multivariate_normal(
-            key=key, mean=self._mean, cov=self._covariance, shape=(n_samples, self.dim)
+            key=key, mean=self._mean, cov=self._covariance, shape=(n_samples,)
         )
 
     @property
