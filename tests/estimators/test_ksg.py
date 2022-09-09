@@ -1,6 +1,6 @@
 import numpy as np
-import pytest  # pytype: disable=import-error
-from jax import random  # pytype: disable=import-error
+import pytest
+from jax import random
 
 import bmi.estimators.ksg as ksg
 from bmi.samplers.splitmultinormal import SplitMultinormal

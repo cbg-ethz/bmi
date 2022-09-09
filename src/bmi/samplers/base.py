@@ -12,7 +12,3 @@ class BaseSampler(ISampler):
             raise ValueError(f"X variable space must be of positive dimension. Was {dim_x}.")
         if dim_y < 1:
             raise ValueError(f"Y variable space must be of positive dimension. Was {dim_x}.")
-
-    @property
-    def dim_total(self) -> int:
-        return self.dim_x + self.dim_y

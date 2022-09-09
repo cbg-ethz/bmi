@@ -2,14 +2,13 @@
 from typing import Sequence, cast
 
 import numpy as np
-from numpy.typing import ArrayLike  # pytype: disable=import-error
-from scipy import special  # pytype: disable=import-error
-from sklearn import metrics, preprocessing  # pytype: disable=import-error
+from numpy.typing import ArrayLike
+from scipy.special import digamma as _DIGAMMA
+from sklearn.preprocessing import StandardScaler as _StandardScaler
+from sklearn.metrics import pairwise_distances as _pairwise_distances
 
 from bmi.estimators.base import EstimatorNotFittedException
 from bmi.interface import IMutualInformationPointEstimator
-
-_DIGAMMA = special.digamma
 
 
 class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
@@ -30,7 +29,7 @@ class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
         self._standardize = standardize
 
         self._fitted = False
-        self._mi_dict = {k: None for k in neighborhoods}
+        self._mi_dict = dict()  # set by fit()
 
     def fit(self, x: ArrayLike, y: ArrayLike) -> None:
         x, y = np.array(x), np.array(y)
@@ -39,16 +38,16 @@ class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
             raise ValueError(f"Arrays have different length: {len(x)} != {len(y)}.")
 
         if self._standardize:
-            x = preprocessing.StandardScaler(copy=False).fit_transform(x)
-            y = preprocessing.StandardScaler(copy=False).fit_transform(y)
+            x: np.ndarray = _StandardScaler(copy=False).fit_transform(x)
+            y: np.ndarray = _StandardScaler(copy=False).fit_transform(y)
 
         digammas_dict = {k: [] for k in self._neighborhoods}
 
-        n_points = len(x)
+        n_points = np.shape(x)[0]
         for index in range(n_points):
             # Distances from x[index] to all the points:
-            distances_x = metrics.pairwise_distances(x[None, index], x)[0, :]
-            distances_y = metrics.pairwise_distances(y[None, index], y)[0, :]
+            distances_x = _pairwise_distances(x[None, index], x)[0, :]
+            distances_y = _pairwise_distances(y[None, index], y)[0, :]
 
             # In the product (XxY) space we use the maximum distance
             distances_z = np.maximum(distances_x, distances_y)
@@ -82,5 +81,5 @@ class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
 
     def estimate(self, x: ArrayLike, y: ArrayLike) -> float:
         self.fit(x, y)
-        predictions = self.get_predictions().values()
+        predictions = np.array(self.get_predictions().values())
         return cast(float, np.mean(predictions))

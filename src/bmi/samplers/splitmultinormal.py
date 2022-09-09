@@ -1,12 +1,18 @@
 import numpy as np
-from jax import random  # pytype: disable=import-error
-from numpy.typing import ArrayLike  # pytype: disable=import-error
+from jax import random
+from jax._src import prng
+
+from numpy.typing import ArrayLike
+from typing import Any, Union
 
 from bmi.samplers.base import BaseSampler
 
 
+KeyArray = Union[Any, prng.PRNGKeyArray]
+
+
 class _Multinormal:
-    """Auxiliary object for representing the multivariate normal distribution."""
+    """Auxiliary object for representing multivariate normal distributions."""
 
     def __init__(self, mean: ArrayLike, covariance: ArrayLike) -> None:
         """
@@ -18,8 +24,7 @@ class _Multinormal:
         self._mean = np.asarray(mean)
         self._covariance = np.asarray(covariance)
 
-        # The determinant of the covariance, used to calculate
-        # the entropy
+        # The determinant of the covariance, used to calculate entropy
         self._det_covariance: float = np.linalg.det(self._covariance)
 
         # Dimensionality of the space
@@ -28,12 +33,12 @@ class _Multinormal:
         # Validate the shape
         if self._covariance.shape != (self._dim, self._dim):
             raise ValueError(
-                f"Covariance has shape {self._covariance.shape} rather than "
+                f"Covariance has shape {self._covariance.shape}, expected "
                 f"{(self._dim, self._dim)}."
             )
         # TODO(Pawel): Validate whether covariance is positive definite
 
-    def sample(self, n_samples: int, key: random.PRNGKeyArray) -> np.ndarray:
+    def sample(self, n_samples: int, key: KeyArray) -> np.ndarray:
         """Sample from the distribution.
         Args:
             n_samples: number of samples to generate
@@ -41,9 +46,9 @@ class _Multinormal:
         Returns:
             samples, shape (n_samples, dim)
         """
-        return random.multivariate_normal(
+        return np.array(random.multivariate_normal(
             key=key, mean=self._mean, cov=self._covariance, shape=(n_samples,)
-        )
+        ))
 
     @property
     def dim(self) -> int:
@@ -102,11 +107,13 @@ class SplitMultinormal(BaseSampler):
         n = self.dim_total
 
         if self._mean.shape != (n,):
-            raise ValueError(f"Mean vector has wrong shape: {self._mean.shape} instead of ({n},).")
+            raise ValueError(
+                f"Mean vector has shape {self._mean.shape}, expected ({n},)."
+            )
         if self._covariance.shape != (n, n):
             raise ValueError(
-                f"Covariance matrix has wrong shape: "
-                f"{self._covariance.shape} instead of ({n}, {n})."
+                f"Covariance matrix has shape {self._covariance.shape}, "
+                f"expected ({n}, {n})."
             )
 
     @property
@@ -117,7 +124,7 @@ class SplitMultinormal(BaseSampler):
     def dim_y(self) -> int:
         return self._dim_y
 
-    def sample(self, n_points: int, rng: random.PRNGKeyArray) -> tuple[np.ndarray, np.ndarray]:
+    def sample(self, n_points: int, rng: KeyArray) -> tuple[np.ndarray, np.ndarray]:
         xy = self._joint_distribution.sample(n_samples=n_points, key=rng)
         return xy[..., : self._dim_x], xy[..., self.dim_x :]  # noqa: E203
 
@@ -125,11 +132,11 @@ class SplitMultinormal(BaseSampler):
         """Calculates the mutual information I(X; Y) using an exact formula.
         Returns:
             mutual information, in nats
-        The mutual information is given by
+        Mutual information is given by
             0.5 * log( det(covariance_x) * det(covariance_y) / det(full covariance) )
-        what follows from the
+        which follows from the formula
             I(X; Y) = H(X) + H(Y) - H(X, Y)
-        formula and the entropy of the multinormal distribution.
+        and the entropy of the multinormal distribution.
         """
         h_x = self._x_distribution.entropy()
         h_y = self._y_distribution.entropy()
