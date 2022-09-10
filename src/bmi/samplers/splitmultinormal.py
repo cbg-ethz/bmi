@@ -1,6 +1,6 @@
 import numpy as np
-from jax import random  # pytype: disable=import-error
-from numpy.typing import ArrayLike  # pytype: disable=import-error
+from jax import random
+from numpy.typing import ArrayLike
 
 from bmi.interface import KeyArray
 from bmi.samplers.base import BaseSampler

@@ -17,6 +17,7 @@ repos:
   hooks:
     - id: pytype
       args: []
+      language: system
 - repo: https://github.com/pycqa/isort
   rev: 5.10.1
   hooks:
