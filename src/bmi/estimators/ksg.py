@@ -2,9 +2,9 @@
 from typing import Sequence, cast
 
 import numpy as np
-from numpy.typing import ArrayLike  # pytype: disable=import-error
-from scipy.special import digamma as _DIGAMMA  # pytype: disable=import-error
-from sklearn import metrics, preprocessing  # pytype: disable=import-error
+from numpy.typing import ArrayLike
+from scipy.special import digamma as _DIGAMMA
+from sklearn import metrics, preprocessing
 
 from bmi.estimators.base import EstimatorNotFittedException
 from bmi.interface import IMutualInformationPointEstimator
