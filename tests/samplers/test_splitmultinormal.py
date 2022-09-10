@@ -1,8 +1,8 @@
 import numpy as np
-import pytest  # pytype: disable=import-error
-from jax import random  # pytype: disable=import-error
+import pytest
+from jax import random
 
-from bmi.samplers.splitmultinormal import SplitMultinormal  # pytype: disable=import-error
+from bmi.samplers.splitmultinormal import SplitMultinormal
 
 
 @pytest.mark.parametrize("y", (2, 5, 10))
