@@ -2,11 +2,11 @@ import numpy as np
 import pytest  # pytype: disable=import-error
 from jax import random  # pytype: disable=import-error
 
-import bmi.estimators.ksg as ksg
-from bmi.samplers.splitmultinormal import SplitMultinormal
+import bmi.estimators.ksg as ksg  # pytype: disable=import-error
+from bmi.samplers.splitmultinormal import SplitMultinormal  # pytype: disable=import-error
 
 
-def random_covariance(size: int, jitter: float = 1e1, rng=0):
+def random_covariance(size: int, jitter: float = 1e-2, rng=0):
     a = np.random.default_rng(rng).normal(0, 1, size=(size, size))
 
     return np.dot(a, a.T) + np.diag([jitter] * size)
@@ -48,10 +48,11 @@ def test_estimate_mi_ksg_2d(n_points: int, k: int, correlation: float) -> None:
     assert estimated_mi == pytest.approx(true_mi, rel=0.15, abs=0.12)
 
 
-@pytest.mark.parametrize("n_points", [250])
-@pytest.mark.parametrize("k", [10])
+@pytest.mark.parametrize("n_points", [450])
+@pytest.mark.parametrize("k", [5])
 @pytest.mark.parametrize("dims", [(1, 2), (2, 2)])
-def test_estimate_mi_ksg(n_points: int, k: int, dims: tuple[int, int]) -> None:
+def test_estimate_mi_ksg_random_covariance(n_points: int, k: int, dims: tuple[int, int]) -> None:
+    """Tests whether the MI agrees for a random covariance."""
     dim_x, dim_y = dims
 
     distribution = SplitMultinormal(
@@ -69,14 +70,14 @@ def test_estimate_mi_ksg(n_points: int, k: int, dims: tuple[int, int]) -> None:
     true_mi = distribution.mutual_information()
 
     # Approximate the MI to 10% and take correction for very small values
-    assert estimated_mi == pytest.approx(true_mi, rel=0.1, abs=0.02)
+    assert estimated_mi == pytest.approx(true_mi, rel=0.15, abs=0.1)
 
 
 @pytest.mark.parametrize("difference", [0, 1, 5])
-def test_ksg_more_neighbors_than_points(
+def test_ksg_more_neighbors_than_points_raises(
     difference: int, neighborhoods: tuple[int, ...] = (10,), dim: int = 3
 ) -> None:
-    """Tests for a fitting error if the number of required neighbors
+    """Tests whether an exception is raised if the number of required neighbors
     is greater than the number of points provided."""
     n_points = max(neighborhoods) - difference  # We don't have enough data points
     x = np.zeros((n_points, dim))
