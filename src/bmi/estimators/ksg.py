@@ -35,6 +35,11 @@ class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
 
         if len(x) != len(y):
             raise ValueError(f"Arrays have different length: {len(x)} != {len(y)}.")
+        if len(x) <= max(self._neighborhoods):
+            raise ValueError(
+                f"Maximum neighborhood used is {max(self._neighborhoods)} "
+                f"but the number of points provided is only {len(x)}."
+            )
 
         if self._standardize:
             x: np.ndarray = preprocessing.StandardScaler(copy=False).fit_transform(x)

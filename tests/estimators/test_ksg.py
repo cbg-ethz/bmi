@@ -72,4 +72,50 @@ def test_estimate_mi_ksg(n_points: int, k: int, dims: tuple[int, int]) -> None:
     assert estimated_mi == pytest.approx(true_mi, rel=0.1, abs=0.02)
 
 
-# TODO(Pawel): Test the fit methods.
+@pytest.mark.parametrize("difference", [0, 1, 5])
+def test_ksg_more_neighbors_than_points(
+    difference: int, neighborhoods: tuple[int, ...] = (10,), dim: int = 3
+) -> None:
+    """Tests for a fitting error if the number of required neighbors
+    is greater than the number of points provided."""
+    n_points = max(neighborhoods) - difference  # We don't have enough data points
+    x = np.zeros((n_points, dim))
+
+    estimator = ksg.KSGEnsembleFirstEstimator(neighborhoods=neighborhoods)
+
+    with pytest.raises(ValueError):
+        estimator.fit(x, x)
+
+
+@pytest.mark.parametrize("neighborhoods", [(2, 5), (1, 10)])
+def test_ksg_fit_predict(neighborhoods: tuple[int, ...], n_samples: int = 15) -> None:
+    """Tests whether the estimator can be fitted
+    and if it allows to get the predictions afterwards."""
+
+    distribution = SplitMultinormal(
+        mean=np.zeros(2),
+        covariance=np.eye(2),
+        dim_x=1,
+        dim_y=1,
+    )
+
+    rng = random.PRNGKey(10)
+    x_sample, y_sample = distribution.sample(n_samples, rng=rng)
+
+    estimator = ksg.KSGEnsembleFirstEstimator(neighborhoods=neighborhoods)
+    estimator.fit(x_sample, y_sample)
+
+    predictions = estimator.get_predictions()
+
+    for k in neighborhoods:
+        assert predictions.get(k) is not None
+        assert predictions[k] >= 0
+
+    assert list(predictions.keys()) == list(neighborhoods)
+
+
+def test_ksg_predict_before_fit() -> None:
+    estimator = ksg.KSGEnsembleFirstEstimator()
+
+    with pytest.raises(ksg.EstimatorNotFittedException):
+        estimator.get_predictions()

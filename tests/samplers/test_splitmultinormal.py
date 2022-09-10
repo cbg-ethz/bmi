@@ -55,7 +55,7 @@ def test_symmetric_gaussian_mi(x: int, y: int, variance: float, n_samples: int =
 @pytest.mark.parametrize("mean_xy", [(0.1, 0.4), (0.4, -0.9)])
 @pytest.mark.parametrize("std_xy", [(0.5, 1.0)])
 @pytest.mark.parametrize("correlation", [0.9, -0.5])
-def test_2d_Gaussian(
+def test_2d_gaussian(
     mean_xy: tuple[float, float],
     std_xy: tuple[float, float],
     correlation: float,
