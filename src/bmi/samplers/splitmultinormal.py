@@ -8,7 +8,7 @@ from bmi.samplers.base import BaseSampler
 
 def _can_be_covariance(mat):
     """Checks if `mat` can be a covariance matrix (positive-definite and symmetric)."""
-    if mat != mat.transpose():
+    if np.all(mat != mat.transpose()):
         raise ValueError("Covariance matrix is not symmetric.")
 
     if not np.all(np.linalg.eigvals(mat) > 0):
