@@ -11,6 +11,15 @@ from bmi.samplers.base import BaseSampler
 KeyArray = Union[Any, prng.PRNGKeyArray]
 
 
+def _can_be_covariance(mat):
+    """Checks if `mat` can be a covariance matrix (positive-definite and symmetric)."""
+    if mat != mat.transpose():
+        raise ValueError("Covariance matrix is not symmetric.")
+
+    if not np.all(np.linalg.eigvals(mat) > 0):
+        raise ValueError("Covariance matrix is not positive-definite.")
+
+
 class _Multinormal:
     """Auxiliary object for representing multivariate normal distributions."""
 
@@ -36,7 +45,9 @@ class _Multinormal:
                 f"Covariance has shape {self._covariance.shape}, expected "
                 f"{(self._dim, self._dim)}."
             )
-        # TODO(Pawel): Validate whether covariance is positive definite
+
+        # Validate symmetry, positive-definiteness
+        _can_be_covariance(self._covariance)
 
     def sample(self, n_samples: int, key: KeyArray) -> np.ndarray:
         """Sample from the distribution.
