@@ -1,6 +1,7 @@
 import numpy as np
 import pytest  # pytype: disable=import-error
 from jax import random  # pytype: disable=import-error
+from sklearn.feature_selection import mutual_info_regression  # pytype: disable=import-error
 
 import bmi.estimators.ksg as ksg  # pytype: disable=import-error
 from bmi.samplers.splitmultinormal import SplitMultinormal  # pytype: disable=import-error
@@ -120,3 +121,45 @@ def test_ksg_predict_before_fit() -> None:
 
     with pytest.raises(ksg.EstimatorNotFittedException):
         estimator.get_predictions()
+
+
+class TestKSGAgreesWithSKLearn:
+    """In this suite of tests we compare our implementation
+    with the implementation in Sci-Kit Learn, which works
+    for 1-D random variables.
+
+    We generate our 1-D random variables using an auxiliary random variable
+        U ~ N(0, 1)
+    and use (not necessarily injective) functions f, g: R -> R
+    to generate
+        X | U ~ f(U) + noise
+        Y | U ~ g(U) + noise
+    """
+
+    @pytest.mark.parametrize("n_samples", [50, 100, 200])
+    @pytest.mark.parametrize("noise", [1e-2, 1e-1])
+    def test_quadratic(
+        self, n_samples: int, noise: float, neighborhoods: tuple[int, ...] = (5, 10, 15)
+    ) -> None:
+        """In this test f(u) = u, g(u) = u**2 and we add Gaussian noise of magnitude `noise`."""
+        rng = random.PRNGKey(10)
+        rng_u, rng_noise_x, rng_noise_y = random.split(rng, 3)
+
+        # These matrices have shape (n_samples,)
+        u_sample = random.normal(rng_u, shape=(n_samples,))
+        x_sample = u_sample + noise * random.normal(rng_noise_x, shape=u_sample.shape)
+        y_sample = u_sample**2 + noise * random.normal(rng_noise_y, shape=u_sample.shape)
+
+        estimator = ksg.KSGEnsembleFirstEstimator(neighborhoods=neighborhoods, standardize=True)
+        # We need to provide matrices (n_samples, 1)
+        estimator.fit(x_sample[:, None], y_sample[:, None])
+        our_predictions = estimator.get_predictions()
+
+        for k in neighborhoods:
+            our_mi = our_predictions[k]
+            sklearn_mi = mutual_info_regression(
+                X=x_sample[:, None], y=y_sample, n_neighbors=k, random_state=0
+            )
+            assert our_mi == pytest.approx(
+                sklearn_mi, rel=0.01, abs=0.00
+            ), f"MI different: {our_mi} != {sklearn_mi}"
