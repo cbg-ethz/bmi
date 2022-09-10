@@ -23,7 +23,7 @@ exclude = '''
 '''
 
 [tool.pytest.ini_options]
-addopts = "--cov=src/bmi"
+addopts = "--cov=src/bmi -n 3"
 testpaths = [
     "tests",
 ]

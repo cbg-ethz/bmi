@@ -1,23 +1,9 @@
 import numpy as np
-from jax import random
-from jax._src import prng
+from jax import random  # pytype: disable=import-error
+from numpy.typing import ArrayLike  # pytype: disable=import-error
 
-from numpy.typing import ArrayLike
-from typing import Any, Union
-
+from bmi.interface import KeyArray
 from bmi.samplers.base import BaseSampler
-
-
-KeyArray = Union[Any, prng.PRNGKeyArray]
-
-
-def _can_be_covariance(mat):
-    """Checks if `mat` can be a covariance matrix (positive-definite and symmetric)."""
-    if mat != mat.transpose():
-        raise ValueError("Covariance matrix is not symmetric.")
-
-    if not np.all(np.linalg.eigvals(mat) > 0):
-        raise ValueError("Covariance matrix is not positive-definite.")
 
 
 class _Multinormal:
@@ -57,9 +43,11 @@ class _Multinormal:
         Returns:
             samples, shape (n_samples, dim)
         """
-        return np.array(random.multivariate_normal(
-            key=key, mean=self._mean, cov=self._covariance, shape=(n_samples,)
-        ))
+        return np.array(
+            random.multivariate_normal(
+                key=key, mean=self._mean, cov=self._covariance, shape=(n_samples,)
+            )
+        )
 
     @property
     def dim(self) -> int:
@@ -118,13 +106,10 @@ class SplitMultinormal(BaseSampler):
         n = self.dim_total
 
         if self._mean.shape != (n,):
-            raise ValueError(
-                f"Mean vector has shape {self._mean.shape}, expected ({n},)."
-            )
+            raise ValueError(f"Mean vector has shape {self._mean.shape}, expected ({n},).")
         if self._covariance.shape != (n, n):
             raise ValueError(
-                f"Covariance matrix has shape {self._covariance.shape}, "
-                f"expected ({n}, {n})."
+                f"Covariance matrix has shape {self._covariance.shape}, " f"expected ({n}, {n})."
             )
 
     @property
