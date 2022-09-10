@@ -1,4 +1,9 @@
 repos:
+- repo: https://github.com/pycqa/isort
+  rev: 5.10.1
+  hooks:
+    - id: isort
+      name: isort (python)
 - repo: https://github.com/psf/black
   rev: 22.3.0
   hooks:
@@ -18,8 +23,3 @@ repos:
     - id: pytype
       args: []
       language: system
-- repo: https://github.com/pycqa/isort
-  rev: 5.10.1
-  hooks:
-    - id: isort
-      name: isort (python)
