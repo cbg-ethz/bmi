@@ -80,5 +80,5 @@ class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
 
     def estimate(self, x: ArrayLike, y: ArrayLike) -> float:
         self.fit(x, y)
-        predictions = np.array(self.get_predictions().values())
+        predictions = np.asarray(list(self.get_predictions().values()))
         return cast(float, np.mean(predictions))
