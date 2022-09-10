@@ -1,12 +1,13 @@
 """Most important interfaces of the package."""
 from abc import abstractmethod
-from typing import Any, Protocol, Union
+from typing import Any, Protocol
 
 import numpy as np
 from numpy.typing import ArrayLike
 
-# This should be updated to PRNGKeyArray when it becomes a part of public JAX API
-KeyArray = Union[Any]
+# This should be updated to the PRNGKeyArray (or possibly union with Any)
+# when it becomes a part of public JAX API
+KeyArray = Any
 
 
 class IMutualInformationPointEstimator(Protocol):
