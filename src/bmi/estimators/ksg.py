@@ -162,10 +162,73 @@ def _chunker(n_items: int, chunk_size: int) -> Generator[slice, None, None]:
         yield slice(start, end)
 
 
+class _ProductSpace:
+    """Represents points in `X x Y` space.
+
+    Attrs:
+        n_points: number of stored points
+        x: points projected on X space
+        y: points projected on Y space
+        xy: points in `X x Y` space. This is a time-expensive operation (calculated on the fly)
+          so if one only needs to access individual points/batches, we suggest to use `space[i]`
+          syntax
+
+    Example:
+        >>> x = [[0], [1]]
+        >>> y = [[2, 3], [4, 5]]
+        >>> space = _ProductSpace(x, y, standardize=False)
+        >>> space.n_points
+        2
+        >>> space.x
+        array([[0.], [1.]])
+        >>> space.y
+        array([[2., 3.], [4., 5.]])
+        >>> space.xy
+        array([[0., 2., 3.], [1., 4. 5.]])
+        >>> space[0]  # Other slicing options are also allowed
+        array([0., 2., 3.])
+    """
+
+    def __init__(self, x: ArrayLike, y: ArrayLike, *, standardize: bool = True) -> None:
+        x, y = np.array(x), np.array(y)
+
+        if x.shape[0] != y.shape[0]:
+            raise ValueError(f"Arrays have different length: {len(x)} != {len(y)}.")
+        if standardize:
+            x: np.ndarray = preprocessing.StandardScaler(copy=False).fit_transform(x)
+            y: np.ndarray = preprocessing.StandardScaler(copy=False).fit_transform(y)
+
+        self._x = x
+        self._y = y
+
+    @property
+    def n_points(self) -> int:
+        return self.x.shape[0]
+
+    @property
+    def x(self) -> np.ndarray:
+        return self._x
+
+    @property
+    def y(self) -> np.ndarray:
+        return self._y
+
+    @property
+    def xy(self) -> np.ndarray:
+        return np.hstack([self.x, self.y])
+
+    def __getitem__(self, item: Union[int, slice]) -> np.ndarray:
+        """Returns the `index`th point in the product space `X x Y`. Works also with
+        the slice notation `start:end`."""
+        return np.hstack([self._x[item], self._y[item]])
+
+
 class KSGEnsembleChebyshevEstimator(IMutualInformationPointEstimator):
     """Mutual information estimator based on fast nearest neighbours,
     available when Chebyshev (l-infty) metric is used for both X and Y spaces.
     """
+
+    _METRIC: str = "chebyshev"
 
     def __init__(
         self,
@@ -180,11 +243,15 @@ class KSGEnsembleChebyshevEstimator(IMutualInformationPointEstimator):
             neighborhoods: sequence of positive integers,
               specifying the size of neighborhood for MI calculation
             standardize: whether to standardize the data before MI calculation, by default true
-            n_jobs: number of jobs to be launched to compute distances.
+            n_jobs: number of jobs to be launched to work with nearest neighbors data structure.
               Use -1 to use all processors.
             chunk_size: controls the batch size (to not exceed available memory)
         """
         self._neighborhoods: list[int] = _cast_and_check_neighborhoods(neighborhoods)
+
+        self._x_nearest_neigbrors = neighbors.NearestNeighbors(metric=self._METRIC, n_jobs=n_jobs)
+        self._y_nearest_neighbors = neighbors.NearestNeighbors(metric=self._METRIC, n_jobs=n_jobs)
+        self._xy_nearest_neighbors = neighbors.NearestNeighbors(metric=self._METRIC, n_jobs=n_jobs)
 
         self._nearest_neighbors = neighbors.NearestNeighbors(metric="chebyshev", n_jobs=n_jobs)
         self._standardize: bool = standardize
@@ -199,13 +266,6 @@ class KSGEnsembleChebyshevEstimator(IMutualInformationPointEstimator):
     def fit(self, x: ArrayLike, y: ArrayLike) -> None:
         """Fits the nearest neighbors structure on the space `X x Y`,
         which can be quickly queried for distances and nearest neighbors."""
-        x, y = np.array(x), np.array(y)
-
-        if len(x) != len(y):
-            raise ValueError(f"Arrays have different length: {len(x)} != {len(y)}.")
-        if self._standardize:
-            x: np.ndarray = preprocessing.StandardScaler(copy=False).fit_transform(x)
-            y: np.ndarray = preprocessing.StandardScaler(copy=False).fit_transform(y)
 
         z = np.hstack([x, y])
         assert z.shape == (
