@@ -4,7 +4,7 @@ from typing import Generator, Literal, Optional, Sequence, Union, cast
 import numpy as np
 from numpy.typing import ArrayLike
 from scipy.special import digamma as _DIGAMMA
-from sklearn import metrics, neighbors, preprocessing
+from sklearn import metrics, preprocessing
 
 from bmi.estimators.base import EstimatorNotFittedException
 from bmi.interface import IMutualInformationPointEstimator
@@ -213,92 +213,4 @@ class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
     def estimate(self, x: ArrayLike, y: ArrayLike) -> float:
         self.fit(x, y)
         predictions = np.asarray(list(self.get_predictions().values()))
-        return cast(float, np.mean(predictions))
-
-
-class KSGEnsembleChebyshevEstimator(IMutualInformationPointEstimator):
-    """Mutual information estimator based on fast nearest neighbours,
-    available when Chebyshev (l-infty) metric is used for both X and Y spaces.
-    """
-
-    _METRIC: str = "chebyshev"
-
-    def __init__(
-        self,
-        neighborhoods: Sequence[int] = (5, 10),
-        standardize: bool = True,
-        n_jobs: int = 1,
-        chunk_size: int = 100,
-    ) -> None:
-        """
-
-        Args:
-            neighborhoods: sequence of positive integers,
-              specifying the size of neighborhood for MI calculation
-            standardize: whether to standardize the data before MI calculation, by default true
-            n_jobs: number of jobs to be launched to work with nearest neighbors data structure.
-              Use -1 to use all processors.
-            chunk_size: controls the batch size (to not exceed available memory)
-        """
-        self._neighborhoods: list[int] = _cast_and_check_neighborhoods(neighborhoods)
-
-        self._x_nearest_neigbrors = neighbors.NearestNeighbors(metric=self._METRIC, n_jobs=n_jobs)
-        self._y_nearest_neighbors = neighbors.NearestNeighbors(metric=self._METRIC, n_jobs=n_jobs)
-        self._xy_nearest_neighbors = neighbors.NearestNeighbors(metric=self._METRIC, n_jobs=n_jobs)
-
-        self._nearest_neighbors = neighbors.NearestNeighbors(metric="chebyshev", n_jobs=n_jobs)
-        self._standardize: bool = standardize
-
-        if chunk_size < 1:
-            raise ValueError("Chunk size must be at least 1.")
-        self._chunk_size: int = chunk_size
-
-        self._x: np.ndarray = np.array([])
-        self._y = np.ndarray = np.array([])
-
-    def fit(self, x: ArrayLike, y: ArrayLike) -> None:
-        """Fits the nearest neighbors structure on the space `X x Y`,
-        which can be quickly queried for distances and nearest neighbors."""
-
-        z = np.hstack([x, y])
-        assert z.shape == (
-            x.shape[0],
-            x.shape[1] + y.shape[1],
-        ), f"Product space has wrong dimension {z.shape}."
-
-        self._nearest_neighbors.fit(z)
-        self._x = x
-        self._y = y
-
-    def _point_in_product_space(self, index: Union[int, slice]) -> np.ndarray:
-        """Returns the `index`th point in the product space `X x Y`. Works also with
-        the slice notation `start:end`."""
-        return np.hstack([self._x[index], self._y[index]])
-
-    def predict(self, neighborhoods: Optional[Sequence[int]] = None) -> dict[int, float]:
-        if neighborhoods is None:
-            neighborhoods = self._neighborhoods
-        else:
-            neighborhoods = _cast_and_check_neighborhoods(neighborhoods)
-
-        max_neighborhood = max(neighborhoods)
-
-        n_points = self._x.shape[0]
-        for batch_index in _chunker(n_items=n_points, chunk_size=self._chunk_size):
-            # batch_index is a slice. It represents some data points, which
-            # number will be referred to as `batch_len`
-
-            # Get the chunk with the points to be processed
-            z = self._point_in_product_space(batch_index)  # Shape (batch_len, dim_x + dim_y)
-            # Estimate their nearest neighbors (distances and indices).
-            # Both arrays have shape (batch_len, max_neighborhood)
-            nearest_distances, nearest_indices = self._nearest_neighbors.kneighbors(
-                X=z, n_neighbors=max_neighborhood, return_distance=True
-            )
-
-        raise NotImplementedError
-
-    def estimate(self, x: ArrayLike, y: ArrayLike) -> float:
-        self.fit(x, y)
-        predictions = np.asarray(list(self.predict().values()))
         return cast(float, np.mean(predictions))
