@@ -204,10 +204,13 @@ class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
                 n_y = (distances_y < distances_k[:, None]).sum(axis=1) - 1  # Shape (batch_size,)
 
                 digammas = _DIGAMMA(n_x + 1) + _DIGAMMA(n_y + 1)  # Shape (batch_size,)
-                digammas_contribution = np.sum(digammas / n_points)
-                digammas_dict[k].append(digammas_contribution)
+                # We calculate mean(digammas) over all the points rather than the batch
+                digammas_mean_contribution = np.sum(digammas / n_points)
+                digammas_dict[k].append(digammas_mean_contribution)
 
         for k, digammas in digammas_dict.items():
+            # As the mean over all the points was calculated for each chunk separately,
+            # we should add the contributions from each chunk
             mi_estimate = _DIGAMMA(k) - np.sum(digammas) + _DIGAMMA(n_points)
             self._mi_dict[k] = max(0.0, mi_estimate)
 
