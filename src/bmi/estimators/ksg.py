@@ -1,5 +1,5 @@
 """Kraskov estimators."""
-from typing import Literal, Optional, Sequence, cast
+from typing import Generator, Literal, Optional, Sequence, Union, cast
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -83,6 +83,8 @@ class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
 
         digammas_dict = {k: [] for k in self._neighborhoods}
 
+        # TODO(Pawel): Consider using `_chunker` as it may speed up
+        #  the calculation of pairwise distances
         n_points = np.shape(x)[0]
         for index in range(n_points):
             # Distances from x[index] to all the points:
@@ -129,18 +131,70 @@ class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
         return cast(float, np.mean(predictions))
 
 
+def _chunker(n_items: int, chunk_size: int) -> Generator[slice, None, None]:
+    """Used to process data in batches.
+
+    Based on https://stackoverflow.com/a/434328
+
+    Args:
+        n_items: number of items in the list or array
+        chunk_size: maximal chunk size
+
+    Returns:
+        a generator object with slices object
+        (can be used to slice a list or array)
+
+    Example:
+        >>> X = list("abcd")
+        >>> for batch_index in _chunker(n_items=4, chunk_size=3):
+                print(X[batch_index])
+        ["a", "b", "c"]
+        ["d"]
+
+    Note:
+        The last chunk may be smaller than `chunk_size`
+    """
+    if n_items <= 0 or chunk_size <= 0:
+        raise ValueError("Size must be non-negative")
+
+    for start in range(0, n_items, chunk_size):
+        end = min(n_items, start + chunk_size)
+        yield slice(start, end)
+
+
 class KSGEnsembleChebyshevEstimator(IMutualInformationPointEstimator):
     """Mutual information estimator based on fast nearest neighbours,
     available when Chebyshev (l-infty) metric is used for both X and Y spaces.
     """
 
     def __init__(
-        self, neighborhoods: Sequence[int] = (5, 10), standardize: bool = True, n_jobs: int = 1
+        self,
+        neighborhoods: Sequence[int] = (5, 10),
+        standardize: bool = True,
+        n_jobs: int = 1,
+        chunk_size: int = 100,
     ) -> None:
+        """
+
+        Args:
+            neighborhoods: sequence of positive integers,
+              specifying the size of neighborhood for MI calculation
+            standardize: whether to standardize the data before MI calculation, by default true
+            n_jobs: number of jobs to be launched to compute distances.
+              Use -1 to use all processors.
+            chunk_size: controls the batch size (to not exceed available memory)
+        """
         self._neighborhoods: list[int] = _cast_and_check_neighborhoods(neighborhoods)
 
         self._nearest_neighbors = neighbors.NearestNeighbors(metric="chebyshev", n_jobs=n_jobs)
         self._standardize: bool = standardize
+
+        if chunk_size < 1:
+            raise ValueError("Chunk size must be at least 1.")
+        self._chunk_size: int = chunk_size
+
+        self._x: np.ndarray = np.array([])
+        self._y = np.ndarray = np.array([])
 
     def fit(self, x: ArrayLike, y: ArrayLike) -> None:
         """Fits the nearest neighbors structure on the space `X x Y`,
@@ -160,12 +214,34 @@ class KSGEnsembleChebyshevEstimator(IMutualInformationPointEstimator):
         ), f"Product space has wrong dimension {z.shape}."
 
         self._nearest_neighbors.fit(z)
+        self._x = x
+        self._y = y
+
+    def _point_in_product_space(self, index: Union[int, slice]) -> np.ndarray:
+        """Returns the `index`th point in the product space `X x Y`. Works also with
+        the slice notation `start:end`."""
+        return np.hstack([self._x[index], self._y[index]])
 
     def predict(self, neighborhoods: Optional[Sequence[int]] = None) -> dict[int, float]:
         if neighborhoods is None:
             neighborhoods = self._neighborhoods
         else:
             neighborhoods = _cast_and_check_neighborhoods(neighborhoods)
+
+        max_neighborhood = max(neighborhoods)
+
+        n_points = self._x.shape[0]
+        for batch_index in _chunker(n_items=n_points, chunk_size=self._chunk_size):
+            # batch_index is a slice. It represents some data points, which
+            # number will be referred to as `batch_len`
+
+            # Get the chunk with the points to be processed
+            z = self._point_in_product_space(batch_index)  # Shape (batch_len, dim_x + dim_y)
+            # Estimate their nearest neighbors (distances and indices).
+            # Both arrays have shape (batch_len, max_neighborhood)
+            nearest_distances, nearest_indices = self._nearest_neighbors.kneighbors(
+                X=z, n_neighbors=max_neighborhood, return_distance=True
+            )
 
         raise NotImplementedError
 
