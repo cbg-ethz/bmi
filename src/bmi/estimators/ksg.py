@@ -26,6 +26,97 @@ def _cast_and_check_neighborhoods(neighborhoods: Sequence[int]) -> list[int]:
     return list(neighborhoods)
 
 
+class _ProductSpace:
+    """Represents points in `X x Y` space.
+
+    Attrs:
+        n_points: number of stored points
+        x: points projected on X space
+        y: points projected on Y space
+        xy: points in `X x Y` space. This is a time-expensive operation (calculated on the fly)
+          so if one only needs to access individual points/batches, we suggest to use `space[i]`
+          syntax
+
+    Example:
+        >>> x = [[0], [1]]
+        >>> y = [[2, 3], [4, 5]]
+        >>> space = _ProductSpace(x, y, standardize=False)
+        >>> space.n_points
+        2
+        >>> space.x
+        array([[0.], [1.]])
+        >>> space.y
+        array([[2., 3.], [4., 5.]])
+        >>> space.xy
+        array([[0., 2., 3.], [1., 4. 5.]])
+        >>> space[0]  # Other slicing options are also allowed
+        array([0., 2., 3.])
+    """
+
+    def __init__(self, x: ArrayLike, y: ArrayLike, *, standardize: bool = True) -> None:
+        x, y = np.array(x), np.array(y)
+
+        if x.shape[0] != y.shape[0]:
+            raise ValueError(f"Arrays have different length: {len(x)} != {len(y)}.")
+        if standardize:
+            x: np.ndarray = preprocessing.StandardScaler(copy=False).fit_transform(x)
+            y: np.ndarray = preprocessing.StandardScaler(copy=False).fit_transform(y)
+
+        self._x = x
+        self._y = y
+
+    def __len__(self) -> int:
+        return self.x.shape[0]
+
+    @property
+    def x(self) -> np.ndarray:
+        return self._x
+
+    @property
+    def y(self) -> np.ndarray:
+        return self._y
+
+    @property
+    def xy(self) -> np.ndarray:
+        return np.hstack([self.x, self.y])
+
+    def __getitem__(self, item: Union[int, slice]) -> np.ndarray:
+        """Returns the `index`th point in the product space `X x Y`. Works also with
+        the slice notation `start:end`."""
+        return np.hstack([self._x[item], self._y[item]])
+
+
+def _chunker(n_items: int, chunk_size: int) -> Generator[slice, None, None]:
+    """Used to process data in batches.
+
+    Based on https://stackoverflow.com/a/434328
+
+    Args:
+        n_items: number of items in the list or array
+        chunk_size: maximal chunk size
+
+    Returns:
+        a generator object with slices object
+        (can be used to slice a list or array)
+
+    Example:
+        >>> X = list("abcd")
+        >>> for batch_index in _chunker(n_items=4, chunk_size=3):
+                print(X[batch_index])
+        ["a", "b", "c"]
+        ["d"]
+
+    Note:
+        The last chunk may be smaller than `chunk_size`
+    """
+    if n_items <= 0 or chunk_size <= 0:
+        raise ValueError("Size must be non-negative")
+
+    for start in range(0, n_items, chunk_size):
+        end = min(n_items, start + chunk_size)
+        yield slice(start, end)
+
+
 class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
     """Ensemble estimator built using the first approximation (equation (8) in the paper)."""
 
@@ -67,35 +158,29 @@ class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
         self._mi_dict = dict()  # set by fit()
 
     def fit(self, x: ArrayLike, y: ArrayLike) -> None:
-        x, y = np.array(x), np.array(y)
+        space = _ProductSpace(x, y, standardize=self._standardize)
 
-        if len(x) != len(y):
-            raise ValueError(f"Arrays have different length: {len(x)} != {len(y)}.")
-        if len(x) <= max(self._neighborhoods):
+        if len(space) <= max(self._neighborhoods):
             raise ValueError(
                 f"Maximum neighborhood used is {max(self._neighborhoods)} "
-                f"but the number of points provided is only {len(x)}."
+                f"but the number of points provided is only {len(space)}."
             )
-
-        if self._standardize:
-            x: np.ndarray = preprocessing.StandardScaler(copy=False).fit_transform(x)
-            y: np.ndarray = preprocessing.StandardScaler(copy=False).fit_transform(y)
 
         digammas_dict = {k: [] for k in self._neighborhoods}
 
         # TODO(Pawel): Consider using `_chunker` as it may speed up
         #  the calculation of pairwise distances
-        n_points = np.shape(x)[0]
+        n_points = len(space)
         for index in range(n_points):
             # Distances from x[index] to all the points:
             distances_x = metrics.pairwise_distances(
-                x[None, index], x, metric=self._metric_x, n_jobs=self._n_jobs
+                space.x[None, index], space.x, metric=self._metric_x, n_jobs=self._n_jobs
             )[0, :]
             distances_y = metrics.pairwise_distances(
-                y[None, index], y, metric=self._metric_y, n_jobs=self._n_jobs
+                space.y[None, index], space.y, metric=self._metric_y, n_jobs=self._n_jobs
             )[0, :]
 
-            # In the product (XxY) space we use the maximum distance
+            # In the product `X x Y` space we use the maximum distance
             distances_z = np.maximum(distances_x, distances_y)
             # And we sort the point indices by being the closest to the considered one
             closest_points = sorted(range(len(distances_z)), key=lambda i: distances_z[i])
@@ -129,98 +214,6 @@ class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
         self.fit(x, y)
         predictions = np.asarray(list(self.get_predictions().values()))
         return cast(float, np.mean(predictions))
-
-
-def _chunker(n_items: int, chunk_size: int) -> Generator[slice, None, None]:
-    """Used to process data in batches.
-
-    Based on https://stackoverflow.com/a/434328
-
-    Args:
-        n_items: number of items in the list or array
-        chunk_size: maximal chunk size
-
-    Returns:
-        a generator object with slices object
-        (can be used to slice a list or array)
-
-    Example:
-        >>> X = list("abcd")
-        >>> for batch_index in _chunker(n_items=4, chunk_size=3):
-                print(X[batch_index])
-        ["a", "b", "c"]
-        ["d"]
-
-    Note:
-        The last chunk may be smaller than `chunk_size`
-    """
-    if n_items <= 0 or chunk_size <= 0:
-        raise ValueError("Size must be non-negative")
-
-    for start in range(0, n_items, chunk_size):
-        end = min(n_items, start + chunk_size)
-        yield slice(start, end)
-
-
-class _ProductSpace:
-    """Represents points in `X x Y` space.
-
-    Attrs:
-        n_points: number of stored points
-        x: points projected on X space
-        y: points projected on Y space
-        xy: points in `X x Y` space. This is a time-expensive operation (calculated on the fly)
-          so if one only needs to access individual points/batches, we suggest to use `space[i]`
-          syntax
-
-    Example:
-        >>> x = [[0], [1]]
-        >>> y = [[2, 3], [4, 5]]
-        >>> space = _ProductSpace(x, y, standardize=False)
-        >>> space.n_points
-        2
-        >>> space.x
-        array([[0.], [1.]])
-        >>> space.y
-        array([[2., 3.], [4., 5.]])
-        >>> space.xy
-        array([[0., 2., 3.], [1., 4. 5.]])
-        >>> space[0]  # Other slicing options are also allowed
-        array([0., 2., 3.])
-    """
-
-    def __init__(self, x: ArrayLike, y: ArrayLike, *, standardize: bool = True) -> None:
-        x, y = np.array(x), np.array(y)
-
-        if x.shape[0] != y.shape[0]:
-            raise ValueError(f"Arrays have different length: {len(x)} != {len(y)}.")
-        if standardize:
-            x: np.ndarray = preprocessing.StandardScaler(copy=False).fit_transform(x)
-            y: np.ndarray = preprocessing.StandardScaler(copy=False).fit_transform(y)
-
-        self._x = x
-        self._y = y
-
-    @property
-    def n_points(self) -> int:
-        return self.x.shape[0]
-
-    @property
-    def x(self) -> np.ndarray:
-        return self._x
-
-    @property
-    def y(self) -> np.ndarray:
-        return self._y
-
-    @property
-    def xy(self) -> np.ndarray:
-        return np.hstack([self.x, self.y])
-
-    def __getitem__(self, item: Union[int, slice]) -> np.ndarray:
-        """Returns the `index`th point in the product space `X x Y`. Works also with
-        the slice notation `start:end`."""
-        return np.hstack([self._x[item], self._y[item]])
 
 
 class KSGEnsembleChebyshevEstimator(IMutualInformationPointEstimator):
