@@ -1,3 +1,5 @@
+from typing import Optional, get_args
+
 import numpy as np
 import pytest
 from jax import random
@@ -89,8 +91,17 @@ def test_ksg_more_neighbors_than_points_raises(
         estimator.fit(x, x)
 
 
-@pytest.mark.parametrize("neighborhoods", [(2, 5), (1, 10)])
-def test_ksg_fit_predict(neighborhoods: tuple[int, ...], n_samples: int = 15) -> None:
+@pytest.mark.parametrize("n_jobs", [1, 2])
+@pytest.mark.parametrize("metric_x", get_args(ksg._AllowedContinuousMetric))
+@pytest.mark.parametrize("metric_y", [None, "euclidean"])
+@pytest.mark.parametrize("neighborhoods", [(2, 5), (1, 7)])
+def test_ksg_fit_predict(
+    neighborhoods: tuple[int, ...],
+    n_jobs: int,
+    metric_x: ksg._AllowedContinuousMetric,
+    metric_y: Optional[ksg._AllowedContinuousMetric],
+    n_samples: int = 10,
+) -> None:
     """Tests whether the estimator can be fitted
     and if it allows to get the predictions afterwards."""
 
@@ -104,7 +115,9 @@ def test_ksg_fit_predict(neighborhoods: tuple[int, ...], n_samples: int = 15) ->
     rng = random.PRNGKey(10)
     x_sample, y_sample = distribution.sample(n_samples, rng=rng)
 
-    estimator = ksg.KSGEnsembleFirstEstimator(neighborhoods=neighborhoods)
+    estimator = ksg.KSGEnsembleFirstEstimator(
+        neighborhoods=neighborhoods, metric_x=metric_x, metric_y=metric_y, n_jobs=n_jobs
+    )
     estimator.fit(x_sample, y_sample)
 
     predictions = estimator.get_predictions()
