@@ -4,12 +4,26 @@ from typing import Literal, Optional, Sequence, cast
 import numpy as np
 from numpy.typing import ArrayLike
 from scipy.special import digamma as _DIGAMMA
-from sklearn import metrics, preprocessing
+from sklearn import metrics, neighbors, preprocessing
 
 from bmi.estimators.base import EstimatorNotFittedException
 from bmi.interface import IMutualInformationPointEstimator
 
 _AllowedContinuousMetric = Literal["euclidean", "manhattan", "chebyshev"]
+
+
+def _cast_and_check_neighborhoods(neighborhoods: Sequence[int]) -> list[int]:
+    """Auxiliary function used to make sure that the provided `neighborhoods` are right
+    and standardize a sequence into a list.
+
+    Raises:
+        ValueError, if any of `neighborhoods` is not positive
+    """
+    if not len(neighborhoods):
+        raise ValueError("Neighborhoods list must be non-empty.")
+    if min(neighborhoods) < 1:
+        raise ValueError("Each neighborhood must be at least 1.")
+    return list(neighborhoods)
 
 
 class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
@@ -38,10 +52,8 @@ class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
             If you use Chebyshev (l-infinity) distance for both X and Y,
             `KSGChebyshevEstimator` may be faster.
         """
-        if min(neighborhoods) < 1:
-            raise ValueError("Each neighborhood must be at least 1.")
 
-        self._neighborhoods = list(neighborhoods)
+        self._neighborhoods: list[int] = _cast_and_check_neighborhoods(neighborhoods)
         self._standardize = standardize
 
         self._n_jobs: int = n_jobs
@@ -122,4 +134,42 @@ class KSGEnsembleChebyshevEstimator(IMutualInformationPointEstimator):
     available when Chebyshev (l-infty) metric is used for both X and Y spaces.
     """
 
-    ...
+    def __init__(
+        self, neighborhoods: Sequence[int] = (5, 10), standardize: bool = True, n_jobs: int = 1
+    ) -> None:
+        self._neighborhoods: list[int] = _cast_and_check_neighborhoods(neighborhoods)
+
+        self._nearest_neighbors = neighbors.NearestNeighbors(metric="chebyshev", n_jobs=n_jobs)
+        self._standardize: bool = standardize
+
+    def fit(self, x: ArrayLike, y: ArrayLike) -> None:
+        """Fits the nearest neighbors structure on the space `X x Y`,
+        which can be quickly queried for distances and nearest neighbors."""
+        x, y = np.array(x), np.array(y)
+
+        if len(x) != len(y):
+            raise ValueError(f"Arrays have different length: {len(x)} != {len(y)}.")
+        if self._standardize:
+            x: np.ndarray = preprocessing.StandardScaler(copy=False).fit_transform(x)
+            y: np.ndarray = preprocessing.StandardScaler(copy=False).fit_transform(y)
+
+        z = np.hstack([x, y])
+        assert z.shape == (
+            x.shape[0],
+            x.shape[1] + y.shape[1],
+        ), f"Product space has wrong dimension {z.shape}."
+
+        self._nearest_neighbors.fit(z)
+
+    def predict(self, neighborhoods: Optional[Sequence[int]] = None) -> dict[int, float]:
+        if neighborhoods is None:
+            neighborhoods = self._neighborhoods
+        else:
+            neighborhoods = _cast_and_check_neighborhoods(neighborhoods)
+
+        raise NotImplementedError
+
+    def estimate(self, x: ArrayLike, y: ArrayLike) -> float:
+        self.fit(x, y)
+        predictions = np.asarray(list(self.predict().values()))
+        return cast(float, np.mean(predictions))
