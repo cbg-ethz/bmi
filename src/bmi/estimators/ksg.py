@@ -127,6 +127,7 @@ class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
         metric_x: _AllowedContinuousMetric = "euclidean",
         metric_y: Optional[_AllowedContinuousMetric] = None,
         n_jobs: int = 1,
+        chunk_size: int = 100,
     ) -> None:
         """
 
@@ -138,6 +139,8 @@ class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
             metric_y: metric on the Y space. If None, `metric_x` will be used
             n_jobs: number of jobs to be launched to compute distances.
               Use -1 to use all processors.
+            chunk_size: internal batch size, used to speed up the computations while fitting
+              into the memory
 
         Note:
             If you use Chebyshev (l-infinity) distance for both X and Y,
@@ -148,6 +151,7 @@ class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
         self._standardize = standardize
 
         self._n_jobs: int = n_jobs
+        self._chunk_size: int = chunk_size
 
         self._metric_x: _AllowedContinuousMetric = metric_x
         self._metric_y: _AllowedContinuousMetric = (
@@ -168,39 +172,43 @@ class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
 
         digammas_dict = {k: [] for k in self._neighborhoods}
 
-        # TODO(Pawel): Consider using `_chunker` as it may speed up
-        #  the calculation of pairwise distances
         n_points = len(space)
-        for index in range(n_points):
-            # Distances from x[index] to all the points:
+        for batch_index in _chunker(n_items=n_points, chunk_size=self._chunk_size):
+            # All these arrays have shape (batch_size, n_points)
             distances_x = metrics.pairwise_distances(
-                space.x[None, index], space.x, metric=self._metric_x, n_jobs=self._n_jobs
-            )[0, :]
+                space.x[batch_index], space.x, metric=self._metric_x, n_jobs=self._n_jobs
+            )
             distances_y = metrics.pairwise_distances(
-                space.y[None, index], space.y, metric=self._metric_y, n_jobs=self._n_jobs
-            )[0, :]
+                space.y[batch_index], space.y, metric=self._metric_y, n_jobs=self._n_jobs
+            )
+            # Distance in space `X x Y` is the maximum distance.
+            # Shape is also (batch_size, n_points)
+            distances_xy = np.maximum(distances_x, distances_y)
 
-            # In the product `X x Y` space we use the maximum distance
-            distances_z = np.maximum(distances_x, distances_y)
-            # And we sort the point indices by being the closest to the considered one
-            closest_points = sorted(range(len(distances_z)), key=lambda i: distances_z[i])
+            # Indices to the closest points in the `X x Y` space.
+            # Shape is also (batch_size, n_points)
+            closest_points = np.argsort(distances_xy, axis=-1)
 
             for k in self._neighborhoods:
                 # Note that the points are 0-indexed and that the "0th neighbor"
                 # is the point itself (as distance(x, x) = 0 is the smallest possible)
                 # Hence, the kth neighbour is at index k
-                kth_neighbour = closest_points[k]
-                distance = distances_z[kth_neighbour]
+                kth_neighbors = closest_points[:, k]  # Shape (batch_size,)
+                # Distance to the k-th neighbor for each point
+                distances_k = distances_xy[
+                    np.arange(len(kth_neighbors)), kth_neighbors
+                ]  # Shape (batch_size,)
 
                 # Don't include the `i`th point itself in n_x and n_y
-                n_x = (distances_x < distance).sum() - 1
-                n_y = (distances_y < distance).sum() - 1
+                n_x = (distances_x < distances_k[:, None]).sum(axis=1) - 1  # Shape (batch_size,)
+                n_y = (distances_x < distances_k[:, None]).sum(axis=1) - 1  # Shape (batch_size,)
 
-                digammas_per_point = _DIGAMMA(n_x + 1) + _DIGAMMA(n_y + 1)
-                digammas_dict[k].append(digammas_per_point)
+                digammas = _DIGAMMA(n_x + 1) + _DIGAMMA(n_y + 1)  # Shape (batch_size,)
+                digammas_contribution = np.sum(digammas / n_points)
+                digammas_dict[k].append(digammas_contribution)
 
         for k, digammas in digammas_dict.items():
-            mi_estimate = _DIGAMMA(k) - np.mean(digammas) + _DIGAMMA(n_points)
+            mi_estimate = _DIGAMMA(k) - np.sum(digammas) + _DIGAMMA(n_points)
             self._mi_dict[k] = max(0.0, mi_estimate)
 
         self._fitted = True
