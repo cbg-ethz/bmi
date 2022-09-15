@@ -201,7 +201,7 @@ class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
 
                 # Don't include the `i`th point itself in n_x and n_y
                 n_x = (distances_x < distances_k[:, None]).sum(axis=1) - 1  # Shape (batch_size,)
-                n_y = (distances_x < distances_k[:, None]).sum(axis=1) - 1  # Shape (batch_size,)
+                n_y = (distances_y < distances_k[:, None]).sum(axis=1) - 1  # Shape (batch_size,)
 
                 digammas = _DIGAMMA(n_x + 1) + _DIGAMMA(n_y + 1)  # Shape (batch_size,)
                 digammas_contribution = np.sum(digammas / n_points)
