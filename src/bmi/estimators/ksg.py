@@ -9,7 +9,7 @@ from sklearn import metrics, preprocessing
 from bmi.estimators.base import EstimatorNotFittedException
 from bmi.interface import IMutualInformationPointEstimator
 
-_AllowedContinuousMetric = Literal["euclidean", "manhattan", "chebyshev", "mahalonobis"]
+_AllowedContinuousMetric = Literal["euclidean", "manhattan", "chebyshev"]
 
 
 class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
@@ -122,4 +122,4 @@ class KSGEnsembleChebyshevEstimator(IMutualInformationPointEstimator):
     available when Chebyshev (l-infty) metric is used for both X and Y spaces.
     """
 
-    raise NotImplementedError
+    ...
