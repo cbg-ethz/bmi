@@ -68,14 +68,18 @@ class SplitStudentT(BaseSampler):
 
         return x[:, : self.dim_x], x[:, self.dim_x :]  # noqa: E203 colon spacing conventions
 
+    @property
+    def nu(self) -> int:
+        return self._nu
+
     def mutual_information(self) -> float:
         """Expression for MI taken from Arellano-Valle et al., p. 47."""
         # Auxiliary variables, to make the expression look nice.
         # They should be read as "H"alf of the sum of "variables"
-        h_nu = 0.5 * self._nu
-        h_nu_x = 0.5 * (self._nu + self._dim_x)
-        h_nu_y = 0.5 * (self._nu + self._dim_y)
-        h_nu_xy = 0.5 * (self._nu + self._dim_x + self._dim_y)
+        h_nu = 0.5 * self.nu
+        h_nu_x = 0.5 * (self.nu + self.dim_x)
+        h_nu_y = 0.5 * (self.nu + self.dim_y)
+        h_nu_xy = 0.5 * (self.nu + self.dim_x + self.dim_y)
 
         mi_normal = self._multinormal.mutual_information()
         log_term = np.log(gamma(h_nu) * gamma(h_nu_xy)) - np.log(gamma(h_nu_x) * gamma(h_nu_y))
