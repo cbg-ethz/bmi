@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 from jax import random
+from sklearn.feature_selection import mutual_info_regression
 
 from bmi.samplers.splitmultinormal import SplitMultinormal
 
@@ -111,3 +112,31 @@ def test_2d_gaussian(
 
     correlation_estimate = np.corrcoef(x_sample.ravel(), y_sample.ravel())[0, 1]
     assert correlation_estimate == pytest.approx(correlation, rel=0.1)
+
+
+@pytest.mark.parametrize("correlation", (0.2, 0.8))
+@pytest.mark.parametrize("var_x", (1.0, 2.0))
+def test_2d_mi(correlation: float, var_x: float, var_y: float = 1.0, n_samples: int = 500) -> None:
+    cov_xy = correlation * np.sqrt(var_x * var_y)
+
+    covariance = np.asarray(
+        [
+            [var_x, cov_xy],
+            [cov_xy, var_y],
+        ]
+    )
+
+    sampler = SplitMultinormal(
+        dim_x=1,
+        dim_y=1,
+        mean=np.zeros(2),
+        covariance=covariance,
+    )
+
+    rng = random.PRNGKey(20)
+
+    x, y = sampler.sample(n_points=n_samples, rng=rng)
+    # We need to reshape `y` from (n, 1) to just (n,)
+    mi_estimate = mutual_info_regression(x, y.ravel(), random_state=5)
+
+    assert sampler.mutual_information() == pytest.approx(mi_estimate, rel=0.05, abs=0.06)
