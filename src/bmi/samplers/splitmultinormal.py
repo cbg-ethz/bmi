@@ -93,10 +93,7 @@ class SplitMultinormal(BaseSampler):
             mean: mean vector, shape (n,) where n = dim_x + dim_y
             covariance: covariance matrix, shape (n, n)
         """
-        # Set dimensions of spaces corresponding to individual variables
-        self._validate_dimensions(dim_x=dim_x, dim_y=dim_y)
-        self._dim_x = dim_x
-        self._dim_y = dim_y
+        super().__init__(dim_x=dim_x, dim_y=dim_y)
 
         # Set mean and covariance
         self._mean = np.array(mean)
@@ -120,14 +117,6 @@ class SplitMultinormal(BaseSampler):
             raise ValueError(
                 f"Covariance matrix has shape {self._covariance.shape}, " f"expected ({n}, {n})."
             )
-
-    @property
-    def dim_x(self) -> int:
-        return self._dim_x
-
-    @property
-    def dim_y(self) -> int:
-        return self._dim_y
 
     def sample(self, n_points: int, rng: KeyArray) -> tuple[np.ndarray, np.ndarray]:
         xy = self._joint_distribution.sample(n_samples=n_points, key=rng)
