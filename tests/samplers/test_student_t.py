@@ -8,16 +8,19 @@ import bmi.samplers.split_student_t as student
 
 @pytest.mark.parametrize("x", (2, 4))
 @pytest.mark.parametrize("y", (1, 2))
-@pytest.mark.parametrize("nu", (4, 20))
+@pytest.mark.parametrize("df", (4, 9.5, 20))
 @pytest.mark.parametrize("n_samples", (1000,))
-def test_samples_produced(x: int, y: int, n_samples: int, nu: int) -> None:
+@pytest.mark.parametrize("dispersion", (0.1, 0.5))
+def test_samples_produced(x: int, y: int, n_samples: int, df: float, dispersion: float) -> None:
     """Tests whether the sampling returns the right shapes."""
+    print(f"x={x} y={y} df={df} n_samples={n_samples}")
 
     rng = random.PRNGKey(111)
     mean = random.uniform(rng, shape=(x + y,))
 
-    sampler = student.SplitStudentT(dim_x=x, dim_y=y, mean=mean, dispersion=np.eye(x + y), nu=nu)
-
+    sampler = student.SplitStudentT(
+        dim_x=x, dim_y=y, mean=mean, dispersion=dispersion * np.eye(x + y), df=df
+    )
     x_sample, y_sample = sampler.sample(n_points=n_samples, rng=42)
 
     assert x_sample.shape == (
@@ -36,16 +39,22 @@ def test_samples_produced(x: int, y: int, n_samples: int, nu: int) -> None:
     ), f"XxY sample shape: {xy_sample.shape} != {(n_samples, x+y)}"
 
     assert np.allclose(
-        mean, xy_sample.mean(axis=0), rtol=0.1, atol=0.05
+        mean, xy_sample.mean(axis=0), rtol=0.12, atol=0.07
     ), f"Arrays different: {mean} != {xy_sample.mean(axis=0)}"
 
 
-@pytest.mark.parametrize("correlation", (0.2, 0.8))
-@pytest.mark.parametrize("nu", (2, 4, 10))
+@pytest.mark.parametrize("pseudocorrelation", (0.2, 0.8))
+@pytest.mark.parametrize("df", (2, 4, 10))
 def test_2d(
-    correlation: float, nu: int, var_x: float = 1.0, var_y: float = 1.0, n_samples: int = 1000
+    pseudocorrelation: float,
+    df: int,
+    var_x: float = 1.0,
+    var_y: float = 1.0,
+    n_samples: int = 1000,
 ) -> None:
-    cov_xy = correlation * np.sqrt(var_x * var_y)
+    # Note: var_x and var_y are *not* really the variances of the distribution,
+    # but diagonal parameters of the dispersion matrix.
+    cov_xy = pseudocorrelation * np.sqrt(var_x * var_y)
 
     dispersion = np.asarray(
         [
@@ -59,7 +68,7 @@ def test_2d(
         dim_y=1,
         mean=np.zeros(2),
         dispersion=dispersion,
-        nu=nu,
+        df=df,
     )
 
     x, y = sampler.sample(n_points=n_samples, rng=10)
