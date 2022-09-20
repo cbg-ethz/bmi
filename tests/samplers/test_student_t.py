@@ -44,13 +44,20 @@ def test_samples_produced(x: int, y: int, n_samples: int, df: float, dispersion:
 
 
 @pytest.mark.parametrize("pseudocorrelation", (0.2, 0.8))
-@pytest.mark.parametrize("df", (2, 4, 10))
+@pytest.mark.parametrize(
+    "df",
+    (
+        10,
+        20,
+        100,
+    ),
+)
 def test_2d(
     pseudocorrelation: float,
     df: int,
     var_x: float = 1.0,
     var_y: float = 1.0,
-    n_samples: int = 1000,
+    n_samples: int = 30000,
 ) -> None:
     # Note: var_x and var_y are *not* really the variances of the distribution,
     # but diagonal parameters of the dispersion matrix.
@@ -73,6 +80,6 @@ def test_2d(
 
     x, y = sampler.sample(n_points=n_samples, rng=10)
     # According to API, y must have shape (n,) rather than (n, 1)
-    mi_estimate = mutual_info_regression(x, y.ravel(), random_state=5, n_neighbors=10)
+    mi_estimate = mutual_info_regression(x, y.ravel(), random_state=5, n_neighbors=20)[0]
 
-    assert sampler.mutual_information() == pytest.approx(mi_estimate, rel=0.05)
+    assert sampler.mutual_information() == pytest.approx(mi_estimate, rel=0.05, abs=0.03)

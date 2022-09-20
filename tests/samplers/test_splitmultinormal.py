@@ -137,6 +137,6 @@ def test_2d_mi(correlation: float, var_x: float, var_y: float = 1.0, n_samples: 
 
     x, y = sampler.sample(n_points=n_samples, rng=rng)
     # We need to reshape `y` from (n, 1) to just (n,)
-    mi_estimate = mutual_info_regression(x, y.ravel(), random_state=5)
+    mi_estimate = mutual_info_regression(x, y.ravel(), random_state=5)[0]
 
     assert sampler.mutual_information() == pytest.approx(mi_estimate, rel=0.05, abs=0.06)
