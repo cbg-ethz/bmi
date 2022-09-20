@@ -1,5 +1,6 @@
 import numpy as np
 from numpy.typing import ArrayLike
+from scipy import stats
 from scipy.special import digamma, gamma
 
 import bmi.samplers.splitmultinormal as spl
@@ -20,7 +21,7 @@ class SplitStudentT(BaseSampler):
     """
 
     def __init__(
-        self, *, dim_x: int, dim_y: int, mean: ArrayLike, dispersion: ArrayLike, nu: int
+        self, *, dim_x: int, dim_y: int, mean: ArrayLike, dispersion: ArrayLike, df: float
     ) -> None:
         """
 
@@ -29,7 +30,7 @@ class SplitStudentT(BaseSampler):
             dim_y: dimension of the Y variable
             mean: mean of the distribution, shape (dim_x + dim_y,)
             dispersion: dispersion matrix, shape (dim_x + dim_y, dim_x + dim_y)
-            nu: degrees of freedom
+            df: degrees of freedom, strictly positive. Use `np.inf` for a Gaussian
         """
         super().__init__(dim_x=dim_x, dim_y=dim_y)
         # Mutual information of multivariate Student-t contains
@@ -39,47 +40,47 @@ class SplitStudentT(BaseSampler):
         self._multinormal = spl.SplitMultinormal(
             dim_x=dim_x, dim_y=dim_y, mean=np.zeros_like(mean), covariance=dispersion
         )
-        self._nu = nu
+
+        if df <= 0:
+            raise ValueError("Degrees of freedom must be positive.")
+        self._degrees_of_freedom = df
 
         self._mean = np.asarray(mean)
         self._dispersion = np.asarray(dispersion)
 
     def sample(self, n_points: int, rng: int) -> tuple[np.ndarray, np.ndarray]:
-        """Sampling from multivariate Student-t as described in
-
-          https://en.wikipedia.org/wiki/Multivariate_t-distribution
+        """Sampling from multivariate Student distribution.
 
         Note:
-            This function is based on NumPy's sampling, rather than JAX.
-            This is motivated by the use of the chi-square distribution.
+            This function is based on SciPy's sampling.
         """
-        generator = np.random.default_rng(rng)
-
-        # Shape (n_points, 1)
-        u = generator.chisquare(df=self._nu, size=(n_points, 1))
-
-        # Shape (n_points, dim_total)
-        y = generator.multivariate_normal(
-            mean=np.zeros(self.dim_total), cov=self._dispersion, size=n_points
+        xy = stats.multivariate_t.rvs(
+            loc=self._mean,
+            shape=self._dispersion,
+            df=self._degrees_of_freedom,
+            size=n_points,
+            random_state=rng,
         )
+        assert xy.shape == (
+            n_points,
+            self.dim_total,
+        ), f"Wrong shape: {xy.shape} != {(n_points, self.dim_total)}."
 
-        # Shape (n_points, dim_total)
-        x = np.sqrt(self._nu / u) * y + self._mean
-
-        return x[:, : self.dim_x], x[:, self.dim_x :]  # noqa: E203 colon spacing conventions
+        return xy[:, : self.dim_x], xy[:, self.dim_x :]  # noqa: E203 colon spacing conventions
 
     @property
-    def nu(self) -> int:
-        return self._nu
+    def df(self) -> float:
+        """Degrees of freedom."""
+        return self._degrees_of_freedom
 
     def mutual_information(self) -> float:
         """Expression for MI taken from Arellano-Valle et al., p. 47."""
         # Auxiliary variables, to make the expression look nice.
         # They should be read as "H"alf of the sum of "variables"
-        h_nu = 0.5 * self.nu
-        h_nu_x = 0.5 * (self.nu + self.dim_x)
-        h_nu_y = 0.5 * (self.nu + self.dim_y)
-        h_nu_xy = 0.5 * (self.nu + self.dim_x + self.dim_y)
+        h_nu = 0.5 * self.df
+        h_nu_x = 0.5 * (self.df + self.dim_x)
+        h_nu_y = 0.5 * (self.df + self.dim_y)
+        h_nu_xy = 0.5 * (self.df + self.dim_x + self.dim_y)
 
         mi_normal = self._multinormal.mutual_information()
         log_term = np.log(gamma(h_nu) * gamma(h_nu_xy)) - np.log(gamma(h_nu_x) * gamma(h_nu_y))
