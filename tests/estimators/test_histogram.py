@@ -8,9 +8,9 @@ from bmi.samplers.splitmultinormal import SplitMultinormal
 
 @pytest.mark.parametrize("n_points", [2000])
 @pytest.mark.parametrize("correlation", [0.0, 0.5, 0.8])
-@pytest.mark.parametrize("n_bins", [6, 8, 10])
-def test_estimate_mi_ksg_2d(n_points: int, correlation: float, n_bins: int) -> None:
-    """Simple tests for the KSG estimator with 2D Gaussian with known correlation."""
+@pytest.mark.parametrize("n_bins", [8, 10, 12, 20])
+def test_estimate_mi_histogram_2d(n_points: int, correlation: float, n_bins: int) -> None:
+    """Histogram-based approach for a 2D Gaussian with known correlation."""
     covariance = np.array(
         [
             [1.0, correlation],
@@ -31,4 +31,4 @@ def test_estimate_mi_ksg_2d(n_points: int, correlation: float, n_bins: int) -> N
 
     true_mi = distribution.mutual_information()
 
-    assert estimated_mi == pytest.approx(true_mi, rel=0.15, abs=0.12)
+    assert estimated_mi == pytest.approx(true_mi, rel=0.12, abs=0.08)
