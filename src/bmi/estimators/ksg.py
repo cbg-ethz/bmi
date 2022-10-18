@@ -8,7 +8,7 @@ from sklearn import metrics
 
 from bmi.estimators.base import EstimatorNotFittedException
 from bmi.interface import IMutualInformationPointEstimator
-from bmi.utils import _chunker, _ProductSpace
+from bmi.utils import ProductSpace, chunker
 
 _AllowedContinuousMetric = Literal["euclidean", "manhattan", "chebyshev"]
 
@@ -72,7 +72,7 @@ class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
         self._mi_dict = dict()  # set by fit()
 
     def fit(self, x: ArrayLike, y: ArrayLike) -> None:
-        space = _ProductSpace(x, y, standardize=self._standardize)
+        space = ProductSpace(x, y, standardize=self._standardize)
 
         if len(space) <= max(self._neighborhoods):
             raise ValueError(
@@ -83,7 +83,7 @@ class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
         digammas_dict = {k: [] for k in self._neighborhoods}
 
         n_points = len(space)
-        for batch_index in _chunker(n_items=n_points, chunk_size=self._chunk_size):
+        for batch_index in chunker(n_items=n_points, chunk_size=self._chunk_size):
             # All these arrays have shape (batch_size, n_points)
             distances_x = metrics.pairwise_distances(
                 space.x[batch_index], space.x, metric=self._metric_x, n_jobs=self._n_jobs
@@ -177,7 +177,7 @@ class KSGEnsembleFirstEstimatorSlow(IMutualInformationPointEstimator):
         self._mi_dict = dict()  # set by fit()
 
     def fit(self, x: ArrayLike, y: ArrayLike) -> None:
-        space = _ProductSpace(x=x, y=y, standardize=self._standardize)
+        space = ProductSpace(x=x, y=y, standardize=self._standardize)
 
         n_points = len(space)
         if n_points <= max(self._neighborhoods):
