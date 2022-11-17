@@ -129,7 +129,6 @@ def test_2d_mi(correlation: float, var_x: float, var_y: float = 1.0, n_samples: 
     sampler = SplitMultinormal(
         dim_x=1,
         dim_y=1,
-        mean=np.zeros(2),
         covariance=covariance,
     )
 
@@ -140,3 +139,28 @@ def test_2d_mi(correlation: float, var_x: float, var_y: float = 1.0, n_samples: 
     mi_estimate = mutual_info_regression(x, y.ravel(), random_state=5)[0]
 
     assert sampler.mutual_information() == pytest.approx(mi_estimate, rel=0.05, abs=0.06)
+
+
+@pytest.mark.parametrize("seed", (3,))
+def test_rng_integer(seed: int, n_points: int = 30, dim_x: int = 3, dim_y: int = 2) -> None:
+    """Tests whether we can pass an integer as a random seed without error."""
+    sampler = SplitMultinormal(dim_x=dim_x, dim_y=dim_y, covariance=np.eye(dim_x + dim_y))
+
+    x1, y1 = sampler.sample(n_points, rng=seed)
+    x2, y2 = sampler.sample(n_points, rng=random.PRNGKey(seed))
+
+    assert np.allclose(x1, x2)
+    assert np.allclose(y1, y2)
+
+
+@pytest.mark.parametrize("dim_x", (2, 3))
+@pytest.mark.parametrize("dim_y", (1, 5))
+def test_default_zero(dim_x: int, dim_y: int) -> None:
+    """Tests whether the default mean vector is the zero vector."""
+    sampler = SplitMultinormal(
+        dim_x=dim_x,
+        dim_y=dim_y,
+        covariance=np.eye(dim_x + dim_y),
+    )
+
+    assert np.allclose(sampler._mean, np.zeros(dim_x + dim_y))
