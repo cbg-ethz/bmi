@@ -1,3 +1,6 @@
+import warnings
+from math import isclose
+
 import numpy as np
 import pytest
 from jax import random
@@ -57,7 +60,7 @@ def test_2d(
     df: int,
     var_x: float = 1.0,
     var_y: float = 1.0,
-    n_samples: int = 30000,
+    n_samples: int = 5000,
 ) -> None:
     # Note: var_x and var_y are *not* really the variances of the distribution,
     # but diagonal parameters of the dispersion matrix.
@@ -81,5 +84,30 @@ def test_2d(
     x, y = sampler.sample(n_points=n_samples, rng=10)
     # According to API, y must have shape (n,) rather than (n, 1)
     mi_estimate = mutual_info_regression(x, y.ravel(), random_state=5, n_neighbors=20)[0]
+    true_mi = sampler.mutual_information()
 
-    assert sampler.mutual_information() == pytest.approx(mi_estimate, rel=0.05, abs=0.03)
+    assert sampler.mutual_information() == pytest.approx(
+        sampler.mi_normal() + sampler.mi_correction()
+    )
+
+    # We discovered that KSG is not very good at estimating MI of Student-t
+    if not isclose(true_mi, mi_estimate, rel_tol=0.05, abs_tol=0.03):
+        warnings.warn(f"True MI is {true_mi:.2f} and the estimate is {mi_estimate:.2f}.")
+
+
+def get_mi_correction(dim_x: int, dim_y: int, df: int) -> float:
+    return student.SplitStudentT(
+        dim_x=dim_x, dim_y=dim_y, df=df, dispersion=np.eye(dim_x + dim_y)
+    ).mi_correction()
+
+
+@pytest.mark.parametrize("dim_x", (2, 3))
+@pytest.mark.parametrize("dim_y", (3, 4))
+@pytest.mark.parametrize("df", (50, 80))
+def test_mi_correction_goes_to_zero(df: int, dim_x: int, dim_y: int) -> None:
+    """The MI correction term should asymptotically behave like dim_x * dim_y / df
+    for df -> infinity.
+    """
+    assert df * get_mi_correction(dim_x=dim_x, dim_y=dim_y, df=df) == pytest.approx(
+        dim_x * dim_y, rel=0.1
+    )
