@@ -23,10 +23,14 @@ def test_digamma():
         assert ksg._DIGAMMA(k + 1) == pytest.approx(ksg._DIGAMMA(k) + 1 / k, rel=0.01)
 
 
+KSG_ESTIMATORS = [ksg.KSGEnsembleFirstEstimator, ksg.KSGEnsembleFirstEstimatorSlow]
+
+
 @pytest.mark.parametrize("n_points", [200])
 @pytest.mark.parametrize("k", [10])
 @pytest.mark.parametrize("correlation", [0.0, 0.5, 0.8])
-def test_estimate_mi_ksg_2d(n_points: int, k: int, correlation: float) -> None:
+@pytest.mark.parametrize("estimator_factory", KSG_ESTIMATORS)
+def test_estimate_mi_ksg_2d(n_points: int, k: int, correlation: float, estimator_factory) -> None:
     """Simple tests for the KSG estimator with 2D Gaussian with known correlation."""
     covariance = np.array(
         [
@@ -43,7 +47,7 @@ def test_estimate_mi_ksg_2d(n_points: int, k: int, correlation: float) -> None:
     rng = random.PRNGKey(19)
     points_x, points_y = distribution.sample(n_points, rng=rng)
 
-    estimator = ksg.KSGEnsembleFirstEstimator(neighborhoods=(k,), standardize=True)
+    estimator = estimator_factory(neighborhoods=(k,), standardize=True)
     estimated_mi = estimator.estimate(points_x, points_y)
 
     true_mi = distribution.mutual_information()
@@ -54,7 +58,10 @@ def test_estimate_mi_ksg_2d(n_points: int, k: int, correlation: float) -> None:
 @pytest.mark.parametrize("n_points", [450])
 @pytest.mark.parametrize("k", [5])
 @pytest.mark.parametrize("dims", [(1, 2), (2, 2)])
-def test_estimate_mi_ksg_random_covariance(n_points: int, k: int, dims: tuple[int, int]) -> None:
+@pytest.mark.parametrize("estimator_factory", KSG_ESTIMATORS)
+def test_estimate_mi_ksg_random_covariance(
+    n_points: int, k: int, dims: tuple[int, int], estimator_factory
+) -> None:
     """Tests whether the MI agrees for a random covariance."""
     dim_x, dim_y = dims
 
@@ -68,7 +75,7 @@ def test_estimate_mi_ksg_random_covariance(n_points: int, k: int, dims: tuple[in
     rng = random.PRNGKey(20)
     points_x, points_y = distribution.sample(n_points, rng=rng)
 
-    estimator = ksg.KSGEnsembleFirstEstimator(neighborhoods=(k,), standardize=True)
+    estimator = estimator_factory(neighborhoods=(k,), standardize=True)
     estimated_mi = estimator.estimate(points_x, points_y)
     true_mi = distribution.mutual_information()
 
@@ -77,15 +84,16 @@ def test_estimate_mi_ksg_random_covariance(n_points: int, k: int, dims: tuple[in
 
 
 @pytest.mark.parametrize("difference", [0, 1, 5])
+@pytest.mark.parametrize("estimator_factory", KSG_ESTIMATORS)
 def test_ksg_more_neighbors_than_points_raises(
-    difference: int, neighborhoods: tuple[int, ...] = (10,), dim: int = 3
+    estimator_factory, difference: int, neighborhoods: tuple[int, ...] = (10,), dim: int = 3
 ) -> None:
     """Tests whether an exception is raised if the number of required neighbors
     is greater than the number of points provided."""
     n_points = max(neighborhoods) - difference  # We don't have enough data points
     x = np.zeros((n_points, dim))
 
-    estimator = ksg.KSGEnsembleFirstEstimator(neighborhoods=neighborhoods)
+    estimator = estimator_factory(neighborhoods=neighborhoods)
 
     with pytest.raises(ValueError):
         estimator.fit(x, x)
@@ -95,7 +103,9 @@ def test_ksg_more_neighbors_than_points_raises(
 @pytest.mark.parametrize("metric_x", get_args(ksg._AllowedContinuousMetric))
 @pytest.mark.parametrize("metric_y", [None, "euclidean"])
 @pytest.mark.parametrize("neighborhoods", [(2, 5), (1, 7)])
+@pytest.mark.parametrize("estimator_factory", KSG_ESTIMATORS)
 def test_ksg_fit_predict(
+    estimator_factory,
     neighborhoods: tuple[int, ...],
     n_jobs: int,
     metric_x: ksg._AllowedContinuousMetric,
@@ -115,7 +125,7 @@ def test_ksg_fit_predict(
     rng = random.PRNGKey(10)
     x_sample, y_sample = distribution.sample(n_samples, rng=rng)
 
-    estimator = ksg.KSGEnsembleFirstEstimator(
+    estimator = estimator_factory(
         neighborhoods=neighborhoods, metric_x=metric_x, metric_y=metric_y, n_jobs=n_jobs
     )
     estimator.fit(x_sample, y_sample)
@@ -129,8 +139,9 @@ def test_ksg_fit_predict(
     assert list(predictions.keys()) == list(neighborhoods)
 
 
-def test_ksg_predict_before_fit() -> None:
-    estimator = ksg.KSGEnsembleFirstEstimator()
+@pytest.mark.parametrize("estimator_factory", KSG_ESTIMATORS)
+def test_ksg_predict_before_fit(estimator_factory) -> None:
+    estimator = estimator_factory()
 
     with pytest.raises(ksg.EstimatorNotFittedException):
         estimator.get_predictions()
@@ -151,8 +162,13 @@ class TestKSGAgreesWithSKLearn:
 
     @pytest.mark.parametrize("n_samples", [50, 100, 200])
     @pytest.mark.parametrize("noise", [1e-2, 1e-1])
+    @pytest.mark.parametrize("estimator_factory", KSG_ESTIMATORS)
     def test_quadratic(
-        self, n_samples: int, noise: float, neighborhoods: tuple[int, ...] = (5, 10, 15)
+        self,
+        estimator_factory,
+        n_samples: int,
+        noise: float,
+        neighborhoods: tuple[int, ...] = (5, 10, 15),
     ) -> None:
         """In this test f(u) = u, g(u) = u**2 and we add Gaussian noise of magnitude `noise`."""
         rng = random.PRNGKey(10)
@@ -163,7 +179,7 @@ class TestKSGAgreesWithSKLearn:
         x_sample = u_sample + noise * random.normal(rng_noise_x, shape=u_sample.shape)
         y_sample = u_sample**2 + noise * random.normal(rng_noise_y, shape=u_sample.shape)
 
-        estimator = ksg.KSGEnsembleFirstEstimator(neighborhoods=neighborhoods, standardize=True)
+        estimator = estimator_factory(neighborhoods=neighborhoods, standardize=True)
         # We need to provide matrices (n_samples, 1)
         estimator.fit(x_sample[:, None], y_sample[:, None])
         our_predictions = estimator.get_predictions()
