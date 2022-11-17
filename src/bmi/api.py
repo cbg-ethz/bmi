@@ -1,8 +1,10 @@
-from bmi.estimators.ksg import KSGEnsembleFirstEstimator, KSGEnsembleFirstEstimatorSlow
-from bmi.samplers.splitmultinormal import SplitMultinormal
+"""The public API of the Python package."""
+import bmi.benchmark.api as benchmark
+import bmi.estimators.api as estimators
+import bmi.samplers.api as samplers
 
 __all__ = [
-    "KSGEnsembleFirstEstimator",
-    "KSGEnsembleFirstEstimatorSlow",
-    "SplitMultinormal",
+    "benchmark",
+    "estimators",
+    "samplers",
 ]
