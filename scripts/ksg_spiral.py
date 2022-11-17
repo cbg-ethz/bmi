@@ -48,6 +48,8 @@ def main() -> None:
     parser = create_parser()
     args = parser.parse_args()
 
+    print(f"Settings:\n{args}")
+
     base_sampler = create_base_sampler(dim_x=args.dim_x, dim_y=args.dim_y, rho=args.rho)
 
     x_normal, y_normal = base_sampler.sample(args.n_points, rng=args.seed)
@@ -55,7 +57,11 @@ def main() -> None:
 
     mi_estimate_normal = bmi.estimators.KSGEnsembleFirstEstimator().estimate(x_normal, y_normal)
 
-    print(f"{mi_true = :.3f}\t{mi_estimate_normal = :.3f}")
+    print(f"True MI: {mi_true:.3f}")
+    print(f"KSG(X; Y) without distortion: {mi_estimate_normal:.3f}")
+
+    print("-------------------")
+    print("speed\tKSG(spiral(X); Y)")
 
     generator = rot.so_generator(args.dim_x, i=0, j=1)
 
@@ -71,7 +77,7 @@ def main() -> None:
             x_transformed, y_transformed
         )
 
-        print(f"{speed = :.2f}\t {mi_estimate_transformed = :.3f}")
+        print(f"{speed:.2f}\t {mi_estimate_transformed:.3f}")
 
 
 if __name__ == "__main__":
