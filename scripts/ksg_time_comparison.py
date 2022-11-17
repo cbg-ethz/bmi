@@ -51,8 +51,8 @@ SLOW = "SLOW"
 NUMPY = "NUMPY"
 
 KSG_ESTIMATORS = {
-    SLOW: bmi.KSGEnsembleFirstEstimatorSlow,
-    NUMPY: bmi.KSGEnsembleFirstEstimator,
+    SLOW: bmi.estimators.KSGEnsembleFirstEstimatorSlow,
+    NUMPY: bmi.estimators.KSGEnsembleFirstEstimator,
 }
 
 
@@ -99,12 +99,12 @@ def get_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
 
 def get_estimator(args: argparse.Namespace):
     if args.ksg_type == SLOW:
-        return bmi.KSGEnsembleFirstEstimatorSlow(
+        return bmi.estimators.KSGEnsembleFirstEstimatorSlow(
             neighborhoods=(args.neighborhood,),
             n_jobs=args.n_jobs,
         )
     elif args.ksg_type == NUMPY:
-        return bmi.KSGEnsembleFirstEstimator(
+        return bmi.estimators.KSGEnsembleFirstEstimator(
             neighborhoods=(args.neighborhood,),
             n_jobs=args.n_jobs,
             chunk_size=args.chunk_size,
@@ -124,7 +124,7 @@ def main() -> None:
     dim_total = args.dim_x + args.dim_y
 
     with TimeIt(message_start="Creating samples...", message_end="\tTook {}."):
-        sampler = bmi.SplitMultinormal(
+        sampler = bmi.samplers.SplitMultinormal(
             dim_x=args.dim_x,
             dim_y=args.dim_y,
             mean=np.zeros(dim_total),
