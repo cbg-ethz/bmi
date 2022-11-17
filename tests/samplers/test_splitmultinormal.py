@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 from jax import random
+from sklearn.feature_selection import mutual_info_regression
 
 from bmi.samplers.splitmultinormal import SplitMultinormal
 
@@ -111,3 +112,55 @@ def test_2d_gaussian(
 
     correlation_estimate = np.corrcoef(x_sample.ravel(), y_sample.ravel())[0, 1]
     assert correlation_estimate == pytest.approx(correlation, rel=0.1)
+
+
+@pytest.mark.parametrize("correlation", (0.2, 0.8))
+@pytest.mark.parametrize("var_x", (1.0, 2.0))
+def test_2d_mi(correlation: float, var_x: float, var_y: float = 1.0, n_samples: int = 500) -> None:
+    cov_xy = correlation * np.sqrt(var_x * var_y)
+
+    covariance = np.asarray(
+        [
+            [var_x, cov_xy],
+            [cov_xy, var_y],
+        ]
+    )
+
+    sampler = SplitMultinormal(
+        dim_x=1,
+        dim_y=1,
+        covariance=covariance,
+    )
+
+    rng = random.PRNGKey(20)
+
+    x, y = sampler.sample(n_points=n_samples, rng=rng)
+    # We need to reshape `y` from (n, 1) to just (n,)
+    mi_estimate = mutual_info_regression(x, y.ravel(), random_state=5)[0]
+
+    assert sampler.mutual_information() == pytest.approx(mi_estimate, rel=0.05, abs=0.06)
+
+
+@pytest.mark.parametrize("seed", (3,))
+def test_rng_integer(seed: int, n_points: int = 30, dim_x: int = 3, dim_y: int = 2) -> None:
+    """Tests whether we can pass an integer as a random seed without error."""
+    sampler = SplitMultinormal(dim_x=dim_x, dim_y=dim_y, covariance=np.eye(dim_x + dim_y))
+
+    x1, y1 = sampler.sample(n_points, rng=seed)
+    x2, y2 = sampler.sample(n_points, rng=random.PRNGKey(seed))
+
+    assert np.allclose(x1, x2)
+    assert np.allclose(y1, y2)
+
+
+@pytest.mark.parametrize("dim_x", (2, 3))
+@pytest.mark.parametrize("dim_y", (1, 5))
+def test_default_zero(dim_x: int, dim_y: int) -> None:
+    """Tests whether the default mean vector is the zero vector."""
+    sampler = SplitMultinormal(
+        dim_x=dim_x,
+        dim_y=dim_y,
+        covariance=np.eye(dim_x + dim_y),
+    )
+
+    assert np.allclose(sampler._mean, np.zeros(dim_x + dim_y))

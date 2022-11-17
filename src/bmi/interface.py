@@ -1,6 +1,6 @@
 """Most important interfaces of the package."""
 from abc import abstractmethod
-from typing import Any, Protocol
+from typing import Any, Protocol, Union
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -31,7 +31,7 @@ class ISampler(Protocol):
     """Interface for a distribution P(X, Y)."""
 
     @abstractmethod
-    def sample(self, n_points: int, rng: KeyArray) -> tuple[np.ndarray, np.ndarray]:
+    def sample(self, n_points: int, rng: Union[int, KeyArray]) -> tuple[np.ndarray, np.ndarray]:
         """Returns a sample from the joint distribution P(X, Y).
 
         Args:

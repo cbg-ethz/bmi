@@ -1,3 +1,5 @@
+from typing import Optional, Union
+
 import numpy as np
 from jax import random
 from numpy.typing import ArrayLike
@@ -13,6 +15,14 @@ def _can_be_covariance(mat):
 
     if not np.all(np.linalg.eigvals(mat) > 0):
         raise ValueError("Covariance matrix is not positive-definite.")
+
+
+def _cast_to_rng(seed: Union[KeyArray, int]) -> KeyArray:
+    """Casts `int` to a KeyArray."""
+    if isinstance(seed, int):
+        return random.PRNGKey(seed)
+    else:
+        return seed
 
 
 class _Multinormal:
@@ -84,19 +94,22 @@ class SplitMultinormal(BaseSampler):
         describe the interaction between X and Y.
     """
 
-    def __init__(self, *, dim_x: int, dim_y: int, mean: ArrayLike, covariance: ArrayLike) -> None:
+    def __init__(
+        self, *, dim_x: int, dim_y: int, covariance: ArrayLike, mean: Optional[ArrayLike] = None
+    ) -> None:
         """
 
         Args:
             dim_x: dimension of the X space
             dim_y: dimension of the Y space
-            mean: mean vector, shape (n,) where n = dim_x + dim_y
+            mean: mean vector, shape (n,) where n = dim_x + dim_y. Default: zero vector
             covariance: covariance matrix, shape (n, n)
         """
-        # Set dimensions of spaces corresponding to individual variables
-        self._validate_dimensions(dim_x=dim_x, dim_y=dim_y)
-        self._dim_x = dim_x
-        self._dim_y = dim_y
+        super().__init__(dim_x=dim_x, dim_y=dim_y)
+
+        # The default is mean vector is zero
+        if mean is None:
+            mean = np.zeros(dim_x + dim_y)
 
         # Set mean and covariance
         self._mean = np.array(mean)
@@ -121,15 +134,8 @@ class SplitMultinormal(BaseSampler):
                 f"Covariance matrix has shape {self._covariance.shape}, " f"expected ({n}, {n})."
             )
 
-    @property
-    def dim_x(self) -> int:
-        return self._dim_x
-
-    @property
-    def dim_y(self) -> int:
-        return self._dim_y
-
-    def sample(self, n_points: int, rng: KeyArray) -> tuple[np.ndarray, np.ndarray]:
+    def sample(self, n_points: int, rng: Union[KeyArray, int]) -> tuple[np.ndarray, np.ndarray]:
+        rng = _cast_to_rng(rng)
         xy = self._joint_distribution.sample(n_samples=n_points, key=rng)
         return xy[..., : self._dim_x], xy[..., self.dim_x :]  # noqa: E203
 
