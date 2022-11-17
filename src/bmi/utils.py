@@ -55,6 +55,14 @@ class ProductSpace:
         return self.x.shape[0]
 
     @property
+    def dim_x(self) -> int:
+        return self._x.shape[1]
+
+    @property
+    def dim_y(self) -> int:
+        return self._y.shape[1]
+
+    @property
     def x(self) -> np.ndarray:
         return self._x
 
