@@ -65,3 +65,43 @@ class Spiral(eqx.Module):
         """
         r = jnp.einsum("i, i", x, x)  # We have r = ||x||^2
         return self.initial @ expm(self.generator * r) @ x
+
+
+def so_generator(n: int, i: int = 0, j: int = 1) -> np.ndarray:
+    """The (i,j)-th canonical generator of the so(n) Lie algebra.
+
+    As so(n) Lie algebra is the vector space of all n x n
+    skew-symmetric matrices, we have a canonical basis
+    such that its (i,j)th vector is a matrix A such that
+          A[i, j] = 1, A[j, i] = -1, i < j
+    and all the other entries are 0.
+
+    Note that there exist n(n-1)/2 such matrices.
+
+    Args:
+        n: we use the Lie algebra so(n)
+        i: index in range {0, 1, ..., j-1}
+        j: index in range {i+1, i+2, ..., n-1}
+
+    Returns:
+        array (n, n)
+    """
+    assert n >= 2
+    assert 0 <= i < j < n
+
+    a = np.zeros((n, n))
+    a[i, j] = 1
+    a[j, i] = -1
+    return a
+
+
+def skew_symmetrize(a: np.ndarray) -> np.ndarray:
+    """The skew-symmetric part of a given matrix `a`.
+
+    Args:
+        a: array, shape (n, n)
+
+    Returns:
+        skew-symmetric part of `a`, shape (n, n)
+    """
+    return 0.5 * (a - a.T)
