@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, overload
 
 import equinox as eqx
 import jax.numpy as jnp
@@ -84,7 +84,10 @@ def so_generator(n: int, i: int = 0, j: int = 1) -> np.ndarray:
         j: index in range {i+1, i+2, ..., n-1}
 
     Returns:
-        array (n, n)
+        NumPy array (n, n)
+
+    Note:
+        This function is NumPy based and is *not* JITtable.
     """
     assert n >= 2
     assert 0 <= i < j < n
@@ -95,7 +98,17 @@ def so_generator(n: int, i: int = 0, j: int = 1) -> np.ndarray:
     return a
 
 
+@overload
 def skew_symmetrize(a: np.ndarray) -> np.ndarray:
+    pass
+
+
+@overload
+def skew_symmetrize(a: jnp.ndarray) -> jnp.ndarray:
+    pass
+
+
+def skew_symmetrize(a):
     """The skew-symmetric part of a given matrix `a`.
 
     Args:
@@ -103,5 +116,8 @@ def skew_symmetrize(a: np.ndarray) -> np.ndarray:
 
     Returns:
         skew-symmetric part of `a`, shape (n, n)
+
+    Note:
+        This function is compatible with both NumPy and JAX NumPy.
     """
     return 0.5 * (a - a.T)
