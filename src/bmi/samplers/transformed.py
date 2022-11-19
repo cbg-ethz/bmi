@@ -102,6 +102,6 @@ class TransformedSampler(base.BaseSampler):
     def mutual_information(self) -> float:
         if not self._dimensions_preserved:
             raise ValueError(
-                "The dimensions are not preserved." "The mutual information may be different."
+                "The dimensions are not preserved. The mutual information may be different."
             )
         return self._base_sampler.mutual_information()
