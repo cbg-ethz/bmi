@@ -1,4 +1,5 @@
 black
+equinox
 flake8
 isort
 jax
