@@ -89,8 +89,10 @@ def so_generator(n: int, i: int = 0, j: int = 1) -> np.ndarray:
     Note:
         This function is NumPy based and is *not* JITtable.
     """
-    assert n >= 2
-    assert 0 <= i < j < n
+    if n < 2:
+        raise ValueError(f"{n = } needs to be at least 2.")
+    if not (0 <= i < j < n):
+        raise ValueError(f"Index is wrong: {n = } {i = } {j = }.")
 
     a = np.zeros((n, n))
     a[i, j] = 1
