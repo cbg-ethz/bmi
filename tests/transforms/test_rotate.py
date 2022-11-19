@@ -1,3 +1,5 @@
+import warnings
+
 import jax
 import numpy as np
 import pytest
@@ -6,7 +8,11 @@ import bmi.transforms.rotate as rt
 
 
 class TestSpiral:
-    pass
+    warnings.warn("Tests for the Spiral are not ready.")
+
+    @pytest.mark.skip("Tests for the Spiral are not ready.")
+    def test_spiral(self) -> None:
+        raise NotImplementedError
 
 
 class TestSkewSymmetrize:
