@@ -1,9 +1,9 @@
+"""Tests whether KSG estimator is invariant to the "spiral" diffeomorphism."""
 import argparse
 
 import numpy as np
 
 import bmi.api as bmi
-import bmi.transforms.rotate as rot
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -63,10 +63,10 @@ def main() -> None:
     print("-------------------")
     print("speed\tKSG(spiral(X); Y)")
 
-    generator = rot.so_generator(args.dim_x, i=0, j=1)
+    generator = bmi.transforms.so_generator(args.dim_x, i=0, j=1)
 
     for speed in [0.0, 0.02, 0.1, 0.5, 1.0, 10.0]:
-        transform_x = rot.Spiral(generator=generator, speed=speed)
+        transform_x = bmi.transforms.Spiral(generator=generator, speed=speed)
         transformed_sampler = bmi.samplers.TransformedSampler(
             base_sampler=base_sampler, transform_x=transform_x
         )
