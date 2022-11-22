@@ -1,4 +1,4 @@
-"""Partial implementation of the IDistribution interface, convenient to inherit from."""
+"""Partial implementation of the ISampler interface, convenient to inherit from."""
 from bmi.interface import ISampler
 
 
@@ -11,7 +11,7 @@ def _validate_dimensions(dim_x: int, dim_y: int) -> None:
 
 
 class BaseSampler(ISampler):
-    """Partial implementation of the IDistribution interface, convenient to inherit from."""
+    """Partial implementation of the ISampler interface, convenient to inherit from."""
 
     def __init__(self, *, dim_x: int, dim_y: int) -> None:
         _validate_dimensions(dim_x, dim_y)

@@ -107,7 +107,7 @@ class SplitMultinormal(BaseSampler):
         """
         super().__init__(dim_x=dim_x, dim_y=dim_y)
 
-        # The default is mean vector is zero
+        # The default mean vector is zero
         if mean is None:
             mean = np.zeros(dim_x + dim_y)
 
