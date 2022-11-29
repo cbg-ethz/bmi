@@ -27,6 +27,16 @@ class Task:
             else samples
         )
 
+    def __repr__(self) -> str:
+        return (
+            f"{type(self).__name__}(metadata={repr(self.metadata)}, samples={repr(self._samples)})"
+        )
+
+    def __str__(self) -> str:
+        seeds_str = " ".join(map(str, self._samples.keys()))
+
+        return f"{type(self).__name__}({self.metadata} seeds={seeds_str}"
+
     def __getitem__(self, item: se.Seed) -> se.SamplesXY:
         return self._samples[item]
 

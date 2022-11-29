@@ -39,7 +39,7 @@ def samples_to_dataframe(
     if n_samples != n_samples_:
         raise ValueError(f"Number of samples needs to be equal, but {n_samples} != {n_samples_}.")
 
-    paired = np.hstack(samples_x, samples_y)
+    paired = np.hstack([samples_x, samples_y])
     columns = column_names(dim_x=dim_x, dim_y=dim_y, prefix_x=prefix_x, prefix_y=prefix_y)
 
     df = pd.DataFrame(paired)
@@ -114,20 +114,23 @@ def dataframe_to_dict(
     }
 
 
-class TaskDirectory(pathlib.Path):
+class TaskDirectory:
     def __init__(self, path: Pathlike) -> None:
-        super().__init__(path)
+        self.path = pathlib.Path(path)
 
-        self.task_metadata = self / "metadata.json"
-        self.samples = self / "samples.csv"
+        self.task_metadata = self.path / "metadata.json"
+        self.samples = self.path / "samples.csv"
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}(path={self.path})"
 
     def can_load(self) -> bool:
-        return self.is_dir() and self.task_metadata.exists() and self.samples.exists()
+        return self.path.is_dir() and self.task_metadata.exists() and self.samples.exists()
 
     def save(
         self, metadata: pydantic.BaseModel, samples: pd.DataFrame, exist_ok: bool = False
     ) -> None:
-        self.mkdir(parents=True, exist_ok=exist_ok)
+        self.path.mkdir(parents=True, exist_ok=exist_ok)
 
         # Save metadata
         with open(self.task_metadata, "w") as outfile:
