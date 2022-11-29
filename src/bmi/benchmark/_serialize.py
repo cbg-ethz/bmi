@@ -114,6 +114,29 @@ def dataframe_to_dict(
     }
 
 
+class OurCustomDumper(yaml.SafeDumper):
+    """The default dumper in PyYAML has problems with the following objects:
+      - Paths
+      - NumPy arrays and NumPy floats
+
+    Hence, we need to convert them manually to other formats.
+
+    Note:
+        This dumper should be extended in case you saw unexpected entry in the YAML file, as
+        "&id" or "!!python".
+    """
+
+    def represent_data(self, data):
+        if isinstance(data, pathlib.Path):  # Convert Paths to strings.
+            return self.represent_data(str(data))
+        elif isinstance(data, np.float):  # Convert NumPy floats to floats
+            return super().represent_data(float(data))
+        elif isinstance(data, np.ndarray):
+            return self.represent_data(data.tolist())
+
+        return super().represent_data(data)
+
+
 class TaskDirectory:
     def __init__(self, path: Pathlike) -> None:
         self.path = pathlib.Path(path)
@@ -134,7 +157,7 @@ class TaskDirectory:
 
         # Save metadata
         with open(self.task_metadata, "w") as outfile:
-            yaml.dump(metadata.dict(), outfile)
+            yaml.dump(metadata.dict(), outfile, Dumper=OurCustomDumper)
 
         # Save samples
         samples.to_csv(self.samples, index=False)
