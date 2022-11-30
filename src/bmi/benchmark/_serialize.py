@@ -259,8 +259,8 @@ class OurCustomDumper(yaml.SafeDumper):
     def represent_data(self, data):
         if isinstance(data, pathlib.Path):  # Convert Paths to strings.
             return super().represent_data(str(data))
-        elif isinstance(data, np.float):  # Convert NumPy floats to floats
-            return super().represent_data(float(data))
+        elif isinstance(data, np.generic):  # Convert NumPy floats to floats
+            return super().represent_data(data.item())
         elif isinstance(data, np.ndarray):
             return super().represent_data(data.tolist())
 

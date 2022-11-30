@@ -1,5 +1,6 @@
-from typing import Generator, Iterable, Optional, Tuple, Union
+from typing import Generator, Iterable, Optional, Set, Tuple, Union
 
+import numpy as np
 import pandas as pd
 import pydantic
 
@@ -43,12 +44,42 @@ class Task:
 
         return f"{type(self).__name__}({self.metadata} seeds={seeds_str}"
 
+    def keys(self) -> Set[se.Seed]:
+        return set(self._samples.keys())
+
     def __getitem__(self, item: se.Seed) -> se.SamplesXY:
         return self._samples[item]
 
     def __iter__(self) -> Generator[Tuple[se.Seed, se.SamplesXY], None, None]:
         for seed, vals in self._samples.items():
             yield seed, vals
+
+    def __eq__(self, other) -> bool:
+        # Make sure the type is right
+        if not isinstance(other, type(self)):
+            return False
+        # Check if the metadata is the same
+        if other.metadata != self.metadata:
+            return False
+
+        # Check if the samples are the same.
+        # This will need to be split into several checks
+
+        # First, check if we have the same random seeds
+        if self.keys() != other.keys():
+            return False
+
+        # Then, for every seed check whether the
+        # samples are the same
+        for seed in self.keys():
+            self_x, self_y = self[seed]
+            other_x, other_y = other[seed]
+
+            if not np.allclose(self_x, other_x):
+                return False
+            if not np.allclose(self_y, other_y):
+                return False
+        return True
 
     @property
     def task_id(self) -> str:
