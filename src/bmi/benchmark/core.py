@@ -16,13 +16,19 @@ class TaskMetadata(pydantic.BaseModel):
 
 
 class Task:
+    """Class representing a given mutual information estimation task.
+
+    We imagine that most of the tasks will be created either via `Task.load()`
+    functionality or the factory method `generate_task()`.
+    """
+
     def __init__(
         self, metadata: TaskMetadata, samples: Union[se.SamplesDict, pd.DataFrame]
     ) -> None:
         self.metadata = metadata
         # TODO(Pawel): Add dimension validation if dictionary is passed, rather than a data frame
         self._samples: se.SamplesDict = (
-            se.dataframe_to_dict(samples, dim_x=metadata.dim_x, dim_y=metadata.dim_y)
+            se.dataframe_to_dictionary(samples, dim_x=metadata.dim_x, dim_y=metadata.dim_y)
             if isinstance(samples, pd.DataFrame)
             else samples
         )
@@ -65,14 +71,21 @@ class Task:
         return self.metadata.n_samples
 
     def save(self, path: se.Pathlike, exist_ok: bool = False) -> None:
+        """Saves the task to the disk.
+
+        Args:
+            path: path to the directory (without any extension) where
+              the task should be saved to
+            exist_ok: if True, we can overwrite existing files.
+              Otherwise an exception is raised.
+        """
         task_directory = se.TaskDirectory(path)
-        # TODO(Pawel): Should we use the default values
-        #  for prefix names or leave this configurable?
-        df = se.dict_to_dataframe(self._samples)
+        df = se.dictionary_to_dataframe(self._samples)
         task_directory.save(metadata=self.metadata, samples=df, exist_ok=exist_ok)
 
     @classmethod
     def load(cls, path: se.Pathlike) -> "Task":
+        """Loads the task from the disk."""
         task_directory = se.TaskDirectory(path)
 
         metadata = TaskMetadata(**task_directory.load_metadata())
@@ -85,6 +98,14 @@ class Task:
 
 
 def generate_task(sampler: ISampler, n_samples: int, seeds: Iterable[int], task_id: str) -> Task:
+    """A factory method generating a task from a given sampler.
+
+    Args:
+        sampler: sampler used to generate the samples and the ground-truth mutual information
+        n_samples: number of samples to be generated from the sampler
+        seeds: list of seeds for which we should generate the samples
+        task_id: a unique task id used to identify the task
+    """
     metadata = TaskMetadata(
         task_id=task_id,
         dim_x=sampler.dim_x,
