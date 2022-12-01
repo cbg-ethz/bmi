@@ -1,6 +1,6 @@
 # Tasks and results (dirs or symlinks) for benchmark
-tasks
-results
+./tasks
+./results
 
 # Data files
 *.bz2
