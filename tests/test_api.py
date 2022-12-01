@@ -6,6 +6,7 @@ def test_api_imports() -> None:
 
 
 SUBMODULES = [
+    "benchmark",
     "estimators",
     "samplers",
     "transforms",

@@ -5,6 +5,7 @@ isort
 jax
 jaxlib
 numpy
+pandas
 pre-commit
 pydantic
 pydata-sphinx-theme
@@ -12,6 +13,7 @@ pytest
 pytest-cov
 pytest-xdist
 pytype
+pyyaml
 scipy
 scikit-learn
 sphinx
