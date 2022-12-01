@@ -1,16 +1,17 @@
 import pathlib
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 import pydantic
 import yaml
 
+from bmi.interface import Pathlike
+
 _PREFIX_X: str = "X"
 _PREFIX_Y: str = "Y"
 _SEED_COLUMN: str = "seed"
 
-Pathlike = Union[str, pathlib.Path]
 Seed = int
 SamplesXY = Tuple[np.ndarray, np.ndarray]
 SamplesDict = Dict[Seed, SamplesXY]

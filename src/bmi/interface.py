@@ -1,4 +1,5 @@
 """Most important interfaces of the package."""
+import pathlib
 from abc import abstractmethod
 from typing import Any, Protocol, Union
 
@@ -8,6 +9,7 @@ from numpy.typing import ArrayLike
 # This should be updated to the PRNGKeyArray (or possibly union with Any)
 # when it becomes a part of public JAX API
 KeyArray = Any
+Pathlike = Union[str, pathlib.Path]
 
 
 class IMutualInformationPointEstimator(Protocol):

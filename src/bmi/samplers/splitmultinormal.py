@@ -19,7 +19,8 @@ def _can_be_covariance(mat):
 
 def _cast_to_rng(seed: Union[KeyArray, int]) -> KeyArray:
     """Casts `int` to a KeyArray."""
-    if isinstance(seed, int):
+    if isinstance(seed, int) or isinstance(seed, np.integer):
+        seed = int(seed)
         return random.PRNGKey(seed)
     else:
         return seed
