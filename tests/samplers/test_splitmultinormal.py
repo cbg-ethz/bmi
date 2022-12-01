@@ -141,8 +141,8 @@ def test_2d_mi(correlation: float, var_x: float, var_y: float = 1.0, n_samples: 
     assert sampler.mutual_information() == pytest.approx(mi_estimate, rel=0.05, abs=0.06)
 
 
-@pytest.mark.parametrize("seed", (3,))
-def test_rng_integer(seed: int, n_points: int = 30, dim_x: int = 3, dim_y: int = 2) -> None:
+@pytest.mark.parametrize("seed", (3, np.int64(5), np.int32(12)))
+def test_rng_integer(seed: int, n_points: int = 10, dim_x: int = 3, dim_y: int = 2) -> None:
     """Tests whether we can pass an integer as a random seed without error."""
     sampler = SplitMultinormal(dim_x=dim_x, dim_y=dim_y, covariance=np.eye(dim_x + dim_y))
 
