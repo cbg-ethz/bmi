@@ -1,3 +1,7 @@
+# Tasks and results (dirs or symlinks) for benchmark
+/tasks
+/results
+
 # Data files
 *.bz2
 *.csv
@@ -9,6 +13,7 @@
 *.pickle
 *.pkl
 *.tar
+*.yaml
 *.zip
 
 # Notebooks are not allowed by default
