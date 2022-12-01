@@ -2,7 +2,7 @@ import bmi.api as bmi
 
 
 def main() -> None:
-    args = ["julia", "mi_estimator.jl"]
+    args = ["julia", "external/mi_estimator.jl"]
     taskdir = "testdir"
 
     output = bmi.benchmark.run_external_estimator(
