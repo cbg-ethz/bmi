@@ -1,0 +1,26 @@
+#!/usr/bin/env wolframscript
+(* ::Package:: *)
+
+(* ::Input:: *)
+(*(* Auxiliary function, implementing x Log[x] with the convention that 0 * \[Infinity] = 0. *)*)
+(*XLogX[x_]:=If[x<=0, 0, x Log[x]];*)
+(**)
+(*(* The differential entropy h(X) calculated using the PDF function p(x) of an \[DoubleStruckCapitalR]-valued random variable X. *)*)
+(*DifferentialEntropy[distribution_]:=-Integrate[*)
+(*XLogX[*)
+(*PDF[distribution,dummyvariable]*)
+(*],*)
+(*{dummyvariable, -\[Infinity], +\[Infinity]}*)
+(*];*)
+(**)
+(*(*a = 2;*)
+(*b = 3;*)
+(*\[Epsilon]=0.1;*)*)
+(**)
+(*XDist = UniformDistribution[{a, b}];*)
+(*NoiseDist = UniformDistribution[{-\[Epsilon], \[Epsilon]}];*)
+(*YDist = TransformedDistribution[x+noise,{x\[Distributed]XDist,noise\[Distributed]NoiseDist}];*)
+
+
+(* ::Input:: *)
+(*FullSimplify[DifferentialEntropy[YDist] - DifferentialEntropy[NoiseDist]]*)
