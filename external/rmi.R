@@ -9,8 +9,8 @@
 
 parser <- argparse::ArgumentParser()
 
-parser$add_argument("SEED", type="integer", help="Seed to be taken.")
 parser$add_argument("FILE", help="Path to the CSV file.")
+parser$add_argument("SEED", type="integer", help="Seed to be taken.")
 parser$add_argument("DIMX", type="integer", help="Dimension of the X variable.")
 parser$add_argument("DIMY", type="integer", help="Dimension of the Y variable.")
 parser$add_argument("--method", default="KSG1", help="Method to be used. Allowed: KSG1, KSG2, LNN, LNC.")

@@ -1,6 +1,8 @@
 """Allows running an external estimator."""
+import abc
+import pathlib
 import subprocess
-from typing import Optional, Sequence
+from typing import Literal, Optional, Sequence
 
 from bmi.benchmark._serialize import TaskDirectory
 from bmi.benchmark.core import RunResult, TaskMetadata
@@ -9,14 +11,13 @@ from bmi.interface import Pathlike
 
 
 def _run_command_and_read_mi(args: list[str]) -> float:
-    output = subprocess.check_output(args)
+    raw_output = subprocess.check_output(args)
+    output: str = raw_output.decode().strip()
 
     try:
-        mi_estimate = float(output.decode().strip())
+        mi_estimate = float(output)
     except Exception as e:
-        raise ValueError(
-            f"Failed to cast output to float, got output '{output.decode()}' and error '{e}'."
-        )
+        raise ValueError(f"Failed to cast output to float, got output '{output}' and error '{e}'.")
 
     return mi_estimate
 
@@ -80,3 +81,90 @@ def run_external_estimator(
         time_in_seconds=timer.check(),
         estimator_params=estimator_params,
     )
+
+
+class ExternalEstimator(abc.ABC):
+    def __init__(self, estimator_id: Optional[str]) -> None:
+        self._estimator_id = estimator_id
+
+    def _estimator_params(self) -> Optional[dict]:
+        return None
+
+    @abc.abstractmethod
+    def _precommands(self) -> list[str]:
+        raise NotImplementedError
+
+    def _postcommands(self) -> list[str]:
+        return []
+
+    @abc.abstractmethod
+    def _default_estimator_id(self) -> str:
+        raise NotImplementedError
+
+    def estimator_id(self) -> str:
+        if self._estimator_id is not None:
+            return self._estimator_id
+        else:
+            return self._default_estimator_id()
+
+    def estimate(self, task_path: Pathlike, seed: int) -> RunResult:
+        return run_external_estimator(
+            task_path=task_path,
+            seed=seed,
+            command_args=self._precommands(),
+            estimator_id=self.estimator_id(),
+            additional_args=self._postcommands(),
+            estimator_params=self._estimator_params(),
+        )
+
+
+# Absolute path to the directory with external estimators
+_EXTERNAL_ESTIMATORS_PATH: pathlib.Path = (
+    pathlib.Path(__file__).parent.parent.parent.parent / "external"
+)
+
+# *String* representing the path to the R script calculating MI.
+_PATH_TO_R_SCRIPT: str = str(_EXTERNAL_ESTIMATORS_PATH / "rmi.R")
+
+
+class REstimatorKSG(ExternalEstimator):
+    """The KSG estimators implemented in R."""
+
+    def __init__(
+        self, estimator_id: Optional[str] = None, variant: Literal[1, 2] = 1, neighbors: int = 10
+    ) -> None:
+        """
+
+        Args:
+            variant: 1 corresponds to KSG1, 2 corresponds to KSG2
+            neighbors: number of neighbors (k) to be used
+
+        Raises:
+            FileNotFoundError, if the R script cannot be localized
+        """
+        super().__init__(estimator_id=estimator_id)
+
+        if not pathlib.Path(_PATH_TO_R_SCRIPT).exists():
+            raise FileNotFoundError(f"Path to the R script {_PATH_TO_R_SCRIPT} does not exist.")
+
+        if neighbors < 1:
+            raise ValueError(f"Neighbors {neighbors} must be at least 1.")
+
+        self._variant = variant
+        self._neighbors = neighbors
+        self._estimator_id_param = estimator_id
+
+    def _default_estimator_id(self) -> str:
+        return f"REstimator-KSG{self._variant}-{self._neighbors}_neighbors"
+
+    def _precommands(self) -> list[str]:
+        return ["Rscript", _PATH_TO_R_SCRIPT]
+
+    def _postcommands(self) -> list[str]:
+        return ["--method", f"KSG{self._variant}", "--neighbors", str(self._neighbors)]
+
+    def _estimator_params(self) -> Optional[dict]:
+        return {
+            "neighbors": self._neighbors,
+            "variant": self._variant,
+        }
