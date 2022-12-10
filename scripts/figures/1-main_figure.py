@@ -50,7 +50,7 @@ def plot_points(
 
 
 def sigmoid(x):
-    return 1 / (1 + np.exp(-10 * x))
+    return 1 / (1 + np.exp(-8 * x))
 
 
 def f(t):
@@ -87,10 +87,8 @@ def main() -> None:
     y_slight = jax.scipy.special.erf(y)
 
     # Drastic diffeomorphisms applied to X and Y
-    # TODO(Pawel): This diffeomorphism doesn't look cool and the differene in MI
-    #   is not that big. Update.
-    x_very = x
-    y_very = f(y)
+    x_very = f(x)
+    y_very = f(y) * -1.0
 
     mi_true = sampler.mutual_information()
     estimate_original = estimator.estimate(x, y)
@@ -106,6 +104,28 @@ def main() -> None:
     plot_points(x, y, axs[0])
     plot_points(x_slight, y_slight, axs[1])
     plot_points(x_very, y_very, axs[2])
+
+    # We turn off the ticks as the scale is not important for this plot
+    for ax in axs:
+        ax.tick_params(
+            bottom=False,
+            top=False,
+            left=False,
+            right=False,
+            which="both",
+            labelbottom=False,
+            labelleft=False,
+        )
+
+    # Set axes labels
+    axs[0].set_xlabel("$X$")
+    axs[0].set_ylabel("$Y$")
+
+    axs[1].set_xlabel("$f_1(X)$")
+    axs[1].set_ylabel("$g_1(Y)$")
+
+    axs[2].set_xlabel("$f_2(X)$")
+    axs[2].set_ylabel("$g_2(Y)$")
 
     fig.tight_layout()
     fig.savefig("figure1.pdf")
