@@ -49,25 +49,56 @@ def plot_points(
     ax.scatter(x, y, alpha=alpha, s=1)
 
 
-def sigmoid(x):
+def sigmoid(x: np.ndarray) -> np.ndarray:
     return 1 / (1 + np.exp(-8 * x))
 
 
-def f(t):
+def stairs(t: np.ndarray) -> np.ndarray:
     return sigmoid(t) + sigmoid(t - 1) + sigmoid(t + 2)
 
 
-def g(u):
-    return u + 0.05 * (u - 2) ** 3 + 0.0003 * (u + 3) ** 5
+def identity(t: np.ndarray) -> np.ndarray:
+    return t
 
 
-def h(u):
-    return jax.scipy.stats.logistic.cdf(u) + u**3 / 2
+def f1(x: np.ndarray) -> np.ndarray:
+    return x
+
+
+def g1(y: np.ndarray) -> np.ndarray:
+    return jax.scipy.special.erf(y)
+
+
+def f2(x: np.ndarray) -> np.ndarray:
+    return stairs(x)
+
+
+def g2(y: np.ndarray) -> np.ndarray:
+    return -stairs(y)
+
+
+def get_estimates(sampler, estimator, f, g, n_points: int, n_seeds: int) -> tuple[float, float]:
+    estimates = []
+    for seed in range(n_seeds):
+        x, y = sampler.sample(n_points=n_points, rng=seed)
+        x_, y_ = f(x), g(y)
+        estimates.append(estimator.estimate(x_, y_))
+
+    mean = np.mean(estimates)
+    # Note that this estimator of population standard deviation
+    # is NOT unbiased, even though we use ddof=1. For more information
+    # see the documentation of np.std or use Jensen's inequality.
+    std = np.std(estimates, ddof=1)
+
+    return mean, std
 
 
 def main() -> None:
+    n_seeds: int = 20
+    n_points_plot = 10_000
+    n_points_sample = 1_000
+
     correlation = 0.95
-    n_points = 1_000
 
     covariance = np.asarray(
         [
@@ -77,33 +108,44 @@ def main() -> None:
     )
 
     sampler = bmi.samplers.SplitMultinormal(dim_x=1, dim_y=1, covariance=covariance)
-
-    x, y = sampler.sample(n_points=n_points, rng=42)
-
     estimator = bmi.estimators.KSGEnsembleFirstEstimator(neighborhoods=(10,))
 
-    # "Slight" diffeomorphisms applied to X and Y
-    x_slight = x + 0.1 * (x - 0.3) ** 3
-    y_slight = jax.scipy.special.erf(y)
-
-    # Drastic diffeomorphisms applied to X and Y
-    x_very = f(x)
-    y_very = f(y) * -1.0
-
     mi_true = sampler.mutual_information()
-    estimate_original = estimator.estimate(x, y)
-    estimate_slight = estimator.estimate(x_slight, y_slight)
-    estimate_very = estimator.estimate(x_very, y_very)
+
+    def get_estimates_simple(f, g) -> tuple[float, float]:
+        return get_estimates(
+            sampler=sampler,
+            estimator=estimator,
+            f=f,
+            g=g,
+            n_points=n_points_sample,
+            n_seeds=n_seeds,
+        )
+
+    # No diffeomorphisms
+    original_mean, original_std = get_estimates_simple(identity, identity)
+
+    # "Slight" diffeomorphisms applied to X and Y
+    slight_mean, slight_std = get_estimates_simple(f1, g1)
+
+    # More "dramatic" diffeomorphisms applied to X and Y
+    dramatic_mean, dramatic_std = get_estimates_simple(f2, g2)
 
     fig, axs = plt.subplots(3, 1, figsize=(3, 10))
 
-    axs[0].set_title(f"True: {mi_true:.2f} Estimate: {estimate_original:.2f}")
-    axs[1].set_title(f"True: {mi_true:.2f} Estimate: {estimate_slight:.2f}")
-    axs[2].set_title(f"True: {mi_true:.2f} Estimate: {estimate_very:.2f}")
+    axs[0].set_title(
+        f"True: {mi_true:.2f} Estimate: {original_mean:.2f} $\\pm$ {original_std:.2f}"
+    )
+    axs[1].set_title(f"True: {mi_true:.2f} Estimate: {slight_mean:.2f} $\\pm$ {slight_std:.2f}")
+    axs[2].set_title(
+        f"True: {mi_true:.2f} Estimate: {dramatic_mean:.2f} $\\pm$ {dramatic_std:.2f}"
+    )
+
+    x, y = sampler.sample(n_points_plot, rng=42)
 
     plot_points(x, y, axs[0])
-    plot_points(x_slight, y_slight, axs[1])
-    plot_points(x_very, y_very, axs[2])
+    plot_points(f1(x), g1(y), axs[1])
+    plot_points(f2(x), f2(y), axs[2])
 
     # We turn off the ticks as the scale is not important for this plot
     for ax in axs:
