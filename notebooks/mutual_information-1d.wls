@@ -20,8 +20,8 @@
 (*    Module[{x, noise, distY},*)
 (*        distY = TransformedDistribution[x + noise, {x \[Distributed] distX, noise *)
 (*            \[Distributed] distN}];*)
-(*        FullSimplify[DifferentialEntropy[distY] - DifferentialEntropy[*)
-(*            distN]]*)
+(*        DifferentialEntropy[distY] - DifferentialEntropy[*)
+(*            distN]*)
 (*    ]*)
 
 
@@ -32,29 +32,33 @@ a, b, \[Epsilon],
 XDist = UniformDistribution[{a, b}],
 NoiseDist = UniformDistribution[{-\[Epsilon], \[Epsilon]}]
 },
-Assuming[\[Epsilon] > 0 && b > a, MutualInfoAdditiveNoise[XDist, NoiseDist]]
+Assuming[\[Epsilon] > 0 && b > a, FullSimplify @ MutualInfoAdditiveNoise[XDist, NoiseDist]]
 ]
 
 
 (* Gaussian X and Gaussian noise. Note that it can be derived from the correlation *)
 Module[
 {
-	\[Mu]x, \[Sigma]x, \[Mu]n, \[Sigma]n,
-	XDist = NormalDistribution[\[Mu]x, \[Sigma]x],
-	NoiseDist = NormalDistribution[\[Mu]n, \[Sigma]n]
+	\[Mu]x=1, \[Sigma]x=1, \[Mu]n=2, \[Sigma]n=3/10,
+	XDist,
+	NoiseDist
 },
-	Assuming[\[Sigma]x > 0 && \[Sigma]n > 0, MutualInfoAdditiveNoise[XDist, NoiseDist]]
+	XDist = NormalDistribution[\[Mu]x, \[Sigma]x];
+	NoiseDist = NormalDistribution[\[Mu]n, \[Sigma]n];
+	N[MutualInfoAdditiveNoise[XDist, NoiseDist], 10]
 ]
 
 
 (* Gaussian X and uniform noise. *)
 Module[
 {
-	\[Mu]x, \[Sigma]x, \[Epsilon],
-	XDist = NormalDistribution[\[Mu]x, \[Sigma]x],
-	NoiseDist = UniformDistribution[{-\[Epsilon], \[Epsilon]}]
+	\[Mu]x=1, \[Sigma]x=1, \[Epsilon]=1/10,
+	XDist,
+	NoiseDist
 },
-	Assuming[\[Sigma]x > 0 && \[Epsilon] > 0, MutualInfoAdditiveNoise[XDist, NoiseDist]]
+	XDist = NormalDistribution[\[Mu]x, \[Sigma]x];
+	NoiseDist = UniformDistribution[{-\[Epsilon], \[Epsilon]}];
+	N[MutualInfoAdditiveNoise[XDist, NoiseDist], 3]
 ]
 
 
