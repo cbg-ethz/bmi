@@ -27,8 +27,11 @@ def run_external_estimator(
     command_args: Sequence[str],
     estimator_id: str,
     estimator_params: Optional[dict] = None,
+    additional_args: Sequence[str] = (),
 ) -> RunResult:
     """Runs an external estimator via a command line.
+
+    The command is run as:
 
     Args:
         task_path: path to the directory with a given task
@@ -38,10 +41,16 @@ def run_external_estimator(
           i.e., the samples CSV, seed, and dimensions)
         estimator_id: the unique identifier of the estimator (and its parameters)
         estimator_params: dictionary with parameters of the estimator, to be added to the RunResult
+        additional_args: method hyperparameters added after the task-dependent parameters
 
     Note:
         The estimator should take the following CLI arguments:
-        COMMAND ARG_1 ... ARG_N SAMPLES_CSV SEED DIM_X DIM_Y
+
+        COMMAND ARG_1 ... ARG_N  SAMPLES_CSV SEED DIM_X DIM_Y  ADDITIONAL_ARG1 ADDITIONAL_ARG2
+        |______________________| |__________________________|  |______________________________|
+              command_args          task-dependent params               additional_args
+                                    added by this command
+
         and *print a single float* to the standard output.
 
         For example, an estimator `some_estimator.sh` which takes
@@ -61,7 +70,7 @@ def run_external_estimator(
     ]
 
     timer = Timer()
-    mi_estimate = _run_command_and_read_mi(list(command_args) + our_args)
+    mi_estimate = _run_command_and_read_mi(list(command_args) + our_args + list(additional_args))
 
     return RunResult(
         task_id=metadata.task_id,
