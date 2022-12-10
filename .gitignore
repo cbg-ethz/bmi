@@ -10,6 +10,7 @@
 *.gz
 *.npy
 *.npz
+*.pdf
 *.pickle
 *.pkl
 *.tar
