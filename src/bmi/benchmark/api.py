@@ -1,6 +1,16 @@
 from bmi.benchmark.core import RunResult, Task, TaskMetadata, generate_task
 from bmi.benchmark.tasks.api import BENCHMARK_TASKS, save_benchmark_tasks
-from bmi.benchmark.wrapper import ExternalEstimator, REstimatorKSG, run_external_estimator
+
+# ISort doesn't want to split these into several lines, conflicting with Black
+# isort: off
+from bmi.benchmark.wrapper import (
+    ExternalEstimator,
+    REstimatorKSG,
+    REstimatorLNN,
+    run_external_estimator,
+)
+
+# isort: on
 
 __all__ = [
     "generate_task",
@@ -8,6 +18,7 @@ __all__ = [
     "save_benchmark_tasks",
     "ExternalEstimator",
     "REstimatorKSG",
+    "REstimatorLNN",
     "Task",
     "TaskMetadata",
     "RunResult",

@@ -163,8 +163,44 @@ class REstimatorKSG(ExternalEstimator):
     def _postcommands(self) -> list[str]:
         return ["--method", f"KSG{self._variant}", "--neighbors", str(self._neighbors)]
 
-    def _estimator_params(self) -> Optional[dict]:
+    def _estimator_params(self) -> dict:
         return {
             "neighbors": self._neighbors,
             "variant": self._variant,
         }
+
+
+class REstimatorLNN(ExternalEstimator):
+    """The LNN estimator implemented in R."""
+
+    def __init__(
+        self, estimator_id: Optional[str] = None, neighbors: int = 10, truncation: int = 30
+    ) -> None:
+        super().__init__(estimator_id=estimator_id)
+
+        if neighbors < 1:
+            raise ValueError(f"Neighbors must be at least 1, was {neighbors}.")
+        if truncation < 1:
+            raise ValueError(f"Truncation must be at least 1, was {truncation}.")
+
+        self._neighbors = neighbors
+        self._truncation = truncation
+
+    def _default_estimator_id(self) -> str:
+        return f"REstimator-LNN-{self._neighbors}_neighbors-{self._truncation}_truncation"
+
+    def _precommands(self) -> list[str]:
+        return ["Rscript", _PATH_TO_R_SCRIPT]
+
+    def _postcommands(self) -> list[str]:
+        return [
+            "--method",
+            "LNN",
+            "--neighbors",
+            str(self._neighbors),
+            "--truncation",
+            str(self._truncation),
+        ]
+
+    def _estimator_params(self) -> dict:
+        return {"neighbors": self._neighbors, "truncation": self._truncation}

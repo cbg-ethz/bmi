@@ -37,6 +37,10 @@ data_matrix <- data.matrix(data)
 
 # Construct the right list of hyperparameters
 if (args$method == "LNC") {
+    # We don't use LNC until we figure out how to pass the right alpha
+    # hyperparameters and what their meaning is, as it's a vector
+    stop("LNC method currently is not supported.")
+
     options <- list(method = args$method, k = args$neighbors, alpha = args$alpha)
     mi_estimate <- rmi::knn_mi(data_matrix, splits, options)
 } else if (args$method == "KSG1" || args$method == "KSG2") {
