@@ -32,7 +32,20 @@ def run_external_estimator(
 ) -> RunResult:
     """Runs an external estimator via a command line.
 
-    The command is run as:
+    The estimator should take the following CLI arguments:
+
+        COMMAND ARG_1 ... ARG_N  SAMPLES_CSV SEED DIM_X DIM_Y  ADDITIONAL_ARG1 ADDITIONAL_ARG2
+        |______________________| |__________________________|  |______________________________|
+              command_args          task-dependent params               additional_args
+                                    added by this command
+
+        and *print a single float* to the standard output.
+
+        For example, an estimator `some_estimator.sh` which takes
+        one hyperparameter --hyper (in this case 1524)
+        can be run on task1/samples.csv with seed 42
+        and with X dimension 5 and Y dimension 2 by:
+        some_estimator.sh task1/samples.csv 42 5 2 --hyper 1524
 
     Args:
         task_path: path to the directory with a given task
@@ -43,22 +56,6 @@ def run_external_estimator(
         estimator_id: the unique identifier of the estimator (and its parameters)
         estimator_params: dictionary with parameters of the estimator, to be added to the RunResult
         additional_args: method hyperparameters added after the task-dependent parameters
-
-    Note:
-        The estimator should take the following CLI arguments:
-
-        COMMAND ARG_1 ... ARG_N  SAMPLES_CSV SEED DIM_X DIM_Y  ADDITIONAL_ARG1 ADDITIONAL_ARG2
-        |______________________| |__________________________|  |______________________________|
-              command_args          task-dependent params               additional_args
-                                    added by this command
-
-        and *print a single float* to the standard output.
-
-        For example, an estimator `some_estimator.sh` which takes
-        one hyperparameter (in this case 1524)
-        can be run on task1/samples.csv with seed 42
-        and with X dimension 5 and Y dimension 2 by:
-        some_estimator.sh 1524 task1/samples.csv 42 5 2
     """
     task_directory = TaskDirectory(task_path)
     metadata = TaskMetadata(**task_directory.load_metadata())
