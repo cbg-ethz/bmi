@@ -39,11 +39,7 @@ def plot_points(
     ax: plt.Axes,
     alpha: float = 0.1,
 ) -> None:
-    """
-
-    Code based on the solution presented in:
-      https://stackoverflow.com/a/36958298/7705397
-    """
+    """Plots the points on `ax`."""
     x = _assert_ravel_1d_array(x)
     y = _assert_ravel_1d_array(y)
     ax.scatter(x, y, alpha=alpha, s=1)
@@ -59,6 +55,13 @@ def stairs(t: np.ndarray) -> np.ndarray:
 
 def identity(t: np.ndarray) -> np.ndarray:
     return t
+
+
+# Conventions:
+#  - f1(X), g1(Y) are the slightly distorted variables
+#  - f2(X), g2(Y) are the heavily distorted variables
+# Note that all of these should be continuous injections R -> R
+# For example, strictly monotonic smooth functions are fine.
 
 
 def f1(x: np.ndarray) -> np.ndarray:
@@ -145,7 +148,7 @@ def main() -> None:
 
     plot_points(x, y, axs[0])
     plot_points(f1(x), g1(y), axs[1])
-    plot_points(f2(x), f2(y), axs[2])
+    plot_points(f2(x), g2(y), axs[2])
 
     # We turn off the ticks as the scale is not important for this plot
     for ax in axs:
