@@ -155,3 +155,56 @@ class SplitMultinormal(BaseSampler):
         h_xy = self._joint_distribution.entropy()
         mi = h_x + h_y - h_xy  # Mutual information estimate
         return max(0.0, mi)  # Mutual information is always non-negative
+
+
+class BivariateNormalSampler(BaseSampler):
+    """A special case of a general multivariate normal sampler,
+    where both X and Y are one-dimensional Gaussian variables with a given correlation."""
+
+    def __init__(
+        self,
+        correlation: float,
+        std_x: float = 1.0,
+        std_y: float = 1.0,
+        mean_x: float = 0.0,
+        mean_y: float = 0.0,
+    ) -> None:
+        super().__init__(dim_x=1, dim_y=1)
+
+        if min(std_x, std_y) <= 0:
+            raise ValueError(
+                f"Standard deviations {std_x} and {std_y} " f"need to be strictly greater than 0."
+            )
+        if not (-1 < correlation < 1):
+            raise ValueError(f"Correlation {correlation} must be in the interval (-1, 1).")
+        self._correlation = correlation
+
+        cov = correlation * std_x * std_y
+        var_x = std_x**2
+        var_y = std_y**2
+
+        covariance = np.asarray(
+            [
+                [var_x, cov],
+                [cov, var_y],
+            ]
+        )
+        mean = np.asarray([mean_x, mean_y])
+
+        self._sampler = SplitMultinormal(
+            dim_x=1,
+            dim_y=1,
+            covariance=covariance,
+            mean=mean,
+        )
+
+    def sample(self, n_points: int, rng: Union[KeyArray, int]) -> tuple[np.ndarray, np.ndarray]:
+        return self._sampler.sample(n_points=n_points, rng=rng)
+
+    def correlation(self) -> float:
+        return self._correlation
+
+    def mutual_information(self) -> float:
+        # This is faster and probably more stable than the more general expression
+        # involving the determinants
+        return -0.5 * np.log(1 - self._correlation**2)
