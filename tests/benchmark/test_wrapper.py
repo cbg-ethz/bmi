@@ -3,19 +3,24 @@ import pytest
 import bmi.benchmark.api as benchmark
 from bmi.samplers.splitmultinormal import BivariateNormalSampler
 
-ESTIMATORS = [
-    benchmark.REstimatorKSG(variant=1, neighbors=5),
-    benchmark.REstimatorKSG(variant=2, neighbors=7),
-    benchmark.REstimatorLNN(neighbors=8, truncation=20),
+# Factories for the estimators.
+# This is e.g., useful when testing on the server
+# as the R files don't need to exist there.
+# TODO(Pawel): Consider moving the R files into somewhere in the module
+#   so at least the path always exists.
+ESTIMATOR_FACTORIES = [
+    lambda: benchmark.REstimatorKSG(variant=1, neighbors=5),
+    lambda: benchmark.REstimatorKSG(variant=2, neighbors=7),
+    lambda: benchmark.REstimatorLNN(neighbors=8, truncation=20),
 ]
 
 
 @pytest.mark.parametrize("n_samples", [300])
-@pytest.mark.parametrize("estimator", ESTIMATORS)
+@pytest.mark.parametrize("estimator_factory", ESTIMATOR_FACTORIES)
 @pytest.mark.requires_r
 def test_ksg_r_runs(
     tmp_path,
-    estimator,
+    estimator_factory,
     n_samples: int,
     correlation: float = 0.85,
     task_id: str = "created-test-task",
@@ -29,6 +34,8 @@ def test_ksg_r_runs(
     )
 
     task.save(task_dir)
+
+    estimator = estimator_factory()
 
     result1 = estimator.estimate(task_dir, seed=1)
     result2 = estimator.estimate(task_dir, seed=2)
