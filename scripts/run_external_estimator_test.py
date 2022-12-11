@@ -1,7 +1,7 @@
 import bmi.api as bmi
 
 
-def main() -> None:
+def run_julia() -> None:
     args = ["julia", "external/mi_estimator.jl"]
     taskdir = "testdir"
 
@@ -10,6 +10,22 @@ def main() -> None:
     )
 
     print(output)
+
+
+def run_estimators(estimators, taskdir: str, seed: int = 1) -> None:
+    for estimator in estimators:
+        output = estimator.estimate(taskdir, seed=seed)
+        print(output)
+
+
+def main() -> None:
+    external_estimators = [
+        bmi.benchmark.REstimatorKSG(variant=1),
+        bmi.benchmark.REstimatorKSG(variant=2),
+        bmi.benchmark.REstimatorLNN(neighbors=5),
+    ]
+
+    run_estimators(external_estimators, taskdir="testdir", seed=1)
 
 
 if __name__ == "__main__":
