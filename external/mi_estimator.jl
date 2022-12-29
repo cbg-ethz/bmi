@@ -1,8 +1,15 @@
+# ===================================================================================
 # A mutual information estimator using TransferEntropy.jl
 # library in Julia
 # Use as:
-# julia external/mi_estimator.jl path_to_file_with_samples.csv seed dim_x dim_y
+# $ julia external/mi_estimator.jl path_to_file_with_samples.csv seed dim_x dim_y
 # Note that the CSV must be formatted as seed, X1, ..., Xn, Y1, ..., Yn
+#
+# To install the dependencies run:
+# $ julia
+# > using Pkg
+# > Pkg.add(["ArgParse", "CSV", "DataFrames", "TransferEntropy"])
+# ===================================================================================
 using ArgParse
 using CSV
 using DataFrames
