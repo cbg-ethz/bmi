@@ -10,11 +10,14 @@ from typing import Literal, Sequence
 from numpy.typing import ArrayLike
 
 try:
+    # pytype: disable=import-error
     import torch
     import torch.nn as nn
     from latte.models.mine import mine
     from latte.modules.data import datamodules as dm
     from pytorch_lightning import Trainer
+
+    # pytype: enable=import-error
 except ImportError as e:
     raise ImportError(
         f"It seems that you are missing a dependency."
