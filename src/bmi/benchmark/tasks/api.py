@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Iterable
 
 import bmi.benchmark.tasks.multinormal as mn
+import bmi.benchmark.tasks.spiral as spiral
 from bmi.benchmark.core import Task
 from bmi.interface import Pathlike
 
@@ -19,3 +20,10 @@ def save_benchmark_tasks(
     for task in tasks:
         task_dir = Path(tasks_dir) / task.task_id
         task.save(task_dir, exist_ok=exist_ok)
+
+
+__all__ = [
+    "BENCHMARK_TASKS",
+    "save_benchmark_tasks",
+    "spiral",
+]

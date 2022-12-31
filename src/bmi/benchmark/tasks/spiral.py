@@ -1,4 +1,4 @@
-from typing import Iterable, Optional, Sequence
+from typing import Optional
 
 import numpy as np
 
@@ -43,20 +43,3 @@ def generate_spiral_invariance_task(
         seeds=list(range(n_seeds)),
         task_id=task_id,
     )
-
-
-def generate_spiral_invariance_task_suite(
-    correlation: float = 0.8,
-    n_points: int = 2000,
-    n_seeds: int = 10,
-    speed_list: Iterable[float] = (1e-2, 1, 2, 5, 10),
-) -> Sequence[core.Task]:
-    return [
-        generate_spiral_invariance_task(
-            correlation=correlation,
-            n_points=n_points,
-            speed=speed,
-            n_seeds=n_seeds,
-        )
-        for speed in speed_list
-    ]
