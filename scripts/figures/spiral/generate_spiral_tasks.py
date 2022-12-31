@@ -1,3 +1,4 @@
+"""Generates tasks and saves them in the specified location."""
 import argparse
 from pathlib import Path
 from typing import Iterable, Sequence
@@ -16,7 +17,7 @@ def create_parser() -> argparse.ArgumentParser:
         type=float,
         nargs="+",
         help="List of speed parameters for the spiral diffeomorphisms.",
-        default=[1e-2, 1, 2, 5, 10],
+        default=[1e-2, 0.1, 0.5, 1, 2, 3, 5, 7, 10],
     )
     parser.add_argument("--seed", type=int, default=10, help="Number of seeds.")
     return parser

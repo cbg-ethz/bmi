@@ -34,7 +34,10 @@ def run_estimator_on_task_seed(
 
 
 ESTIMATORS = {
-    "ksg": bmi.estimators.KSGEnsembleFirstEstimator(),
+    "KSG: 10": bmi.estimators.KSGEnsembleFirstEstimator(neighborhoods=(10,)),
+    "KSG: 5": bmi.estimators.KSGEnsembleFirstEstimator(neighborhoods=(5,)),
+    "Histograms: 5, 7": bmi.estimators.HistogramEstimator(n_bins_x=5, n_bins_y=7),
+    "Histograms: 10, 10": bmi.estimators.HistogramEstimator(n_bins_x=10, n_bins_y=10),
 }
 
 
