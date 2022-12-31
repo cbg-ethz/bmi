@@ -62,11 +62,11 @@ class TestSkewSymmetrize:
 
 class TestSOGenerator:
     def test_2d_example(self) -> None:
-        expected = np.asarray([[0, 1], [-1, 0]])
+        expected = np.asarray([[0, -1], [1, 0]])
         assert np.allclose(rt.so_generator(2, 0, 1), expected)
 
     def test_3d_example(self) -> None:
-        expected = np.asarray([[0, 1, 0], [-1, 0, 0], [0, 0, 0]])
+        expected = np.asarray([[0, -1, 0], [1, 0, 0], [0, 0, 0]])
         assert np.allclose(rt.so_generator(3, 0, 1), expected)
 
     @pytest.mark.parametrize("n", (2, 4))

@@ -35,7 +35,7 @@ estimators = {
 # TODO(frdrc): save and load results! run only when not found
 def run_estimator_on_task(
     estimator_id: str,
-    estimator,  # TODO(frdrc): export estimator interface?
+    estimator: bmi.IMutualInformationPointEstimator,
     task: bmi.benchmark.Task,
 ):
     results = []

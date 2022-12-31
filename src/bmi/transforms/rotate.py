@@ -73,7 +73,7 @@ def so_generator(n: int, i: int = 0, j: int = 1) -> np.ndarray:
     As so(n) Lie algebra is the vector space of all n x n
     skew-symmetric matrices, we have a canonical basis
     such that its (i,j)th vector is a matrix A such that
-          A[i, j] = 1, A[j, i] = -1, i < j
+          A[i, j] = -1, A[j, i] = 1, i < j
     and all the other entries are 0.
 
     Note that there exist n(n-1)/2 such matrices.
@@ -95,8 +95,8 @@ def so_generator(n: int, i: int = 0, j: int = 1) -> np.ndarray:
         raise ValueError(f"Index is wrong: {n = } {i = } {j = }.")
 
     a = np.zeros((n, n))
-    a[i, j] = 1
-    a[j, i] = -1
+    a[i, j] = -1
+    a[j, i] = 1
     return a
 
 

@@ -41,6 +41,7 @@ class TransformedSampler(base.BaseSampler):
         transform_y: Optional[Callable] = None,
         add_dim_x: int = 0,
         add_dim_y: int = 0,
+        vectorise: bool = True,
     ) -> None:
         """
         Args:
@@ -52,6 +53,8 @@ class TransformedSampler(base.BaseSampler):
             add_dim_x: the difference in dimensions of the output of `f` and its input.
               Note that for any diffeomorphism it must be zero
             add_dim_y: similarly as `add_dim_x`, but for `g`
+            vectorise: whether to use `jax.vmap` to vectorise transforms.
+                If False, provided `transform_X` and `transform_Y` need to already be vectorized.
 
         Note:
           If you don't use diffeomorphisms (in particular,
@@ -67,8 +70,9 @@ class TransformedSampler(base.BaseSampler):
         if transform_y is None:
             transform_y = identity
 
-        self._vectorized_transform_x = jax.vmap(transform_x)
-        self._vectorized_transform_y = jax.vmap(transform_y)
+        # We either vectorise the transform or assume that we were given vectorised transforms
+        self._vectorized_transform_x = jax.vmap(transform_x) if vectorise else transform_x
+        self._vectorized_transform_y = jax.vmap(transform_y) if vectorise else transform_y
         self._base_sampler = base_sampler
 
         # Boolean flag checking whether the dimension of each variable
