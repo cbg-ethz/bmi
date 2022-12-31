@@ -19,7 +19,10 @@ exclude = '''
   | build
   | dist
   | docs
+  | venv
 )/
+  | README.md
+  | __pycache__
 '''
 
 [tool.pytest.ini_options]
