@@ -34,6 +34,7 @@ def generate_spiral_invariance_task_suite(
             n_points=n_points,
             speed=speed,
             n_seeds=n_seeds,
+            task_id=f"spiral-speed_{speed:.4f}",
         )
         for speed in speed_list
     ]
