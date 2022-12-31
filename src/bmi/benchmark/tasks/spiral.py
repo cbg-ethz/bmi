@@ -18,7 +18,7 @@ def generate_spiral_invariance_task(
 ) -> core.Task:
     task_id = (
         task_id
-        or f"spiral-cor_{correlation:.2f}-N_{n_points}-dim_{dim_x}_{dim_y}-speed{speed:.2f}"
+        or f"spiral-cor_{correlation:.2f}-N_{n_points}-dim_{dim_x}_{dim_y}-speed_{speed:.2f}"
     )
 
     # First, we create a Gaussian sampler
