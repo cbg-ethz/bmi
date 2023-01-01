@@ -5,6 +5,7 @@ from typing import Any, Protocol, Union
 
 import numpy as np
 from numpy.typing import ArrayLike
+from pydantic import BaseModel
 
 # This should be updated to the PRNGKeyArray (or possibly union with Any)
 # when it becomes a part of public JAX API
@@ -26,6 +27,11 @@ class IMutualInformationPointEstimator(Protocol):
         Returns:
             mutual information estimate
         """
+        raise NotImplementedError
+
+    @abstractmethod
+    def parameters(self) -> BaseModel:
+        """Returns the parameters of the estimator."""
         raise NotImplementedError
 
 

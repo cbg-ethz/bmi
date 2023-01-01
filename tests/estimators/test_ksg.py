@@ -1,4 +1,4 @@
-from typing import Optional, get_args
+from typing import Optional, Sequence, get_args
 
 import numpy as np
 import pytest
@@ -47,7 +47,10 @@ def test_estimate_mi_ksg_2d(n_points: int, k: int, correlation: float, estimator
     rng = random.PRNGKey(19)
     points_x, points_y = distribution.sample(n_points, rng=rng)
 
-    estimator = estimator_factory(neighborhoods=(k,), standardize=True)
+    estimator = estimator_factory(neighborhoods=[k], standardize=True)
+
+    assert estimator.parameters().neighborhoods == [k]
+
     estimated_mi = estimator.estimate(points_x, points_y)
 
     true_mi = distribution.mutual_information()
@@ -192,3 +195,16 @@ class TestKSGAgreesWithSKLearn:
             assert our_mi == pytest.approx(
                 sklearn_mi, rel=0.01, abs=0.00
             ), f"MI different: {our_mi} != {sklearn_mi}"
+
+
+@pytest.mark.parametrize("estimator_factory", KSG_ESTIMATORS)
+@pytest.mark.parametrize("standardize", [True, False])
+@pytest.mark.parametrize("neighborhoods", [(1, 2), [2, 3], [4]])
+def test_parameters(estimator_factory, standardize: bool, neighborhoods: Sequence[int]) -> None:
+    estimator = estimator_factory(neighborhoods=neighborhoods, standardize=standardize)
+
+    params = estimator.parameters()
+    assert params.neighborhoods == list(neighborhoods)
+    assert params.standardize == standardize
+
+    assert isinstance(params.dict(), dict)
