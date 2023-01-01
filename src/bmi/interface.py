@@ -30,7 +30,9 @@ class IMutualInformationPointEstimator(Protocol):
         raise NotImplementedError
 
     @abstractmethod
-    def parameters(self) -> BaseModel:
+    def parameters(self) -> BaseModel:  # pytype: disable=invalid-annotation
+        # We can remove the pytype comment once the following issue has been closed:
+        # https://github.com/google/pytype/issues/1105
         """Returns the parameters of the estimator."""
         raise NotImplementedError
 
