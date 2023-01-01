@@ -6,6 +6,17 @@ import bmi.transforms.api as transforms
 
 # ISort doesn't want to split these into several lines, conflicting with Black
 # isort: off
+from bmi.benchmark.api import (
+    Task,
+    TaskDirectory,
+    TaskMetadata,
+    WrappedEstimator,
+)
+
+# isort: on
+
+# ISort doesn't want to split these into several lines, conflicting with Black
+# isort: off
 from bmi.interface import (
     IMutualInformationPointEstimator,
     ISampler,
@@ -26,4 +37,8 @@ __all__ = [
     "ITaskEstimator",
     "Pathlike",
     "RunResult",
+    "Task",
+    "TaskDirectory",
+    "TaskMetadata",
+    "WrappedEstimator",
 ]

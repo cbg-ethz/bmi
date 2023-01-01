@@ -1,13 +1,25 @@
 """Allows running an external estimator."""
 import abc
+import json
 import pathlib
 import subprocess
 from typing import Literal, Optional, Sequence
 
 from bmi.benchmark._serialize import TaskDirectory
-from bmi.benchmark.core import TaskMetadata
+from bmi.benchmark.core import Task, TaskMetadata
 from bmi.benchmark.timer import Timer
-from bmi.interface import Pathlike, RunResult
+
+# ISort doesn't want to split these into several lines, conflicting with Black
+# isort: off
+from bmi.interface import (
+    IMutualInformationPointEstimator,
+    ITaskEstimator,
+    Pathlike,
+    RunResult,
+    Seed,
+)
+
+# isort: on
 
 
 def _run_command_and_read_mi(args: list[str]) -> float:
@@ -82,12 +94,9 @@ def run_external_estimator(
     )
 
 
-class ExternalEstimator(abc.ABC):
+class ExternalEstimator(abc.ABC, ITaskEstimator):
     def __init__(self, estimator_id: Optional[str]) -> None:
         self._estimator_id = estimator_id
-
-    def _estimator_params(self) -> dict:
-        return {}
 
     @abc.abstractmethod
     def _precommands(self) -> list[str]:
@@ -106,14 +115,14 @@ class ExternalEstimator(abc.ABC):
         else:
             return self._default_estimator_id()
 
-    def estimate(self, task_path: Pathlike, seed: int) -> RunResult:
+    def estimate(self, task_path: Pathlike, seed: Seed) -> RunResult:
         return run_external_estimator(
             task_path=task_path,
             seed=seed,
             command_args=self._precommands(),
             estimator_id=self.estimator_id(),
             additional_args=self._postcommands(),
-            estimator_params=self._estimator_params(),
+            estimator_params=self.parameters(),
         )
 
 
@@ -162,7 +171,7 @@ class REstimatorKSG(ExternalEstimator):
     def _postcommands(self) -> list[str]:
         return ["--method", f"KSG{self._variant}", "--neighbors", str(self._neighbors)]
 
-    def _estimator_params(self) -> dict:
+    def parameters(self) -> dict:
         return {
             "neighbors": self._neighbors,
             "variant": self._variant,
@@ -201,5 +210,62 @@ class REstimatorLNN(ExternalEstimator):
             str(self._truncation),
         ]
 
-    def _estimator_params(self) -> dict:
+    def parameters(self) -> dict:
         return {"neighbors": self._neighbors, "truncation": self._truncation}
+
+
+class WrappedEstimator(ITaskEstimator):
+    """This class can be used to wrap an instance of
+    our internal `IMutualInformationPointEstimator`
+    estimator into an instance of `ITaskEstimator`.
+    """
+
+    def __init__(
+        self,
+        estimator: IMutualInformationPointEstimator,
+        estimator_id: Optional[str] = None,
+        parameters: Optional[dict] = None,
+    ) -> None:
+        """
+        Args:
+            estimator: estimator to be wrapped
+            estimator_id: estimator ID to be used.
+              If not specified, an automated one will be generated.
+            parameters: instead of using estimator's parameters, one can use
+              their own.
+              Note that usage of this argument is discouraged,
+              unless you are very sure that a bug won't be introduced
+        """
+        self._estimator = estimator
+        self._parameters = parameters if parameters is not None else estimator.parameters().dict()
+        self._estimator_id = estimator_id or self._generate_estimator_id()
+
+    def parameters(self) -> dict:
+        return self._parameters
+
+    def estimator_id(self) -> str:
+        return self._estimator_id
+
+    def _generate_estimator_id(self) -> str:
+        type_name: str = type(self._estimator).__name__
+        params = json.dumps(self._parameters, default=lambda x: str(x))
+        return f"{type_name}-{params}"
+
+    def estimate(self, task_path: Pathlike, seed: Seed) -> RunResult:
+        task = Task.load(task_path)
+        x, y = task[seed]
+        metadata = task.metadata
+        del task
+
+        timer = Timer()
+        mi_estimate = self._estimator.estimate(x=x, y=y)
+
+        return RunResult(
+            task_id=metadata.task_id,
+            seed=seed,
+            estimator_id=self.estimator_id(),
+            mi_estimate=mi_estimate,
+            time_in_seconds=timer.check(),
+            estimator_params=self.parameters(),
+            task_params=metadata.task_params,
+        )

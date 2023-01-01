@@ -322,3 +322,7 @@ class TaskDirectory:
             No validation is performed.
         """
         return pd.read_csv(self.samples)
+
+    def seeds(self, _seed_column: ColumnName = _SEED_COLUMN) -> list[int]:
+        df = pd.read_csv(self.samples, usecols=[_seed_column])
+        return sorted(df[_seed_column].unique())

@@ -5,7 +5,7 @@ import pandas as pd
 import pydantic
 
 import bmi.benchmark._serialize as se
-from bmi.interface import BaseModel, ISampler, Seed
+from bmi.interface import BaseModel, ISampler, Pathlike, Seed
 
 
 class TaskMetadata(BaseModel):
@@ -106,7 +106,7 @@ class Task:
     def task_params(self) -> dict:
         return self.metadata.task_params
 
-    def save(self, path: se.Pathlike, exist_ok: bool = False) -> None:
+    def save(self, path: Pathlike, exist_ok: bool = False) -> None:
         """Saves the task to the disk.
 
         Args:
@@ -120,7 +120,7 @@ class Task:
         task_directory.save(metadata=self.metadata, samples=df, exist_ok=exist_ok)
 
     @classmethod
-    def load(cls, path: se.Pathlike) -> "Task":
+    def load(cls, path: Pathlike) -> "Task":
         """Loads the task from the disk."""
         task_directory = se.TaskDirectory(path)
 

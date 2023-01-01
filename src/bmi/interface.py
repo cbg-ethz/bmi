@@ -1,4 +1,10 @@
-"""Most important interfaces of the package."""
+"""Most important interfaces of the package.
+
+Note:
+    The `interface` module CANNOT import anything from the developed package.
+    This restriction is to ensure that any subpackage can import from
+    the `interface` module and that we do not run into the circular imports issue.
+"""
 import pathlib
 from abc import abstractmethod
 from typing import Any, Optional, Protocol, Union
