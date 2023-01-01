@@ -10,6 +10,8 @@ from typing import Literal, Sequence
 import pydantic
 from numpy.typing import ArrayLike
 
+from bmi.interface import BaseModel
+
 try:
     # pytype: disable=import-error
     import torch
@@ -98,7 +100,7 @@ def _parse_objective_type(objective: MINEObjectiveType) -> mine.MINEObjectiveTyp
         raise ValueError("Objective type not recognized.")
 
 
-class DataParams(pydantic.BaseModel):
+class DataParams(BaseModel):
     standardize: bool = pydantic.Field(default=True)
     proportion_train: pydantic.PositiveFloat = pydantic.Field(default=1 / 3)
     proportion_valid: pydantic.PositiveFloat = pydantic.Field(default=1 / 3)
@@ -109,23 +111,23 @@ class DataParams(pydantic.BaseModel):
         return 1 - (self.proportion_train + self.proportion_valid)
 
 
-class MINESpecificParams(pydantic.BaseModel):
+class MINESpecificParams(BaseModel):
     alpha: pydantic.PositiveFloat = pydantic.Field(default=1e-2)
     objective: MINEObjectiveType = pydantic.Field(default_factory=lambda: MINEObjectiveType.MINE)
 
 
-class StatisticsNNParams(pydantic.BaseModel):
+class StatisticsNNParams(BaseModel):
     hidden_layers: list[int] = pydantic.Field(default_factory=lambda: [10, 5])
     bias: bool = pydantic.Field(default=True)
 
 
-class TrainingParams(pydantic.BaseModel):
+class TrainingParams(BaseModel):
     learning_rate: pydantic.PositiveFloat = pydantic.Field(default=1e-3)
     max_epochs: pydantic.PositiveInt = pydantic.Field(default=300)
     batch_size: pydantic.PositiveInt = pydantic.Field(default=32)
 
 
-class AllMINEParams(pydantic.BaseModel):
+class AllMINEParams(BaseModel):
     data: DataParams = pydantic.Field(default_factory=DataParams)
     mine: MINESpecificParams = pydantic.Field(default_factory=MINESpecificParams)
     statistics_nn: StatisticsNNParams = pydantic.Field(default_factory=StatisticsNNParams)

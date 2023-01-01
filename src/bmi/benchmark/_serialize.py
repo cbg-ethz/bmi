@@ -3,10 +3,9 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-import pydantic
 import yaml
 
-from bmi.interface import Pathlike
+from bmi.interface import BaseModel, Pathlike
 
 _PREFIX_X: str = "X"
 _PREFIX_Y: str = "Y"
@@ -290,13 +289,11 @@ class TaskDirectory:
     def can_load(self) -> bool:
         return self.path.is_dir() and self.task_metadata.exists() and self.samples.exists()
 
-    def save(
-        self, metadata: pydantic.BaseModel, samples: pd.DataFrame, exist_ok: bool = False
-    ) -> None:
+    def save(self, metadata: BaseModel, samples: pd.DataFrame, exist_ok: bool = False) -> None:
         """Saves metadata and samples to the disk.
 
         Args:
-            metadata: pydantic BaseModel to be serialized
+            metadata: BaseModel to be serialized
             samples: pandas data frame to be saved
             exist_ok: if True and the directory already exists, it will
               overwrite its contents. If False, it will just raise an exception.
