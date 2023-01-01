@@ -10,11 +10,11 @@ import numpy as np
 import pydantic
 from numpy.typing import ArrayLike
 
-from bmi.interface import IMutualInformationPointEstimator
+from bmi.interface import BaseModel, IMutualInformationPointEstimator
 from bmi.utils import ProductSpace
 
 
-class HistogramEstimatorParams(pydantic.BaseModel):
+class HistogramEstimatorParams(BaseModel):
     n_bins_x: pydantic.PositiveInt
     n_bins_y: pydantic.PositiveInt
     standardize: bool

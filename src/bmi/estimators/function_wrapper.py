@@ -2,9 +2,8 @@ from typing import Callable, Optional
 
 import numpy as np
 from numpy.typing import ArrayLike
-from pydantic import BaseModel
 
-from bmi.interface import IMutualInformationPointEstimator
+from bmi.interface import BaseModel, IMutualInformationPointEstimator
 
 
 class _EmptyParams(BaseModel):

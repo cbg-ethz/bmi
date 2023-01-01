@@ -4,8 +4,20 @@ from abc import abstractmethod
 from typing import Any, Protocol, Union
 
 import numpy as np
+import pydantic
 from numpy.typing import ArrayLike
-from pydantic import BaseModel
+
+
+class BaseModel(pydantic.BaseModel):  # pytype: disable=invalid-annotation
+    """As pytype has a false-positive problem with BaseModel and our CI fails,
+    we need to create this dummy class.
+
+    We can remove it once the problem has been solved:
+    https://github.com/google/pytype/issues/1105
+    """
+
+    pass
+
 
 # This should be updated to the PRNGKeyArray (or possibly union with Any)
 # when it becomes a part of public JAX API

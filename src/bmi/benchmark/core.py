@@ -5,10 +5,10 @@ import pandas as pd
 import pydantic
 
 import bmi.benchmark._serialize as se
-from bmi.interface import ISampler
+from bmi.interface import BaseModel, ISampler
 
 
-class TaskMetadata(pydantic.BaseModel):
+class TaskMetadata(BaseModel):
     task_id: str
     dim_x: int
     dim_y: int
@@ -168,7 +168,7 @@ def generate_task(
     )
 
 
-class RunResult(pydantic.BaseModel):
+class RunResult(BaseModel):
     """Class keeping the output of a single estimator run."""
 
     task_id: str
