@@ -30,12 +30,6 @@ def read_tasks(path: Path) -> dict[TASK_ID, bmi.benchmark.TaskMetadata]:
     return ret
 
 
-def read_speed(task_id: TASK_ID) -> float:
-    # TODO(Pawel): Refactor this, we should keep it somewhere,
-    #   rather than parse it.
-    return float(task_id.split("speed")[1].split("_")[1].strip())
-
-
 def read_results(path: Path) -> list[bmi.RunResult]:
     results = []
     for json_path in path.iterdir():
@@ -105,7 +99,7 @@ def main() -> None:
         std = np.std(group_df["mi_estimate"].values, ddof=0)
         plotting_results.append(
             {
-                "speed": read_speed(task_id),
+                "speed": tasks_dict[task_id].task_params["speed"],
                 "estimator": estimator_id,
                 "mean": mean,
                 "std": std,

@@ -17,7 +17,7 @@ $ mkdir -p $SPIRALDIR/figures
 ```
 Plot the spirals:
 ```
-$ python -p $SPIRALDIR/figures/spiral_visualisation.pdf
+$ python scripts/visualise_spiral.py $SPIRALDIR/figures/spiral_visualisation.pdf
 ```
 
 Generate the benchmark tasks:

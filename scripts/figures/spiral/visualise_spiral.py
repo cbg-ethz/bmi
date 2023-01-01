@@ -87,6 +87,7 @@ def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("OUTPUT", type=str, help="Figure output")
     parser.add_argument("--n", type=int, default=2000, help="Number of points.")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed.")
     return parser
 
 
@@ -95,11 +96,11 @@ def main() -> None:
 
     figure_location = args.OUTPUT
     n_points: int = args.n
+    random_seed: int = args.seed
     # TODO(Pawel): Make configurable.
     x_scale: float = 2
     y_scale: float = 5e-2
     sample_uniform: bool = True
-    random_seed: int = 42
     speed_list = [1, 10]
     colors = ["tab:red", "tab:purple", "tab:blue"]
 

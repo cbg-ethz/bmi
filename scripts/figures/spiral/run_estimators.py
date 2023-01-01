@@ -33,6 +33,8 @@ def run_estimator_on_task_seed(
     )
 
 
+# TODO(Pawel): Refactor this in similar way as `make_benchmark()`, so we can use
+#   external estimators.
 ESTIMATORS = {
     "KSG: 10": bmi.estimators.KSGEnsembleFirstEstimator(neighborhoods=(10,)),
     "KSG: 5": bmi.estimators.KSGEnsembleFirstEstimator(neighborhoods=(5,)),

@@ -6,6 +6,8 @@ import bmi.benchmark.core as core
 import bmi.transforms.rotate as rt
 from bmi.samplers.api import SplitMultinormal, TransformedSampler
 
+SPEED: str = "speed"
+
 
 def generate_spiral_invariance_task(
     correlation: float,
@@ -42,4 +44,5 @@ def generate_spiral_invariance_task(
         n_samples=n_points,
         seeds=list(range(n_seeds)),
         task_id=task_id,
+        task_params={SPEED: speed},
     )
