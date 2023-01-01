@@ -7,6 +7,7 @@ Note:
 import enum
 from typing import Literal, Sequence
 
+import pydantic
 from numpy.typing import ArrayLike
 
 try:
@@ -97,6 +98,41 @@ def _parse_objective_type(objective: MINEObjectiveType) -> mine.MINEObjectiveTyp
         raise ValueError("Objective type not recognized.")
 
 
+class DataParams(pydantic.BaseModel):
+    standardize: bool = pydantic.Field(default=True)
+    proportion_train: pydantic.PositiveFloat = pydantic.Field(default=1 / 3)
+    proportion_valid: pydantic.PositiveFloat = pydantic.Field(default=1 / 3)
+    # TODO(Pawel): Add validator that proportion_test = 1 - sum(train, valid) is also non-negative.
+
+    @property
+    def proportion_test(self) -> float:
+        return 1 - (self.proportion_train + self.proportion_valid)
+
+
+class MINESpecificParams(pydantic.BaseModel):
+    alpha: pydantic.PositiveFloat = pydantic.Field(default=1e-2)
+    objective: MINEObjectiveType = pydantic.Field(default_factory=lambda: MINEObjectiveType.MINE)
+
+
+class StatisticsNNParams(pydantic.BaseModel):
+    hidden_layers: list[int] = pydantic.Field(default_factory=lambda: [10, 5])
+    bias: bool = pydantic.Field(default=True)
+
+
+class TrainingParams(pydantic.BaseModel):
+    learning_rate: pydantic.PositiveFloat = pydantic.Field(default=1e-3)
+    max_epochs: pydantic.PositiveInt = pydantic.Field(default=300)
+    batch_size: pydantic.PositiveInt = pydantic.Field(default=32)
+
+
+class AllMINEParams(pydantic.BaseModel):
+    data: DataParams = pydantic.Field(default_factory=DataParams)
+    mine: MINESpecificParams = pydantic.Field(default_factory=MINESpecificParams)
+    statistics_nn: StatisticsNNParams = pydantic.Field(default_factory=StatisticsNNParams)
+    training: TrainingParams = pydantic.Field(default_factory=TrainingParams)
+    seed: int = pydantic.Field(default_factory=714)
+
+
 class MutualInformationNeuralEstimator(IMutualInformationPointEstimator):
     def __init__(
         self,
@@ -114,19 +150,9 @@ class MutualInformationNeuralEstimator(IMutualInformationPointEstimator):
         learning_rate: float = 1e-3,
         max_epochs: int = 300,
         batch_size: int = 32,
-        device: Literal["cpu", "gpu"] = "cpu",
         seed: int = 714,
+        device: Literal["cpu", "gpu"] = "cpu",
     ) -> None:
-        """
-
-        Args:
-            standardize: whether to standardize the data (recommended)
-            proportion_train: specifies the fraction of samples to go into the training data set
-            proportion_valid: specifies the fraction of samples to go into the validation data set
-            hidden_layers: specifices the layers of the statistics NN
-            bias: specifies the bias in the statistics NN
-            seed: random seed for PyTorch
-        """
         # Whether the model has been fitted to the data
         # and can be queried about the training
         self._fitted: bool = False
@@ -134,62 +160,56 @@ class MutualInformationNeuralEstimator(IMutualInformationPointEstimator):
         self._data_module = None
         self._results = None
 
-        # Data processing parameters
-        self._standardize = standardize
-        self._proportion_train = proportion_train
-        self._proportion_valid = proportion_valid
-        self._proportion_test = 1 - (proportion_train + proportion_valid)
+        self._params = AllMINEParams(
+            data=DataParams(
+                standardize=standardize,
+                proportion_train=proportion_train,
+                proportion_valid=proportion_valid,
+            ),
+            mine=MINESpecificParams(
+                alpha=alpha,
+                objective=objective,
+            ),
+            statistics_nn=StatisticsNNParams(
+                hidden_layers=hidden_layers,
+                bias=bias,
+            ),
+            training=TrainingParams(
+                learning_rate=learning_rate,
+                max_epochs=max_epochs,
+                batch_size=batch_size,
+            ),
+            seed=seed,
+        )
 
-        if min(self._proportion_train, self._proportion_valid, self._proportion_test) < 0:
-            raise ValueError("The proportion of each data set must be positive.")
-
-        # MINE parameters
-        self._alpha = alpha
-        self._objective = objective
-
-        # Statistics network parameters
-        self._hidden_layers = hidden_layers
-        self._bias = bias
-
-        # Training parameters
-        if max_epochs < 1:
-            raise ValueError("Maximum number of methods must be at least 1.")
-        self._max_epochs = max_epochs
         self._device = device
-        self._learning_rate = learning_rate
-        if learning_rate < 0:
-            raise ValueError("Learning rate must be positive.")
-        self._batch_size = batch_size
-        if batch_size < 1:
-            raise ValueError("Batch size must be at least 1.")
-        self._seed = seed
 
     def fit(self, x: ArrayLike, y: ArrayLike) -> None:
-        space = ProductSpace(x=x, y=y, standardize=self._standardize)
+        space = ProductSpace(x=x, y=y, standardize=self._params.data.standardize)
 
-        torch.manual_seed(self._seed)
+        torch.manual_seed(self._params.seed)
 
         data_module = dm.GenericDataModule(
             X=torch.from_numpy(space.x).float(),
             Y=torch.from_numpy(space.y).float(),
-            p_train=self._proportion_train,
-            p_val=self._proportion_valid,
-            batch_size=self._batch_size,
+            p_train=self._params.data.proportion_train,
+            p_val=self._params.data.proportion_valid,
+            batch_size=self._params.training.batch_size,
         )
 
         network = _construct_statistics_network(
             dim_x=space.dim_x,
             dim_y=space.dim_y,
-            hidden_layers=self._hidden_layers,
-            bias=self._bias,
+            hidden_layers=self._params.statistics_nn.hidden_layers,
+            bias=self._params.statistics_nn.bias,
         )
         model = mine.StandaloneMINE(
             T=network,
-            kind=_parse_objective_type(self._objective),
-            alpha=self._alpha,
+            kind=_parse_objective_type(self._params.mine.objective),
+            alpha=self._params.mine.alpha,
         )
         trainer = Trainer(
-            max_epochs=self._max_epochs,
+            max_epochs=self._params.training.max_epochs,
             enable_model_summary=False,
             enable_progress_bar=False,
             accelerator=self._device,
@@ -241,3 +261,6 @@ class MutualInformationNeuralEstimator(IMutualInformationPointEstimator):
     def estimate(self, x: ArrayLike, y: ArrayLike) -> float:
         self.fit(x, y)
         return self.mi_test()
+
+    def parameters(self) -> AllMINEParams:
+        return self._params
