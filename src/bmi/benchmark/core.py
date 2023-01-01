@@ -5,7 +5,7 @@ import pandas as pd
 import pydantic
 
 import bmi.benchmark._serialize as se
-from bmi.interface import BaseModel, ISampler
+from bmi.interface import BaseModel, ISampler, Seed
 
 
 class TaskMetadata(BaseModel):
@@ -45,13 +45,13 @@ class Task:
 
         return f"{type(self).__name__}({self.metadata} seeds={seeds_str}"
 
-    def keys(self) -> Set[se.Seed]:
+    def keys(self) -> Set[Seed]:
         return set(self._samples.keys())
 
-    def __getitem__(self, item: se.Seed) -> se.SamplesXY:
+    def __getitem__(self, item: Seed) -> se.SamplesXY:
         return self._samples[item]
 
-    def __iter__(self) -> Generator[Tuple[se.Seed, se.SamplesXY], None, None]:
+    def __iter__(self) -> Generator[Tuple[Seed, se.SamplesXY], None, None]:
         for seed, vals in self._samples.items():
             yield seed, vals
 

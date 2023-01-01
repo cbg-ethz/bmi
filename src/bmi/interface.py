@@ -7,8 +7,6 @@ import numpy as np
 import pydantic
 from numpy.typing import ArrayLike
 
-from bmi.benchmark import _serialize as se
-
 
 class BaseModel(pydantic.BaseModel):  # pytype: disable=invalid-annotation
     """As pytype has a false-positive problem with BaseModel and our CI fails,
@@ -96,7 +94,7 @@ class RunResult(BaseModel):
     """Class keeping the output of a single estimator run."""
 
     task_id: str
-    seed: se.Seed
+    seed: Seed
     estimator_id: str
     mi_estimate: float
     time_in_seconds: Optional[float] = None
