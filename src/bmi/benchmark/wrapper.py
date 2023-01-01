@@ -5,9 +5,9 @@ import subprocess
 from typing import Literal, Optional, Sequence
 
 from bmi.benchmark._serialize import TaskDirectory
-from bmi.benchmark.core import RunResult, TaskMetadata
+from bmi.benchmark.core import TaskMetadata
 from bmi.benchmark.timer import Timer
-from bmi.interface import Pathlike
+from bmi.interface import Pathlike, RunResult
 
 
 def _run_command_and_read_mi(args: list[str]) -> float:

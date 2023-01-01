@@ -166,15 +166,3 @@ def generate_task(
         metadata=metadata,
         samples=samples,
     )
-
-
-class RunResult(BaseModel):
-    """Class keeping the output of a single estimator run."""
-
-    task_id: str
-    seed: se.Seed
-    estimator_id: str
-    mi_estimate: float
-    time_in_seconds: Optional[float] = None
-    estimator_params: dict = pydantic.Field(default_factory=dict)
-    task_params: dict = pydantic.Field(default_factory=dict)

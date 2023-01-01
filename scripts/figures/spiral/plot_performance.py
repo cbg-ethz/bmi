@@ -36,11 +36,11 @@ def read_speed(task_id: TASK_ID) -> float:
     return float(task_id.split("speed")[1].split("_")[1].strip())
 
 
-def read_results(path: Path) -> list[bmi.benchmark.RunResult]:
+def read_results(path: Path) -> list[bmi.RunResult]:
     results = []
     for json_path in path.iterdir():
         with open(json_path) as f:
-            result = bmi.benchmark.RunResult(**json.load(f))
+            result = bmi.RunResult(**json.load(f))
             results.append(result)
     return results
 

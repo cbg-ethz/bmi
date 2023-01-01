@@ -1,11 +1,13 @@
 """Most important interfaces of the package."""
 import pathlib
 from abc import abstractmethod
-from typing import Any, Protocol, Union
+from typing import Any, Optional, Protocol, Union
 
 import numpy as np
 import pydantic
 from numpy.typing import ArrayLike
+
+from bmi.benchmark import _serialize as se
 
 
 class BaseModel(pydantic.BaseModel):  # pytype: disable=invalid-annotation
@@ -23,6 +25,7 @@ class BaseModel(pydantic.BaseModel):  # pytype: disable=invalid-annotation
 # when it becomes a part of public JAX API
 KeyArray = Any
 Pathlike = Union[str, pathlib.Path]
+Seed = int
 
 
 class IMutualInformationPointEstimator(Protocol):
@@ -86,4 +89,30 @@ class ISampler(Protocol):
     @abstractmethod
     def mutual_information(self) -> float:
         """Mutual information MI(X; Y)."""
+        raise NotImplementedError
+
+
+class RunResult(BaseModel):
+    """Class keeping the output of a single estimator run."""
+
+    task_id: str
+    seed: se.Seed
+    estimator_id: str
+    mi_estimate: float
+    time_in_seconds: Optional[float] = None
+    estimator_params: dict = pydantic.Field(default_factory=dict)
+    task_params: dict = pydantic.Field(default_factory=dict)
+
+
+class ITaskEstimator(Protocol):
+    @abstractmethod
+    def estimator_id(self) -> str:
+        raise NotImplementedError
+
+    @abstractmethod
+    def parameters(self) -> dict:
+        raise NotImplementedError
+
+    @abstractmethod
+    def estimate(self, task_path: Pathlike, seed: Seed) -> RunResult:
         raise NotImplementedError

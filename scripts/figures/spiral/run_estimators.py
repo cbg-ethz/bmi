@@ -18,13 +18,13 @@ def run_estimator_on_task_seed(
     estimator: bmi.IMutualInformationPointEstimator,
     task: bmi.benchmark.Task,
     seed: int,
-) -> bmi.benchmark.RunResult:
+) -> bmi.RunResult:
     x, y = task[seed]
     t0 = time.time()
     mi_estimate = estimator.estimate(x, y)
     t1 = time.time()
 
-    return bmi.benchmark.RunResult(
+    return bmi.RunResult(
         task_id=task.task_id,
         estimator_id=estimator_id,
         seed=seed,

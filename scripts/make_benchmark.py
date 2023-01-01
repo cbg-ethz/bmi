@@ -45,7 +45,7 @@ def run_estimator_on_task(
         t1 = time()
 
         results.append(
-            bmi.benchmark.RunResult(
+            bmi.RunResult(
                 task_id=task.task_id,
                 estimator_id=estimator_id,
                 seed=seed,
