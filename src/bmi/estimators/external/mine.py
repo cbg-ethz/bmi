@@ -130,7 +130,7 @@ class AllMINEParams(pydantic.BaseModel):
     mine: MINESpecificParams = pydantic.Field(default_factory=MINESpecificParams)
     statistics_nn: StatisticsNNParams = pydantic.Field(default_factory=StatisticsNNParams)
     training: TrainingParams = pydantic.Field(default_factory=TrainingParams)
-    seed: int = pydantic.Field(default_factory=714)
+    seed: int = pydantic.Field(default=714)
 
 
 class MutualInformationNeuralEstimator(IMutualInformationPointEstimator):

@@ -5,11 +5,16 @@ from bmi.interface import IMutualInformationPointEstimator
 from bmi.samplers.api import SplitMultinormal
 
 
+def get_module():
+    import bmi.estimators.external.mine as mine
+
+    return mine
+
+
 def get_estimator() -> IMutualInformationPointEstimator:
     import torch  # pytype: disable=import-error
 
-    import bmi.estimators.external.mine as mine
-
+    mine = get_module()
     device = "gpu" if torch.cuda.is_available() else "cpu"
     return mine.MutualInformationNeuralEstimator(
         max_epochs=100,
@@ -35,7 +40,19 @@ def test_estimate_mi_2d(n_points: int = 15_000, correlation: float = 0.8) -> Non
     points_x, points_y = distribution.sample(n_points, rng=19)
 
     estimator = get_estimator()
+
+    mine = get_module()
+    assert isinstance(estimator.parameters(), mine.AllMINEParams)
+
     true_mi = distribution.mutual_information()
     estimate = estimator.estimate(points_x, points_y)
 
     assert estimate == pytest.approx(true_mi, abs=0.03, rel=0.02)
+
+
+@pytest.mark.requires_mine_pytorch
+def test_params_can_be_created() -> None:
+    import bmi.estimators.external.mine as mine
+
+    params = mine.AllMINEParams()
+    assert isinstance(params, mine.AllMINEParams)
