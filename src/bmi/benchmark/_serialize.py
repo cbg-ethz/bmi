@@ -5,13 +5,12 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from bmi.interface import BaseModel, Pathlike
+from bmi.interface import BaseModel, Pathlike, Seed
 
 _PREFIX_X: str = "X"
 _PREFIX_Y: str = "Y"
 _SEED_COLUMN: str = "seed"
 
-Seed = int
 SamplesXY = Tuple[np.ndarray, np.ndarray]
 SamplesDict = Dict[Seed, SamplesXY]
 ColumnName = str
@@ -323,3 +322,7 @@ class TaskDirectory:
             No validation is performed.
         """
         return pd.read_csv(self.samples)
+
+    def seeds(self, _seed_column: ColumnName = _SEED_COLUMN) -> list[int]:
+        df = pd.read_csv(self.samples, usecols=[_seed_column])
+        return sorted(df[_seed_column].unique())

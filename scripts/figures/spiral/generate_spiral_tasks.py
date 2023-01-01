@@ -28,7 +28,7 @@ def generate_spiral_invariance_task_suite(
     n_points: int,
     n_seeds: int,
     speed_list: Iterable[float],
-) -> Sequence[bmi.benchmark.Task]:
+) -> Sequence[bmi.Task]:
     return [
         bmi.benchmark.generate_spiral_invariance_task(
             correlation=correlation,
