@@ -14,6 +14,7 @@ class TaskMetadata(pydantic.BaseModel):
     dim_y: int
     n_samples: int
     mi_true: pydantic.NonNegativeFloat
+    task_params: dict = pydantic.Field(default_factory=dict)
 
 
 class Task:
@@ -101,6 +102,10 @@ class Task:
     def n_samples(self) -> int:
         return self.metadata.n_samples
 
+    @property
+    def task_params(self) -> dict:
+        return self.metadata.task_params
+
     def save(self, path: se.Pathlike, exist_ok: bool = False) -> None:
         """Saves the task to the disk.
 
@@ -128,7 +133,13 @@ class Task:
         )
 
 
-def generate_task(sampler: ISampler, n_samples: int, seeds: Iterable[int], task_id: str) -> Task:
+def generate_task(
+    sampler: ISampler,
+    n_samples: int,
+    seeds: Iterable[int],
+    task_id: str,
+    task_params: Optional[dict] = None,
+) -> Task:
     """A factory method generating a task from a given sampler.
 
     Args:
@@ -136,13 +147,17 @@ def generate_task(sampler: ISampler, n_samples: int, seeds: Iterable[int], task_
         n_samples: number of samples to be generated from the sampler
         seeds: list of seeds for which we should generate the samples
         task_id: a unique task id used to identify the task
+        task_params: an optional dictionary with parameters of the task
     """
+    task_params = {} if task_params is None else task_params
+
     metadata = TaskMetadata(
         task_id=task_id,
         dim_x=sampler.dim_x,
         dim_y=sampler.dim_y,
         n_samples=n_samples,
         mi_true=sampler.mutual_information(),
+        task_params=task_params,
     )
 
     samples = {seed: sampler.sample(n_points=n_samples, rng=seed) for seed in seeds}
@@ -161,4 +176,5 @@ class RunResult(pydantic.BaseModel):
     estimator_id: str
     mi_estimate: float
     time_in_seconds: Optional[float] = None
-    estimator_params: Optional[dict] = None
+    estimator_params: dict = pydantic.Field(default_factory=dict)
+    task_params: dict = pydantic.Field(default_factory=dict)

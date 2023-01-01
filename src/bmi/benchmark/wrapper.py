@@ -59,6 +59,7 @@ def run_external_estimator(
     """
     task_directory = TaskDirectory(task_path)
     metadata = TaskMetadata(**task_directory.load_metadata())
+    estimator_params: dict = {} if estimator_params is None else estimator_params
 
     our_args = [
         str(task_directory.samples),
@@ -77,6 +78,7 @@ def run_external_estimator(
         mi_estimate=mi_estimate,
         time_in_seconds=timer.check(),
         estimator_params=estimator_params,
+        task_params=metadata.task_params,
     )
 
 
@@ -84,8 +86,8 @@ class ExternalEstimator(abc.ABC):
     def __init__(self, estimator_id: Optional[str]) -> None:
         self._estimator_id = estimator_id
 
-    def _estimator_params(self) -> Optional[dict]:
-        return None
+    def _estimator_params(self) -> dict:
+        return {}
 
     @abc.abstractmethod
     def _precommands(self) -> list[str]:
