@@ -46,8 +46,8 @@ def test_wrapped_ksg(
 
     wrapped_estimator = fw.FunctionalEstimator(func)
 
-    covariance = samplers.one_and_one_correlation_matrix(
-        dim_x=dim_x, dim_y=dim_y, correlation=correlation
+    covariance = samplers.parametrised_correlation_matrix(
+        dim_x=dim_x, dim_y=dim_y, k=1, correlation=correlation
     )
     sampler = samplers.SplitMultinormal(dim_x=dim_x, dim_y=dim_y, covariance=covariance)
 
