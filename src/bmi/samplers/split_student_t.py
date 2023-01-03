@@ -45,6 +45,11 @@ class SplitStudentT(BaseSampler):
             use the `covariance` method.
         """
         super().__init__(dim_x=dim_x, dim_y=dim_y)
+
+        if mean is None:
+            mean = np.zeros(dim_x + dim_y)
+        self._mean = np.asarray(mean)
+
         # Mutual information of multivariate Student-t contains
         # the term corresponding to the multivariate normal distribution.
         # Note that this will also validate all the dimensions
@@ -57,7 +62,6 @@ class SplitStudentT(BaseSampler):
             raise ValueError("Degrees of freedom must be positive.")
         self._degrees_of_freedom = df
 
-        self._mean = np.asarray(mean)
         self._dispersion = np.asarray(dispersion)
 
     def sample(self, n_points: int, rng: int) -> tuple[np.ndarray, np.ndarray]:

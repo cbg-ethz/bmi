@@ -3,12 +3,13 @@ from typing import Iterable
 
 import bmi.benchmark.tasks.multinormal as mn
 import bmi.benchmark.tasks.spiral as spiral
+import bmi.benchmark.tasks.student as st
 from bmi.benchmark.core import Task
 from bmi.interface import Pathlike
 
 BENCHMARK_TASKS = (
-    mn.task_mn_1_2_eye_100,
-    mn.task_mn_1_2_eye_1000,
+    *mn.MULTINORMAL_TASKS,
+    *st.STUDENT_T_TASKS,
 )
 
 

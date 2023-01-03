@@ -20,7 +20,8 @@ def create_parser() -> argparse.ArgumentParser:
 ESTIMATORS_INTERNAL: list[tuple[Optional[str], bmi.IMutualInformationPointEstimator]] = [
     ("default-KSG", bmi.estimators.KSGEnsembleFirstEstimator()),
     ("hist-naive-3-3", bmi.estimators.HistogramEstimator(n_bins_x=3)),
-    (None, bmi.estimators.HistogramEstimator(n_bins_x=5)),
+    ("hist-naive-5-5", bmi.estimators.HistogramEstimator(n_bins_x=5)),
+    ("cca", bmi.estimators.CCAMutualInformationEstimator()),
 ]
 
 # Other ITaskEstimators, e.g., these using R or Julia.
@@ -67,6 +68,7 @@ def main() -> None:
     # TODO(Frederic, Pawel): idea we can have results.csv
     #  (detailed, not reduced) and results.html (pretty plots and means)
     results = pd.DataFrame(map(dict, results))
+    results.to_csv("results.csv", index=False)
     interesting_cols = ["mi_estimate", "time_in_seconds"]
 
     means = (
@@ -81,6 +83,7 @@ def main() -> None:
         .rename(columns=lambda x: x + "_std")
     )
     stats = means.join(stds)
+    stats.to_csv("stats.csv")
     print(stats)
 
 
