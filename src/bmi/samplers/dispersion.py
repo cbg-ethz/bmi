@@ -2,6 +2,22 @@
 import numpy as np
 
 
+def _validate(
+    dim_x: int, dim_y: int, k: int, correlation: float, correlation_x: float, correlation_y: float
+) -> None:
+    if min(dim_x, dim_y, k) < 1:
+        raise ValueError(f"dim_x, dim_y and k must be at least 1. Were {dim_x}, {dim_y}, {k}.")
+
+    if k > dim_x or k > dim_y:
+        raise ValueError(f"dim_x={dim_x} and dim_y={dim_y} must be greater or equal than k={k}.")
+
+    if (
+        min(correlation_x, correlation_y, correlation) < -1
+        or max(correlation_x, correlation_y, correlation) > 1
+    ):
+        raise ValueError("Correlations must be between -1 and 1.")
+
+
 def parametrised_correlation_matrix(
     dim_x: int,
     dim_y: int,
@@ -26,17 +42,14 @@ def parametrised_correlation_matrix(
     Raises:
         ValueError, if `k` is greater than `dim_x` or `dim_y`
     """
-    if min(dim_x, dim_y, k) < 1:
-        raise ValueError(f"dim_x, dim_y and k must be at least 1. Were {dim_x}, {dim_y}, {k}.")
-
-    if k > dim_x or k > dim_y:
-        raise ValueError(f"dim_x={dim_x} and dim_y={dim_y} must be greater or equal than k={k}.")
-
-    if (
-        min(correlation_x, correlation_y, correlation) < -1
-        or max(correlation_x, correlation_y, correlation) > 1
-    ):
-        raise ValueError("Correlations must be between -1 and 1.")
+    _validate(
+        dim_x=dim_x,
+        dim_y=dim_y,
+        k=k,
+        correlation=correlation,
+        correlation_x=correlation_x,
+        correlation_y=correlation_y,
+    )
 
     corr_matrix = np.eye(dim_x + dim_y)
     for i in range(k):
