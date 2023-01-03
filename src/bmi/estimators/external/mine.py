@@ -154,6 +154,7 @@ class MutualInformationNeuralEstimator(IMutualInformationPointEstimator):
         batch_size: int = 32,
         seed: int = 714,
         device: Literal["cpu", "gpu"] = "cpu",
+        num_workers_loader: int = 1,
     ) -> None:
         # Whether the model has been fitted to the data
         # and can be queried about the training
@@ -161,6 +162,7 @@ class MutualInformationNeuralEstimator(IMutualInformationPointEstimator):
         self._trainer = None
         self._data_module = None
         self._results = None
+        self._num_workers_loader = num_workers_loader
 
         self._params = AllMINEParams(
             data=DataParams(
@@ -197,6 +199,7 @@ class MutualInformationNeuralEstimator(IMutualInformationPointEstimator):
             p_train=self._params.data.proportion_train,
             p_val=self._params.data.proportion_valid,
             batch_size=self._params.training.batch_size,
+            num_workers=self._num_workers_loader,
         )
 
         network = _construct_statistics_network(
