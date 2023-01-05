@@ -12,6 +12,7 @@ from bmi.benchmark.wrapper import (
     run_external_estimator,
     WrappedEstimator,
 )
+from bmi.benchmark.traverse import SaveLoadRunResults, LoadTaskMetadata
 
 # isort: on
 
@@ -23,6 +24,8 @@ __all__ = [
     "ExternalEstimator",
     "REstimatorKSG",
     "REstimatorLNN",
+    "SaveLoadRunResults",
+    "LoadTaskMetadata",
     "Task",
     "TaskDirectory",
     "TaskMetadata",
