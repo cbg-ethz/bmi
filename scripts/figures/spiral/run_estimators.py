@@ -67,10 +67,7 @@ def main() -> None:
                     )
 
                     path = results_directory / f"{estimator_id}-{task.task_id}-{seed}.json"
-
-                    with open(path, "w") as f:
-                        f.write(result.json())
-
+                    bmi.benchmark.SaveLoadRunResults.dump(result, path=path)
                 except Exception as e:
                     warnings.warn(
                         f"Running estimator {estimator_id} on task {task.task_id} "
