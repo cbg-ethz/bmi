@@ -8,7 +8,7 @@ from bmi.benchmark.filesys.serialize_dataframe import (
 )
 
 # isort: on
-from bmi.benchmark.filesys.serialize_object import OurCustomDumper
+from bmi.benchmark.filesys.serialize_dict import OurCustomDumper
 from bmi.benchmark.filesys.task_directory import TaskDirectory
 
 __all__ = [
