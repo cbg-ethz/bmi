@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pydantic
 
-import bmi.benchmark._serialize as se
+import bmi.benchmark.filesys.api as fs
 from bmi.interface import BaseModel, ISampler, Pathlike, Seed
 
 
@@ -25,12 +25,12 @@ class Task:
     """
 
     def __init__(
-        self, metadata: TaskMetadata, samples: Union[se.SamplesDict, pd.DataFrame]
+        self, metadata: TaskMetadata, samples: Union[fs.SamplesDict, pd.DataFrame]
     ) -> None:
         self.metadata = metadata
         # TODO(Pawel): Add dimension validation if dictionary is passed, rather than a data frame
-        self._samples: se.SamplesDict = (
-            se.dataframe_to_dictionary(samples, dim_x=metadata.dim_x, dim_y=metadata.dim_y)
+        self._samples: fs.SamplesDict = (
+            fs.dataframe_to_dictionary(samples, dim_x=metadata.dim_x, dim_y=metadata.dim_y)
             if isinstance(samples, pd.DataFrame)
             else samples
         )
@@ -48,10 +48,10 @@ class Task:
     def keys(self) -> Set[Seed]:
         return set(self._samples.keys())
 
-    def __getitem__(self, item: Seed) -> se.SamplesXY:
+    def __getitem__(self, item: Seed) -> fs.SamplesXY:
         return self._samples[item]
 
-    def __iter__(self) -> Generator[Tuple[Seed, se.SamplesXY], None, None]:
+    def __iter__(self) -> Generator[Tuple[Seed, fs.SamplesXY], None, None]:
         for seed, vals in self._samples.items():
             yield seed, vals
 
@@ -115,14 +115,14 @@ class Task:
             exist_ok: if True, we can overwrite existing files.
               Otherwise an exception is raised.
         """
-        task_directory = se.TaskDirectory(path)
-        df = se.dictionary_to_dataframe(self._samples)
+        task_directory = fs.TaskDirectory(path)
+        df = fs.dictionary_to_dataframe(self._samples)
         task_directory.save(metadata=self.metadata, samples=df, exist_ok=exist_ok)
 
     @classmethod
     def load(cls, path: Pathlike) -> "Task":
         """Loads the task from the disk."""
-        task_directory = se.TaskDirectory(path)
+        task_directory = fs.TaskDirectory(path)
 
         metadata = TaskMetadata(**task_directory.load_metadata())
         samples_df: pd.DataFrame = task_directory.load_samples()

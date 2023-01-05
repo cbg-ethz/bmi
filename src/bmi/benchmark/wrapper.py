@@ -5,8 +5,8 @@ import pathlib
 import subprocess
 from typing import Literal, Optional, Sequence
 
-from bmi.benchmark._serialize import TaskDirectory
 from bmi.benchmark.core import Task, TaskMetadata
+from bmi.benchmark.filesys.api import TaskDirectory
 from bmi.benchmark.timer import Timer
 
 # ISort doesn't want to split these into several lines, conflicting with Black
