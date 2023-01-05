@@ -25,12 +25,29 @@ Generate the benchmark tasks:
 $ python scripts/figures/spiral/generate_spiral_tasks.py $SPIRALDIR/tasks
 ```
 
-Then, run the estimators:
+Then, run the estimators. We'll use [GNU Parallel](https://www.gnu.org/software/parallel/) to do this.
+Let's generate the list of commands to be run:
 ```
 $ python scripts/figures/spiral/run_estimators.py $SPIRALDIR/tasks $SPIRALDIR/results 
 ```
+As you can see, these commands are just printed out. To actually run them, we need to to pipe them to GNU Parallel:
+```
+$ python scripts/figures/spiral/run_estimators.py $SPIRALDIR/tasks $SPIRALDIR/results | parallel
+```
+Et voilà, we have all the estimators running in parallel, what speeds up the whole process over running them sequentially in Python!
+You can observe how the new results appear every second by listing the `$SPIRALDIR/results` directory.
+For example, I like running:
+```
+$ ls -1 $SPIRALDIR/results | wc -l
+```
+to see how the results are appearing and
+```
+$ htop
+```
+to see how many cores are used.
 
-Once the run has finished, you can generate the plot:
+Once all the run has finished, you can generate the plot:
 ```
 $ python scripts/figures/spiral/plot_performance.py $SPIRALDIR/tasks $SPIRALDIR/results $SPIRALDIR/figures/spiral_plot.pdf
 ```
+
