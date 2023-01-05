@@ -2,7 +2,7 @@ from typing import Tuple
 
 import pytest
 
-import bmi.benchmark._serialize as se
+import bmi.benchmark.filesys.serialize_dataframe as se
 
 
 def test_column_names() -> None:

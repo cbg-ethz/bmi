@@ -1,5 +1,5 @@
-from bmi.benchmark._serialize import TaskDirectory
 from bmi.benchmark.core import Task, TaskMetadata, generate_task
+from bmi.benchmark.filesys.api import TaskDirectory
 from bmi.benchmark.tasks.api import BENCHMARK_TASKS, save_benchmark_tasks
 from bmi.benchmark.tasks.spiral import generate_spiral_invariance_task
 
