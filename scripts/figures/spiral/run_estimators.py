@@ -24,11 +24,6 @@ ESTIMATORS = [
     "CCA",
 ]
 
-ESTIMATORS = [
-    "Histogram-5",
-    "CCA",
-]
-
 
 def main() -> None:
     args = create_parser().parse_args()
