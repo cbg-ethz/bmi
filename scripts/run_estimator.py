@@ -2,20 +2,17 @@
 import argparse
 from enum import Enum
 from pathlib import Path
+from typing import Literal, Optional, Protocol, cast
 
 import bmi.api as bmi
 
 
-class Estimator(Enum):
-    KSG_10 = "KSG-10"
-    KSG_5 = "KSG-5"
-    R_KSG_10 = "R-KSG-10"
-    R_KSG_5 = "R-KSG-5"
-    R_LNN_10 = "R-LNN-10"
-    R_LNN_5 = "R-LNN-5"
+class EstimatorType(Enum):
+    KSG = "KSG"
+    R_KSG = "R-KSG"
+    R_LNN = "R-LNN"
     MINE = "MINE"
-    HISTOGRAM_3 = "Histogram-3"
-    HISTOGRAM_5 = "Histogram-5"
+    HISTOGRAM = "Histogram"
     CCA = "CCA"
 
 
@@ -32,38 +29,52 @@ def _load_mine() -> bmi.ITaskEstimator:
     )
 
 
-def create_estimator(estimator: Estimator) -> bmi.ITaskEstimator:  # noqa: C901
+class Args(Protocol):
+    estimator: EstimatorType
+    neighbors: int  # For kNN-based methods
+    truncation: int  # A parameter for LNN
+    metric: Literal[
+        "euclidean", "manhattan", "chebyshev"
+    ]  # Metric for Python implementation of KSG
+    bins_x: int  # Bins per X dimension for histogram
+    bins_y: Optional[int]  # Bins per Y dimension for histogram. If None, defaults to bins_x
+    variant: Literal[1, 2]
+
+
+def create_estimator(args: Args) -> bmi.ITaskEstimator:  # noqa: C901
     # Silence the C901 linting error saying that this function is too complex.
     # It is indeed quite long and complex, but what else can we do?
-    if estimator == Estimator.KSG_10:
-        return bmi.benchmark.WrappedEstimator(
-            estimator=bmi.estimators.KSGEnsembleFirstEstimator(neighborhoods=(10,)),
-            estimator_id="KSG-10",
+    estimator: EstimatorType = args.estimator
+    if estimator == EstimatorType.KSG:
+        ksg_estimator = bmi.estimators.KSGEnsembleFirstEstimator(
+            neighborhoods=(args.neighbors,),
+            metric_x=args.metric,
+            metric_y=args.metric,
         )
-    elif estimator == Estimator.KSG_5:
         return bmi.benchmark.WrappedEstimator(
-            estimator=bmi.estimators.KSGEnsembleFirstEstimator(neighborhoods=(5,)),
-            estimator_id="KSG-5",
+            estimator=ksg_estimator,
         )
-    elif estimator == Estimator.R_KSG_5:
-        return bmi.benchmark.REstimatorKSG(neighbors=5)
-    elif estimator == Estimator.R_KSG_10:
-        return bmi.benchmark.REstimatorKSG(neighbors=10)
-    elif estimator == Estimator.R_LNN_10:
-        return bmi.benchmark.REstimatorLNN(neighbors=10)
-    elif estimator == Estimator.R_LNN_5:
-        return bmi.benchmark.REstimatorLNN(neighbors=5)
-    elif estimator == Estimator.MINE:
+    elif estimator == EstimatorType.R_KSG:
+        return bmi.benchmark.REstimatorKSG(
+            neighbors=args.neighbors,
+            variant=args.variant,
+        )
+    elif estimator == EstimatorType.R_LNN:
+        return bmi.benchmark.REstimatorLNN(
+            neighbors=args.neighbors,
+            truncation=args.truncation,
+        )
+    elif estimator == EstimatorType.MINE:
         return _load_mine()
-    elif estimator == Estimator.HISTOGRAM_3:
-        return bmi.benchmark.WrappedEstimator(
-            estimator_id="Histogram-3", estimator=bmi.estimators.HistogramEstimator(n_bins_x=3)
+    elif estimator == EstimatorType.HISTOGRAM:
+        histogram_estimator = bmi.estimators.HistogramEstimator(
+            n_bins_x=args.bins_x,
+            n_bins_y=args.bins_y,
         )
-    elif estimator == Estimator.HISTOGRAM_5:
         return bmi.benchmark.WrappedEstimator(
-            estimator_id="Histogram-3", estimator=bmi.estimators.HistogramEstimator(n_bins_x=3)
+            estimator=histogram_estimator,
         )
-    elif estimator == Estimator.CCA:
+    elif estimator == EstimatorType.CCA:
         return bmi.benchmark.WrappedEstimator(
             estimator_id="CCA",
             estimator=bmi.estimators.CCAMutualInformationEstimator(),
@@ -74,35 +85,68 @@ def create_estimator(estimator: Estimator) -> bmi.ITaskEstimator:  # noqa: C901
 
 def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--task", type=Path, help="Path to the task directory.")
+    parser.add_argument("--TASK", type=Path, help="Path to the task directory.")
     parser.add_argument(
-        "--output", type=Path, help="Path to which the results YAML will be dumped."
+        "--OUTPUT", type=Path, help="Path to which the results YAML will be dumped."
     )
-    parser.add_argument("--seed", type=int, help="Seed to load the right sample from the task.")
+    parser.add_argument("--SEED", type=int, help="Seed to load the right sample from the task.")
 
-    def _to_estimator_enum(s: str) -> Estimator:
-        for est in Estimator:
+    def _to_estimator_enum(s: str) -> EstimatorType:
+        for est in EstimatorType:
             if s == est.value:
                 return est
         else:
             raise ValueError(f"Estimator {s} not recognized.")
 
-    estimators_allowed = [est.value for est in Estimator]
+    estimators_allowed = [est.value for est in EstimatorType]
     parser.add_argument(
         "--estimator",
         type=_to_estimator_enum,
         action="store",
         help=f"The estimator to be run. Available: {' '.join(estimators_allowed)}",
+        default=EstimatorType.KSG,
     )
+
+    parser.add_argument(
+        "--neighbors",
+        type=int,
+        default=5,
+        help="Number of neighbors for kNN graph methods: " "both versions of KSG and LNN.",
+    )
+    parser.add_argument(
+        "--variant",
+        type=int,
+        choices=[1, 2],
+        help="The variant of the R KSG estimator to be used.",
+    )
+    parser.add_argument("--truncation", type=int, default=15, help="Truncation parameter of LNN.")
+    parser.add_argument(
+        "--metric",
+        type=str,
+        default="euclidean",
+        choices=["euclidean", "manhattan", "chebyshev"],
+        help="For the Python implementation of KSG we can specify the metric "
+        "to be used (on both spaces).",
+    )
+    parser.add_argument(
+        "--bins-x", type=int, default=5, help="Number of bins on each dimension of the X variable."
+    )
+    parser.add_argument(
+        "--bins-y",
+        type=int,
+        default=None,
+        help="Number of bins on each dimension of the Y variable." "Defaults to `--bins-x`.",
+    )
+
     return parser
 
 
 def main() -> None:
     args = create_parser().parse_args()
 
-    estimator = create_estimator(args.estimator)
-    result = estimator.estimate(task_path=args.task, seed=args.seed)
-    bmi.benchmark.SaveLoadRunResults.dump(result, path=args.output)
+    estimator = create_estimator(cast(Args, args))
+    result = estimator.estimate(task_path=args.TASK, seed=args.SEED)
+    bmi.benchmark.SaveLoadRunResults.dump(result, path=args.OUTPUT)
 
 
 if __name__ == "__main__":
