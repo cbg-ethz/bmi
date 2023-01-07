@@ -38,7 +38,7 @@ $ python scripts/figures/spiral/experimental_design.py $SPIRALDIR/tasks $SPIRALD
 ```
 To actually run them, we need to pipe them to GNU Parallel:
 ```
-$ python scripts/figures/spiral/run_estimators.py $SPIRALDIR/tasks $SPIRALDIR/results | parallel
+$ python scripts/figures/spiral/experimental_design.py $SPIRALDIR/tasks $SPIRALDIR/results | parallel
 ```
 Et voilà, we have all the estimators running in parallel, what is much faster than running them sequentially in Python!
 You can observe how the new results appear every second by listing the `$SPIRALDIR/results` directory.
