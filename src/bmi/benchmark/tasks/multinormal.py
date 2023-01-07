@@ -1,9 +1,9 @@
-from typing import Optional
+from typing import Iterable, Optional
 
 import numpy as np
 
 import bmi.samplers.api as samplers
-from bmi.benchmark.core import generate_task
+from bmi.benchmark.core import Task, generate_task
 
 SEEDS = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 
@@ -13,7 +13,7 @@ def task_mn_uniform(
     dim_y: int,
     n_samples: int,
     seeds=SEEDS,
-):
+) -> Task:
     sampler = samplers.SplitMultinormal(
         dim_x=dim_x,
         dim_y=dim_y,
@@ -38,7 +38,7 @@ def task_mn_sparse(
     correlation_noise: float = 0.1,
     seeds=SEEDS,
     task_id: Optional[str] = None,
-):
+) -> Task:
     covariance = samplers.parametrised_correlation_matrix(
         dim_x=dim_x,
         dim_y=dim_y,
@@ -68,40 +68,30 @@ def task_mn_sparse(
     return task
 
 
-# Uniform correlations
-
-task_mn_uniform_2_2 = task_mn_uniform(dim_x=2, dim_y=2, n_samples=5000)
-task_mn_uniform_2_5 = task_mn_uniform(dim_x=2, dim_y=5, n_samples=5000)
-task_mn_uniform_5_5 = task_mn_uniform(dim_x=5, dim_y=5, n_samples=5000)
-task_mn_uniform_25_25 = task_mn_uniform(dim_x=25, dim_y=25, n_samples=5000)
-task_mn_uniform_50_50 = task_mn_uniform(dim_x=50, dim_y=50, n_samples=5000)
-
-
-# Sparse correlations
-
-task_mn_sparse_3_3 = task_mn_sparse(dim_x=3, dim_y=3, n_samples=5000)
-task_mn_sparse_2_5 = task_mn_sparse(dim_x=2, dim_y=5, n_samples=5000)
-task_mn_sparse_5_5 = task_mn_sparse(dim_x=5, dim_y=5, n_samples=5000)
-task_mn_sparse_25_25 = task_mn_sparse(dim_x=25, dim_y=25, n_samples=5000)
-
-task_mn_sparse_5_5_no_noise = task_mn_sparse(
-    dim_x=5,
-    dim_y=5,
-    n_samples=5000,
-    correlation_noise=0.0,
-    task_id="mn-sparse-5-5-5000-no-noise",
-)
+def _generate_uniform_tasks() -> Iterable[Task]:
+    """Uniform correlations between all variables."""
+    yield task_mn_uniform(dim_x=2, dim_y=2, n_samples=5000)
+    yield task_mn_uniform(dim_x=2, dim_y=5, n_samples=5000)
+    yield task_mn_uniform(dim_x=5, dim_y=5, n_samples=5000)
+    yield task_mn_uniform(dim_x=25, dim_y=25, n_samples=5000)
+    yield task_mn_uniform(dim_x=50, dim_y=50, n_samples=5000)
 
 
-MULTINORMAL_TASKS = (
-    task_mn_uniform_2_2,
-    task_mn_uniform_2_5,
-    task_mn_uniform_5_5,
-    task_mn_uniform_25_25,
-    task_mn_uniform_50_50,
-    task_mn_sparse_3_3,
-    task_mn_sparse_2_5,
-    task_mn_sparse_5_5,
-    task_mn_sparse_25_25,
-    task_mn_sparse_5_5_no_noise,
-)
+def _generate_sparse_tasks() -> Iterable[Task]:
+    """Sparse correlations."""
+    yield task_mn_sparse(dim_x=3, dim_y=3, n_samples=5000)
+    yield task_mn_sparse(dim_x=2, dim_y=5, n_samples=5000)
+    yield task_mn_sparse(dim_x=5, dim_y=5, n_samples=5000)
+    yield task_mn_sparse(dim_x=25, dim_y=25, n_samples=5000)
+    yield task_mn_sparse(
+        dim_x=5,
+        dim_y=5,
+        n_samples=5000,
+        correlation_noise=0.0,
+        task_id="mn-sparse-5-5-5000-no-noise",
+    )
+
+
+def generate_tasks() -> Iterable[Task]:
+    yield from _generate_uniform_tasks()
+    yield from _generate_sparse_tasks()
