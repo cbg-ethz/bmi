@@ -9,15 +9,15 @@ import bmi.api as bmi
 def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("DIRECTORY", type=Path, help="Path to which the tasks will be dumped.")
-    parser.add_argument("--n", type=int, default=2000, help="Number of points.")
+    parser.add_argument("--n", type=int, default=5000, help="Number of points.")
     parser.add_argument("--correlation", type=float, default=0.8, help="Correlation.")
     parser.add_argument(
         "--speed",
-        metavar="N",
+        metavar="SPEED",
         type=float,
         nargs="+",
         help="List of speed parameters for the spiral diffeomorphisms.",
-        default=[1e-2, 0.1, 0.5, 1, 2, 3, 5, 7, 10],
+        default=[1e-2, 0.1, 0.5, 1, 1.5, 2, 2.5, 3],
     )
     parser.add_argument("--seed", type=int, default=10, help="Number of seeds.")
     return parser
