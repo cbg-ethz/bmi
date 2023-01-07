@@ -12,7 +12,7 @@ class EstimatorType(Enum):
     R_KSG = "R-KSG"
     R_LNN = "R-LNN"
     MINE = "MINE"
-    HISTOGRAM = "Histogram"
+    HISTOGRAM = "HISTOGRAM"
     CCA = "CCA"
 
 

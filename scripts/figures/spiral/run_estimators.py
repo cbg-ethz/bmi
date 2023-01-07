@@ -11,18 +11,13 @@ def create_parser() -> argparse.ArgumentParser:
     return parser
 
 
-ESTIMATORS = [
-    "KSG-10",
-    "KSG-5",
-    "R-KSG-10",
-    "R-KSG-5",
-    "R-LNN-10",
-    "R-LNN-5",
-    # "MINE",
-    "Histogram-3",
-    "Histogram-5",
-    "CCA",
-]
+ESTIMATORS: dict[str, str] = {
+    "KSG": "--estimator KSG --neighbors 5",
+    "LNN": "--estimator R-LNN --neighbors 5 --truncation 15",
+    "Histogram-3": "--estimator HISTOGRAM --bins-x 3",
+    "Histogram-5": "--estimator HISTOGRAM --bins-x 5",
+    "CCA": "--estimator CCA",
+}
 
 
 def main() -> None:
@@ -35,18 +30,19 @@ def main() -> None:
     for task_path in task_directory.iterdir():
         task = bmi.benchmark.Task.load(task_path)
         for seed in task.keys():
-            for estimator in ESTIMATORS:
+            for estimator_id, estimator_args in ESTIMATORS.items():
                 # We hash task ID as it may contain spaces or other special characters, which
                 # are not bash-friendly
                 task_id_hash = str(hash(task.task_id))
 
-                output_path = results_directory / f"{estimator}-{task_id_hash}-{seed}.yaml"
+                output_path = results_directory / f"{estimator_id}-{task_id_hash}-{seed}.yaml"
                 command = (
                     f"python scripts/run_estimator.py "
-                    f"--task {str(task_path)} "
-                    f"--estimator {estimator} "
-                    f"--seed {seed} "
-                    f"--output {output_path}"
+                    f"--TASK {str(task_path)} "
+                    f"--SEED {seed} "
+                    f"--OUTPUT {output_path} "
+                    f"--estimator-id {estimator_id} "
+                    f"{estimator_args}"
                 )
                 print(command)
 
