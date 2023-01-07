@@ -4,7 +4,7 @@ import pandas as pd
 import yaml
 
 from bmi.benchmark.filesys.serialize_dataframe import _SEED_COLUMN, ColumnName
-from bmi.benchmark.filesys.serialize_object import OurCustomDumper
+from bmi.benchmark.filesys.serialize_dict import OurCustomDumper
 from bmi.interface import BaseModel, Pathlike
 
 

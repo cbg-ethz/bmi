@@ -1,6 +1,4 @@
 import argparse
-import time
-import warnings
 from pathlib import Path
 
 import bmi.api as bmi
@@ -13,34 +11,18 @@ def create_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def run_estimator_on_task_seed(
-    estimator_id: str,
-    estimator: bmi.IMutualInformationPointEstimator,
-    task: bmi.benchmark.Task,
-    seed: int,
-) -> bmi.RunResult:
-    x, y = task[seed]
-    t0 = time.time()
-    mi_estimate = estimator.estimate(x, y)
-    t1 = time.time()
-
-    return bmi.RunResult(
-        task_id=task.task_id,
-        estimator_id=estimator_id,
-        seed=seed,
-        mi_estimate=mi_estimate,
-        time_in_seconds=t1 - t0,
-    )
-
-
-# TODO(Pawel): Refactor this in similar way as `make_benchmark()`, so we can use
-#   external estimators.
-ESTIMATORS = {
-    "KSG: 10": bmi.estimators.KSGEnsembleFirstEstimator(neighborhoods=(10,)),
-    "KSG: 5": bmi.estimators.KSGEnsembleFirstEstimator(neighborhoods=(5,)),
-    "Histograms: 5, 7": bmi.estimators.HistogramEstimator(n_bins_x=5, n_bins_y=7),
-    "Histograms: 10, 10": bmi.estimators.HistogramEstimator(n_bins_x=10, n_bins_y=10),
-}
+ESTIMATORS = [
+    "KSG-10",
+    "KSG-5",
+    "R-KSG-10",
+    "R-KSG-5",
+    "R-LNN-10",
+    "R-LNN-5",
+    # "MINE",
+    "Histogram-3",
+    "Histogram-5",
+    "CCA",
+]
 
 
 def main() -> None:
@@ -52,32 +34,21 @@ def main() -> None:
 
     for task_path in task_directory.iterdir():
         task = bmi.benchmark.Task.load(task_path)
-
-        print(f"Running estimators on {task.task_id}...")
         for seed in task.keys():
-            print(f"    Seed {seed}...")
-            for estimator_id, estimator in ESTIMATORS.items():
-                print(f"        Running estimator {estimator_id}...")
-                try:
-                    result = run_estimator_on_task_seed(
-                        estimator_id=estimator_id,
-                        estimator=estimator,
-                        task=task,
-                        seed=seed,
-                    )
+            for estimator in ESTIMATORS:
+                # We hash task ID as it may contain spaces or other special characters, which
+                # are not bash-friendly
+                task_id_hash = str(hash(task.task_id))
 
-                    path = results_directory / f"{estimator_id}-{task.task_id}-{seed}.json"
-
-                    with open(path, "w") as f:
-                        f.write(result.json())
-
-                except Exception as e:
-                    warnings.warn(
-                        f"Running estimator {estimator_id} on task {task.task_id} "
-                        f"with seed {seed} raised error {e}."
-                    )
-
-    print("Run finished.")
+                output_path = results_directory / f"{estimator}-{task_id_hash}-{seed}.yaml"
+                command = (
+                    f"python scripts/run_estimator.py "
+                    f"--task {str(task_path)} "
+                    f"--estimator {estimator} "
+                    f"--seed {seed} "
+                    f"--output {output_path}"
+                )
+                print(command)
 
 
 if __name__ == "__main__":

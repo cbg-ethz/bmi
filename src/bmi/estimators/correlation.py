@@ -14,8 +14,14 @@ def mi_gauss(correlation: float) -> float:
 
 
 class CCAMutualInformationEstimator(IMutualInformationPointEstimator):
+    def __init__(self, scale: bool = True) -> None:
+        self._scale = scale
+
     def estimate(self, x, y):
-        x_new, y_new = CCA().fit_transform(x, y)
+        x = np.asarray(x)
+        y = np.asarray(y)
+        n_components = min(x.shape[-1], y.shape[-1])
+        x_new, y_new = CCA(n_components=n_components, scale=self._scale).fit_transform(x, y)
         dims = x_new.shape[-1]
         assert y_new.shape[-1] == dims
 

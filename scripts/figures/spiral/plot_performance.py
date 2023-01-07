@@ -1,6 +1,5 @@
 """Plots the run results."""
 import argparse
-import json
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -20,23 +19,6 @@ def create_parser() -> argparse.ArgumentParser:
 
 TASK_ID = str
 ESTIMATOR_ID = str
-
-
-def read_tasks(path: Path) -> dict[TASK_ID, bmi.benchmark.TaskMetadata]:
-    ret = {}
-    for task_dir in path.iterdir():
-        task = bmi.benchmark.Task.load(task_dir)
-        ret[task.task_id] = task.metadata
-    return ret
-
-
-def read_results(path: Path) -> list[bmi.RunResult]:
-    results = []
-    for json_path in path.iterdir():
-        with open(json_path) as f:
-            result = bmi.RunResult(**json.load(f))
-            results.append(result)
-    return results
 
 
 def plot(
@@ -80,8 +62,8 @@ def plot(
 def main() -> None:
     args = create_parser().parse_args()
 
-    tasks_dict = read_tasks(args.TASKS)
-    results_list = read_results(args.RUN_RESULTS)
+    tasks_dict = bmi.benchmark.LoadTaskMetadata.from_directory(args.TASKS)
+    results_list = bmi.benchmark.SaveLoadRunResults.from_directory(args.RUN_RESULTS)
 
     mi_true_values = [metadata.mi_true for metadata in tasks_dict.values()]
 
