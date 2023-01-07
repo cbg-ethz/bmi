@@ -16,15 +16,15 @@ class EstimatorType(Enum):
     CCA = "CCA"
 
 
-def _load_mine() -> bmi.ITaskEstimator:
+def _load_mine(device: Literal["cpu", "gpu", "auto"]) -> bmi.ITaskEstimator:
     import torch
 
     import bmi.estimators.external.mine as mine
 
-    device = "gpu" if torch.cuda.is_available() else "cpu"
+    if device == "auto":
+        device = "gpu" if torch.cuda.is_available() else "cpu"
 
     return bmi.benchmark.WrappedEstimator(
-        estimator_id="MINE",
         estimator=mine.MutualInformationNeuralEstimator(device=device),
     )
 
@@ -39,6 +39,7 @@ class Args(Protocol):
     bins_x: int  # Bins per X dimension for histogram
     bins_y: Optional[int]  # Bins per Y dimension for histogram. If None, defaults to bins_x
     variant: Literal[1, 2]
+    device: Literal["cpu", "gpu", "auto"]
 
 
 def create_estimator(args: Args) -> bmi.ITaskEstimator:  # noqa: C901
@@ -65,7 +66,7 @@ def create_estimator(args: Args) -> bmi.ITaskEstimator:  # noqa: C901
             truncation=args.truncation,
         )
     elif estimator == EstimatorType.MINE:
-        return _load_mine()
+        return _load_mine(device=args.device)
     elif estimator == EstimatorType.HISTOGRAM:
         histogram_estimator = bmi.estimators.HistogramEstimator(
             n_bins_x=args.bins_x,
@@ -76,7 +77,6 @@ def create_estimator(args: Args) -> bmi.ITaskEstimator:  # noqa: C901
         )
     elif estimator == EstimatorType.CCA:
         return bmi.benchmark.WrappedEstimator(
-            estimator_id="CCA",
             estimator=bmi.estimators.CCAMutualInformationEstimator(),
         )
     else:
@@ -99,6 +99,8 @@ def create_parser() -> argparse.ArgumentParser:
             raise ValueError(f"Estimator {s} not recognized.")
 
     estimators_allowed = [est.value for est in EstimatorType]
+
+    # Arguments for kNN-based estimators
     parser.add_argument(
         "--estimator",
         type=_to_estimator_enum,
@@ -128,6 +130,8 @@ def create_parser() -> argparse.ArgumentParser:
         help="For the Python implementation of KSG we can specify the metric "
         "to be used (on both spaces).",
     )
+
+    # Arguments for histogram-based estimators
     parser.add_argument(
         "--bins-x", type=int, default=5, help="Number of bins on each dimension of the X variable."
     )
@@ -136,6 +140,16 @@ def create_parser() -> argparse.ArgumentParser:
         type=int,
         default=None,
         help="Number of bins on each dimension of the Y variable." "Defaults to `--bins-x`.",
+    )
+
+    # Arguments for MINE
+    parser.add_argument(
+        "--device",
+        type=str,
+        choices=["cpu", "gpu", "auto"],
+        default="auto",
+        help="Device to be used for MINE training. "
+        "Defaults to 'auto', which will try to use CUDA if it's available.",
     )
 
     return parser
