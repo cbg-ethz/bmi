@@ -16,7 +16,9 @@ class EstimatorType(Enum):
     CCA = "CCA"
 
 
-def _load_mine(device: Literal["cpu", "gpu", "auto"]) -> bmi.ITaskEstimator:
+def _load_mine(
+    device: Literal["cpu", "gpu", "auto"], estimator_id: Optional[str]
+) -> bmi.ITaskEstimator:
     import torch
 
     import bmi.estimators.external.mine as mine
@@ -26,11 +28,13 @@ def _load_mine(device: Literal["cpu", "gpu", "auto"]) -> bmi.ITaskEstimator:
 
     return bmi.benchmark.WrappedEstimator(
         estimator=mine.MutualInformationNeuralEstimator(device=device),
+        estimator_id=estimator_id,
     )
 
 
 class Args(Protocol):
     estimator: EstimatorType
+    estimator_id: Optional[str]
     neighbors: int  # For kNN-based methods
     truncation: int  # A parameter for LNN
     metric: Literal[
@@ -53,20 +57,20 @@ def create_estimator(args: Args) -> bmi.ITaskEstimator:  # noqa: C901
             metric_y=args.metric,
         )
         return bmi.benchmark.WrappedEstimator(
-            estimator=ksg_estimator,
+            estimator=ksg_estimator, estimator_id=args.estimator_id
         )
     elif estimator == EstimatorType.R_KSG:
         return bmi.benchmark.REstimatorKSG(
-            neighbors=args.neighbors,
-            variant=args.variant,
+            neighbors=args.neighbors, variant=args.variant, estimator_id=args.estimator_id
         )
     elif estimator == EstimatorType.R_LNN:
         return bmi.benchmark.REstimatorLNN(
             neighbors=args.neighbors,
             truncation=args.truncation,
+            estimator_id=args.estimator_id,
         )
     elif estimator == EstimatorType.MINE:
-        return _load_mine(device=args.device)
+        return _load_mine(device=args.device, estimator_id=args.estimator_id)
     elif estimator == EstimatorType.HISTOGRAM:
         histogram_estimator = bmi.estimators.HistogramEstimator(
             n_bins_x=args.bins_x,
@@ -74,10 +78,12 @@ def create_estimator(args: Args) -> bmi.ITaskEstimator:  # noqa: C901
         )
         return bmi.benchmark.WrappedEstimator(
             estimator=histogram_estimator,
+            estimator_id=args.estimator_id,
         )
     elif estimator == EstimatorType.CCA:
         return bmi.benchmark.WrappedEstimator(
             estimator=bmi.estimators.CCAMutualInformationEstimator(),
+            estimator_id=args.estimator_id,
         )
     else:
         raise ValueError(f"Estimator {estimator} not recognized.")
@@ -107,6 +113,12 @@ def create_parser() -> argparse.ArgumentParser:
         action="store",
         help=f"The estimator to be run. Available: {' '.join(estimators_allowed)}",
         default=EstimatorType.KSG,
+    )
+    parser.add_argument(
+        "--estimator-id",
+        type=str,
+        help="Custom `estimator_id`. If left unspecified, will be generated automatically.",
+        default=None,
     )
 
     parser.add_argument(
