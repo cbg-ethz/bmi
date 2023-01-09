@@ -25,29 +25,34 @@ Generate the benchmark tasks:
 $ python scripts/figures/spiral/generate_spiral_tasks.py $SPIRALDIR/tasks
 ```
 
-Then, run the estimators. We'll use [GNU Parallel](https://www.gnu.org/software/parallel/) to do this.
-Let's generate the list of commands to be run:
+Then, let's run the estimators. We'll use [GNU Parallel](https://www.gnu.org/software/parallel/) to do this.
+Hence, we need to create an experimental design. For this experiment, we created one in `scripts/figures/spiral/experimental_design.py`.
+Let's take a look at it:
 ```
-$ python scripts/figures/spiral/run_estimators.py $SPIRALDIR/tasks $SPIRALDIR/results 
+$ python scripts/figures/spiral/experimental_design.py $SPIRALDIR/tasks $SPIRALDIR/results --summary
 ```
-As you can see, these commands are just printed out. To actually run them, we need to to pipe them to GNU Parallel:
+Note the `--summary` flag, so only a summary is printed, rather than all the commands running the estimators!
+To print out the commands run:
 ```
-$ python scripts/figures/spiral/run_estimators.py $SPIRALDIR/tasks $SPIRALDIR/results | parallel
+$ python scripts/figures/spiral/experimental_design.py $SPIRALDIR/tasks $SPIRALDIR/results
 ```
-Et voilà, we have all the estimators running in parallel, what speeds up the whole process over running them sequentially in Python!
+To actually run them, we need to pipe them to GNU Parallel:
+```
+$ python scripts/figures/spiral/experimental_design.py $SPIRALDIR/tasks $SPIRALDIR/results | parallel
+```
+Et voilà, we have all the estimators running in parallel, what is much faster than running them sequentially in Python!
 You can observe how the new results appear every second by listing the `$SPIRALDIR/results` directory.
 For example, I like running:
 ```
 $ ls -1 $SPIRALDIR/results | wc -l
 ```
-to see how the results are appearing and
+and compare it to expected number of runs from the summary.
+Also, to see how many cores are used I recommend:
 ```
 $ htop
 ```
-to see how many cores are used.
 
-Once all the run has finished, you can generate the plot:
+Once all the runs have finished, you can generate the plot:
 ```
 $ python scripts/figures/spiral/plot_performance.py $SPIRALDIR/tasks $SPIRALDIR/results $SPIRALDIR/figures/spiral_plot.pdf
 ```
-
