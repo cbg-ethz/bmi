@@ -106,6 +106,12 @@ def create_parser() -> argparse.ArgumentParser:
 
     estimators_allowed = [est.value for est in EstimatorType]
 
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="If present, an estimator will be created, but not run.",
+    )
+
     # Arguments for kNN-based estimators
     parser.add_argument(
         "--estimator",
@@ -167,12 +173,26 @@ def create_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _check_seed_in_task(task_path: Path, seed: int) -> None:
+    """Checks if the specified seed is in the task.
+    If not, raises an exception."""
+    task = bmi.Task.load(task_path)
+    if seed not in task.keys():
+        raise ValueError(f"Seed {seed} was not found in task at {task_path}.")
+
+
 def main() -> None:
     args = create_parser().parse_args()
 
     estimator = create_estimator(cast(Args, args))
-    result = estimator.estimate(task_path=args.TASK, seed=args.SEED)
-    bmi.benchmark.SaveLoadRunResults.dump(result, path=args.OUTPUT)
+
+    # If it's a dry run, we will just check if there's the right seed in the task
+    if args.dry_run:
+        _check_seed_in_task(task_path=args.TASK, seed=args.SEED)
+    # If it's not a dry run, we will run the actual estimator and save the result
+    else:
+        result = estimator.estimate(task_path=args.TASK, seed=args.SEED)
+        bmi.benchmark.SaveLoadRunResults.dump(result, path=args.OUTPUT)
 
 
 if __name__ == "__main__":

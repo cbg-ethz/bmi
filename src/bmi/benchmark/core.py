@@ -55,6 +55,9 @@ class Task:
         for seed, vals in self._samples.items():
             yield seed, vals
 
+    def __len__(self) -> int:
+        return len(self._samples)
+
     def __eq__(self, other) -> bool:
         # Make sure the type is right
         if not isinstance(other, type(self)):
