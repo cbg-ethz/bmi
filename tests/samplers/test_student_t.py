@@ -4,6 +4,7 @@ from math import isclose
 import numpy as np
 import pytest
 from jax import random
+from scipy.special import digamma, gamma
 from sklearn.feature_selection import mutual_info_regression
 
 import bmi.samplers.split_student_t as student
@@ -11,10 +12,10 @@ import bmi.samplers.split_student_t as student
 
 @pytest.mark.parametrize("x", (2, 4))
 @pytest.mark.parametrize("y", (1, 2))
-@pytest.mark.parametrize("df", (4, 9.5, 20))
+@pytest.mark.parametrize("df", (4, 10, 20))
 @pytest.mark.parametrize("n_samples", (1000,))
 @pytest.mark.parametrize("dispersion", (0.1, 0.5))
-def test_samples_produced(x: int, y: int, n_samples: int, df: float, dispersion: float) -> None:
+def test_samples_produced(x: int, y: int, n_samples: int, df: int, dispersion: float) -> None:
     """Tests whether the sampling returns the right shapes."""
     print(f"x={x} y={y} df={df} n_samples={n_samples}")
 
@@ -111,3 +112,30 @@ def test_mi_correction_goes_to_zero(df: int, dim_x: int, dim_y: int) -> None:
     assert df * get_mi_correction(dim_x=dim_x, dim_y=dim_y, df=df) == pytest.approx(
         dim_x * dim_y, rel=0.1
     )
+
+
+def _alternative_correction_formula(df: int, dim_x: int, dim_y: int) -> float:
+    # Auxiliary variables, to make the expression look nice.
+    # They should be read as "H"alf of the sum of "variables"
+    h_nu = 0.5 * df
+    h_nu_x = 0.5 * (df + dim_x)
+    h_nu_y = 0.5 * (df + dim_y)
+    h_nu_xy = 0.5 * (df + dim_x + dim_y)
+
+    log_term = np.log(gamma(h_nu) * gamma(h_nu_xy)) - np.log(gamma(h_nu_x) * gamma(h_nu_y))
+    subtract_term = h_nu_x * digamma(h_nu_x) + h_nu_y * digamma(h_nu_y)
+    add_term = h_nu_xy * digamma(h_nu_xy) + h_nu * digamma(h_nu)
+    return log_term - subtract_term + add_term
+
+
+@pytest.mark.parametrize("dim_x", (1, 2, 10))
+@pytest.mark.parametrize("dim_y", (1, 5, 8))
+@pytest.mark.parametrize("df", (1, 2, 7, 12))
+def test_mi_correction(dim_x: int, dim_y: int, df: int) -> None:
+    mi1 = student.SplitStudentT.mi_correction_function(df=df, dim_x=dim_x, dim_y=dim_y)
+    mi2 = get_mi_correction(dim_x=dim_x, dim_y=dim_y, df=df)
+    mi3 = _alternative_correction_formula(df=df, dim_x=dim_x, dim_y=dim_y)
+
+    assert mi1 == pytest.approx(mi2)
+    assert mi2 == pytest.approx(mi3)
+    assert mi3 == pytest.approx(mi1)
