@@ -1,4 +1,7 @@
-"""This script is used to generate the experimental design from """
+"""This script is used to generate the experimental design from a YAML file of the format:
+
+estimator_id: "--argument 1 --argument2 ..."
+"""
 import argparse
 from pathlib import Path
 
