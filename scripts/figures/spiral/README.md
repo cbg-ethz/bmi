@@ -22,23 +22,38 @@ $ python scripts/figures/spiral/visualise_spiral.py $SPIRALDIR/figures/spiral_vi
 
 Generate the benchmark tasks:
 ```
-$ python scripts/figures/spiral/generate_spiral_tasks.py $SPIRALDIR/tasks
+$ python scripts/figures/spiral/generate_tasks.py $SPIRALDIR/tasks
 ```
 
 Then, let's run the estimators. We'll use [GNU Parallel](https://www.gnu.org/software/parallel/) to do this.
-Hence, we need to create an experimental design. For this experiment, we created one in `scripts/figures/spiral/experimental_design.py`.
-Let's take a look at it:
+Hence, we need to create an experimental design. Experimental design is a list of commands to be run
+and explicitly contains all the estimators and the tasks used.
+
+We will generate one using an auxiliary script `scripts/experimental_design.py` from
+the task directory and a YAML file summarizing the estimators:
+```bash
+$ cat scripts/figures/spiral/estimators.yaml
 ```
-$ python scripts/figures/spiral/experimental_design.py $SPIRALDIR/tasks $SPIRALDIR/results --summary
+Let's see a summary of the experimental design:
+```bash
+$ python scripts/experimental_design.py \
+    --TASKS $SPIRALDIR/tasks \ 
+    --ESTIMATORS scripts/figures/spiral/estimators.yaml \
+    --summary
 ```
-Note the `--summary` flag, so only a summary is printed, rather than all the commands running the estimators!
-To print out the commands run:
+Now we now how many runs we expect. Let's generate the full experimental design:
 ```
-$ python scripts/figures/spiral/experimental_design.py $SPIRALDIR/tasks $SPIRALDIR/results
+$ python scripts/figures/spiral/experimental_design.py \
+    --TASKS $SPIRALDIR/tasks \
+    --RESULTS $SPIRALDIR/results \
+    --ESTIMATORS scripts/figures/spiral/estimators.yaml
 ```
 To actually run them, we need to pipe them to GNU Parallel:
 ```
-$ python scripts/figures/spiral/experimental_design.py $SPIRALDIR/tasks $SPIRALDIR/results | parallel
+$ python scripts/figures/spiral/experimental_design.py \
+    --TASKS $SPIRALDIR/tasks \
+    --RESULTS $SPIRALDIR/results \
+    --ESTIMATORS scripts/figures/spiral/estimators.yaml | parallel
 ```
 Et voilà, we have all the estimators running in parallel, what is much faster than running them sequentially in Python!
 You can observe how the new results appear every second by listing the `$SPIRALDIR/results` directory.

@@ -9,6 +9,12 @@ import bmi.samplers.splitmultinormal as spl
 from bmi.samplers.base import BaseSampler
 
 
+def _f(x: float) -> float:
+    """Auxiliary function used to calculate mutual information correction."""
+    h = x / 2
+    return h * digamma(h) + np.log(gamma(h))
+
+
 class SplitStudentT(BaseSampler):
     """Multivariate Student-t distribution.
 
@@ -27,7 +33,7 @@ class SplitStudentT(BaseSampler):
         *,
         dim_x: int,
         dim_y: int,
-        df: float,
+        df: int,
         dispersion: ArrayLike,
         mean: Optional[ArrayLike] = None,
     ) -> None:
@@ -85,7 +91,7 @@ class SplitStudentT(BaseSampler):
         return xy[:, : self.dim_x], xy[:, self.dim_x :]  # noqa: E203 colon spacing conventions
 
     @property
-    def df(self) -> float:
+    def df(self) -> int:
         """Degrees of freedom."""
         return self._degrees_of_freedom
 
@@ -118,18 +124,7 @@ class SplitStudentT(BaseSampler):
         and the degrees of freedom.
         (It does not depend on the dispersion matrix or mean vector used).
         """
-
-        # Auxiliary variables, to make the expression look nice.
-        # They should be read as "H"alf of the sum of "variables"
-        h_nu = 0.5 * self.df
-        h_nu_x = 0.5 * (self.df + self.dim_x)
-        h_nu_y = 0.5 * (self.df + self.dim_y)
-        h_nu_xy = 0.5 * (self.df + self.dim_x + self.dim_y)
-
-        log_term = np.log(gamma(h_nu) * gamma(h_nu_xy)) - np.log(gamma(h_nu_x) * gamma(h_nu_y))
-        subtract_term = h_nu_x * digamma(h_nu_x) + h_nu_y * digamma(h_nu_y)
-        add_term = h_nu_xy * digamma(h_nu_xy) + h_nu * digamma(h_nu)
-        return log_term - subtract_term + add_term
+        return self.mi_correction_function(df=self.df, dim_x=self.dim_x, dim_y=self.dim_y)
 
     def mutual_information(self) -> float:
         """Expression for MI taken from Arellano-Valle et al., p. 47.
@@ -142,3 +137,11 @@ class SplitStudentT(BaseSampler):
         """
 
         return self.mi_normal() + self.mi_correction()
+
+    @staticmethod
+    def mi_correction_function(df: int, dim_x: int, dim_y: int) -> float:
+        """Mutual information between variables with joint Multivariate Student-t
+        decomposes as the sum of mutual information of Gaussian variables
+        and the correction term.
+        """
+        return _f(df) + _f(df + dim_x + dim_y) - _f(df + dim_x) - _f(df + dim_y)
