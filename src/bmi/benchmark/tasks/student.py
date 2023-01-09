@@ -11,7 +11,7 @@ SEEDS = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 def task_st_uniform(
     dim_x: int,
     dim_y: int,
-    df: float,
+    df: int,
     n_samples: int,
     seeds=SEEDS,
 ) -> Task:
@@ -35,7 +35,7 @@ def task_st_uniform(
 def task_st_sparse(
     dim_x: int,
     dim_y: int,
-    df: float,
+    df: int,
     n_samples: int,
     dispersion_signal: float = 0.8,
     dispersion_noise: float = 0.1,
