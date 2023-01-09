@@ -1,0 +1,6 @@
+"KSG-5": "--estimator KSG --neighbors 5"
+"KSG-10": "--estimator KSG --neighbors 5"
+"LNN": "--estimator R-LNN --neighbors 5 --truncation 15"
+"Histogram-3": "--estimator HISTOGRAM --bins-x 3"
+"Histogram-5": "--estimator HISTOGRAM --bins-x 5"
+"CCA": "--estimator CCA"

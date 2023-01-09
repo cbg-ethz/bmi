@@ -56,6 +56,8 @@ def generate_task(
         "mi_gaussian": sampler.mi_normal(),
         "mi_correction": sampler.mi_correction(),
         "mi_true": sampler.mutual_information(),
+        "degrees_of_freedom": df,
+        "strength": strength,
     }
     task_id = f"student-df_{df}-strength_{strength:.4}"
 
