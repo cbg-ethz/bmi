@@ -21,9 +21,14 @@ def create_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--summary",
-        default=False,
         action="store_true",
         help="Instead of printing experimental design, print a summary.",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Add the `--dry-run` flag to all the commands. "
+        "It it useful for catching errors within the experimental design.",
     )
     return parser
 
@@ -46,6 +51,7 @@ def get_estimators(args) -> dict[str, str]:
 
 
 def summary(args) -> None:
+    """Prints a basic summary of the experimental design."""
     task_directory = args.TASKS
     estimators = get_estimators(args)
 
@@ -67,6 +73,8 @@ def summary(args) -> None:
 
 
 def print_experimental_design(args) -> None:
+    """Prints the experimental design,
+    so it can be piped to GNU Parallel or run sequentially."""
     task_directory = args.TASKS
     estimators = get_estimators(args)
 
@@ -86,9 +94,12 @@ def print_experimental_design(args) -> None:
                 task_id_hash = str(hash(task.task_id))
                 output_path = results_directory / f"{estimator_id}-{task_id_hash}-{seed}.yaml"
 
+                # Note the space after the flag, to have correct separation of flags in the command
+                dry_run_flag = "--dry-run " if args.dry_run else ""
+
                 command = (
-                    f"python scripts/run_estimator.py "
-                    f"--TASK {str(task_path)} "
+                    f"python scripts/run_estimator.py {dry_run_flag}"
+                    f"--TASK {task_path} "
                     f"--SEED {seed} "
                     f"--OUTPUT {output_path} "
                     f"--estimator-id {estimator_id} "
@@ -99,8 +110,10 @@ def print_experimental_design(args) -> None:
 
 def main() -> None:
     args = create_parser().parse_args()
+    # We want to take a look at the design summary
     if args.summary:
         summary(args)
+    # We want to print the design, so it can be run
     else:
         print_experimental_design(args)
 
