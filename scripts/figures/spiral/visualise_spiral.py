@@ -101,7 +101,7 @@ def main() -> None:
     x_scale: float = 2
     y_scale: float = 5e-2
     sample_uniform: bool = True
-    speed_list = [1, 10]
+    speed_list = [1, 3]
     colors = ["tab:red", "tab:purple", "tab:blue"]
 
     points = get_points(
