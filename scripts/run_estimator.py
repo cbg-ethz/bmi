@@ -17,7 +17,7 @@ class EstimatorType(Enum):
 
 
 def _load_mine(
-    device: Literal["cpu", "gpu", "auto"], estimator_id: Optional[str]
+    device: Literal["cpu", "gpu", "auto"], estimator_id: Optional[str], max_epochs: int
 ) -> bmi.ITaskEstimator:
     import torch
 
@@ -27,7 +27,7 @@ def _load_mine(
         device = "gpu" if torch.cuda.is_available() else "cpu"
 
     return bmi.benchmark.WrappedEstimator(
-        estimator=mine.MutualInformationNeuralEstimator(device=device),
+        estimator=mine.MutualInformationNeuralEstimator(device=device, max_epochs=max_epochs),
         estimator_id=estimator_id,
     )
 
@@ -44,6 +44,7 @@ class Args(Protocol):
     bins_y: Optional[int]  # Bins per Y dimension for histogram. If None, defaults to bins_x
     variant: Literal[1, 2]
     device: Literal["cpu", "gpu", "auto"]
+    max_epochs: int
 
 
 def create_estimator(args: Args) -> bmi.ITaskEstimator:  # noqa: C901
@@ -70,7 +71,9 @@ def create_estimator(args: Args) -> bmi.ITaskEstimator:  # noqa: C901
             estimator_id=args.estimator_id,
         )
     elif estimator == EstimatorType.MINE:
-        return _load_mine(device=args.device, estimator_id=args.estimator_id)
+        return _load_mine(
+            device=args.device, estimator_id=args.estimator_id, max_epochs=args.max_epochs
+        )
     elif estimator == EstimatorType.HISTOGRAM:
         histogram_estimator = bmi.estimators.HistogramEstimator(
             n_bins_x=args.bins_x,
@@ -168,6 +171,9 @@ def create_parser() -> argparse.ArgumentParser:
         default="auto",
         help="Device to be used for MINE training. "
         "Defaults to 'auto', which will try to use CUDA if it's available.",
+    )
+    parser.add_argument(
+        "--max-epochs", type=int, default=300, help="Maximum number of epochs of MINE training."
     )
 
     return parser

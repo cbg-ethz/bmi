@@ -1,4 +1,5 @@
 import pathlib
+from enum import Enum
 
 import numpy as np
 import yaml
@@ -23,5 +24,7 @@ class OurCustomDumper(yaml.SafeDumper):
             return super().represent_data(data.item())
         elif isinstance(data, np.ndarray):
             return super().represent_data(data.tolist())
+        elif isinstance(data, Enum):
+            return super().represent_data(data.value)
 
         return super().represent_data(data)
