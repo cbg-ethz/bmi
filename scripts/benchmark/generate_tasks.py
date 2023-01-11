@@ -14,6 +14,9 @@ def create_parser() -> argparse.ArgumentParser:
         choices=[1],
         default=1,
     )
+    parser.add_argument(
+        "--n-seeds", type=int, help="The default number of seeds per task.", default=10
+    )
     return parser
 
 
@@ -24,7 +27,7 @@ def main() -> None:
 
     # Generating benchmark tasks
     print("Generating benchmark tasks...")
-    tasks = bmi.benchmark.generate_benchmark(version=args.version)
+    tasks = bmi.benchmark.generate_benchmark(version=args.version, n_seeds=args.n_seeds)
     bmi.benchmark.save_benchmark_tasks(
         tasks=tasks,
         tasks_dir=tasks_dir,
