@@ -1,5 +1,10 @@
 """Partial implementation of the ISampler interface, convenient to inherit from."""
-from bmi.interface import ISampler
+from typing import Union
+
+import numpy as np
+from jax import random
+
+from bmi.interface import ISampler, KeyArray
 
 
 def _validate_dimensions(dim_x: int, dim_y: int) -> None:
@@ -25,3 +30,12 @@ class BaseSampler(ISampler):
     @property
     def dim_y(self) -> int:
         return self._dim_y
+
+
+def cast_to_rng(seed: Union[KeyArray, int]) -> KeyArray:
+    """Casts `int` to a KeyArray."""
+    if isinstance(seed, int) or isinstance(seed, np.integer):
+        seed = int(seed)
+        return random.PRNGKey(seed)
+    else:
+        return seed

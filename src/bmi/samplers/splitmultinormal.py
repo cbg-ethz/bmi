@@ -5,7 +5,7 @@ from jax import random
 from numpy.typing import ArrayLike
 
 from bmi.interface import KeyArray
-from bmi.samplers.base import BaseSampler
+from bmi.samplers.base import BaseSampler, cast_to_rng
 
 
 def _can_be_covariance(mat):
@@ -15,15 +15,6 @@ def _can_be_covariance(mat):
 
     if not np.all(np.linalg.eigvals(mat) > 0):
         raise ValueError("Covariance matrix is not positive-definite.")
-
-
-def _cast_to_rng(seed: Union[KeyArray, int]) -> KeyArray:
-    """Casts `int` to a KeyArray."""
-    if isinstance(seed, int) or isinstance(seed, np.integer):
-        seed = int(seed)
-        return random.PRNGKey(seed)
-    else:
-        return seed
 
 
 class _Multinormal:
@@ -136,7 +127,7 @@ class SplitMultinormal(BaseSampler):
             )
 
     def sample(self, n_points: int, rng: Union[KeyArray, int]) -> tuple[np.ndarray, np.ndarray]:
-        rng = _cast_to_rng(rng)
+        rng = cast_to_rng(rng)
         xy = self._joint_distribution.sample(n_samples=n_points, key=rng)
         return xy[..., : self._dim_x], xy[..., self.dim_x :]  # noqa: E203
 
