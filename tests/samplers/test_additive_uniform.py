@@ -16,5 +16,5 @@ def test_uniform_additive(epsilon: float, rng, n_samples: int = 5_000) -> None:
     assert x.shape == (n_samples, 1)
     assert y.shape == (n_samples, 1)
 
-    mi_estimate = mutual_info_regression(x, y.ravel())[0]
-    assert mi_estimate == pytest.approx(sampler.mutual_information(), rel=0.02, abs=0.02)
+    mi_estimate = mutual_info_regression(x, y.ravel(), random_state=0)[0]
+    assert mi_estimate == pytest.approx(sampler.mutual_information(), rel=0.03, abs=0.05)

@@ -116,7 +116,9 @@ def test_2d_gaussian(
 
 @pytest.mark.parametrize("correlation", (0.2, 0.8))
 @pytest.mark.parametrize("var_x", (1.0, 2.0))
-def test_2d_mi(correlation: float, var_x: float, var_y: float = 1.0, n_samples: int = 500) -> None:
+def test_2d_mi(
+    correlation: float, var_x: float, var_y: float = 1.0, n_samples: int = 1000
+) -> None:
     cov_xy = correlation * np.sqrt(var_x * var_y)
 
     covariance = np.asarray(
