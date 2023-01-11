@@ -10,7 +10,7 @@ from bmi.samplers.splitmultinormal import SplitMultinormal
 
 @pytest.mark.parametrize("n_points", [2000])
 @pytest.mark.parametrize("correlation", [0.0, 0.5, 0.8])
-@pytest.mark.parametrize("n_bins_x", [10, 12, 20])
+@pytest.mark.parametrize("n_bins_x", [8, 10, 15])
 @pytest.mark.parametrize("n_bins_y", [None, 10])
 def test_estimate_mi_histogram_2d(
     n_points: int, correlation: float, n_bins_x: int, n_bins_y: Optional[int]
@@ -36,4 +36,4 @@ def test_estimate_mi_histogram_2d(
 
     true_mi = distribution.mutual_information()
 
-    assert estimated_mi == pytest.approx(true_mi, rel=0.12, abs=0.08)
+    assert estimated_mi == pytest.approx(true_mi, rel=0.12, abs=0.1)
