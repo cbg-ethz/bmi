@@ -15,8 +15,9 @@ using CSV
 using DataFrames
 using TransferEntropy
 
+
 function get_args()
-    allowed_estimators = ["KSG1", "KSG2", "EntropyKL", "EntropyKSG"]
+    allowed_estimators = ["KSG1", "KSG2", "EntropyKSG", "Histogram", "Transfer", "Kernel"]
 
     settings = ArgParseSettings()
 
@@ -46,6 +47,14 @@ function get_args()
     "--estimator"
         help = "Estimator type to be used. Allowed: $(allowed_estimators)"
         default = "KSG1"
+    "--bins"
+        help = "Number of bins per dimension for the histogram- and transfer- based estimators."
+        arg_type = Int
+        default = 10
+    "--bandwidth"
+        help = "Bandwidth for the kernel-based estimator."
+        arg_type = Float64
+        default = 1.0
     end
 
     args = parse_args(settings)
@@ -74,6 +83,31 @@ function get_args()
     return args
 end
 
+
+function get_estimator(args::Dict, verbose::Bool)
+    name = args["estimator"]
+    k = args["neighbors"]
+    bins = args["bins"]
+    bandwidth = args["bandwidth"]
+
+    if name == "EntropyKSG"
+        return Kraskov(k)
+    elseif name == "KSG1"
+        return Kraskov1(k)
+    elseif name == "KSG2"
+        return Kraskov2(k)
+    elseif name == "Histogram"
+        return VisitationFrequency(RectangularBinning(bins))
+    elseif name == "Transfer"
+        return TransferOperator(RectangularBinning(bins))
+    elseif name == "Kernel"
+        return NaiveKernel(bandwidth)
+    else
+        throw(ArgumentError("estimator not recognized"))
+    end
+end
+
+
 function get_samples(filename::String, seed::Int, dim_x::Int, dim_y::Int, verbose::Bool)
     # Parse the file into a data frame
     df = CSV.File(filename) |> DataFrame
@@ -93,23 +127,13 @@ function get_samples(filename::String, seed::Int, dim_x::Int, dim_y::Int, verbos
     x = Dataset(Matrix(df[:, 2:1+dim_x]))
     y = Dataset(Matrix(df[:, 2+dim_x: 1+dim_x+dim_y]))
 
+    if verbose
+        println("X variable: $(size(x)). Y variable: $(size(y))")
+    end
+
     return (x, y)
 end
 
-function get_estimator(args::Dict, verbose::Bool)
-    name = args["estimator"]
-    k = args["neighbors"]
-
-    if name == "EntropyKSG"
-        return Kraskov(k)
-    elseif name == "KSG1"
-        return Kraskov1(k)
-    elseif name == "KSG2"
-        return Kraskov2(k)
-    else
-        throw(ArgumentError("estimator not recognized"))
-    end
-end
 
 function main()
     args = get_args()
