@@ -29,7 +29,7 @@
 Module[
 {
 a, b, \[Epsilon],
-XDist = UniformDistribution[{a, b}],
+XDist = UniformDistribution[{0, 1}],
 NoiseDist = UniformDistribution[{-\[Epsilon], \[Epsilon]}]
 },
 Assuming[\[Epsilon] > 0 && b > a, FullSimplify @ MutualInfoAdditiveNoise[XDist, NoiseDist]]
