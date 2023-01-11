@@ -88,11 +88,10 @@ def get_estimates(sampler, estimator, f, g, n_points: int, n_seeds: int) -> tupl
         estimates.append(estimator.estimate(x_, y_))
 
     mean = np.mean(estimates)
-    # Note that this estimator of population standard deviation
-    # is NOT unbiased, even though we use ddof=1. For more information
-    # see the documentation of np.std or use Jensen's inequality.
-    std = np.std(estimates, ddof=1)
-
+    # Note that this is the sample standard deviation, rather than population SD
+    # In particular, it is biased (and even if we used ddof=1 it would be).
+    # For more information see the documentation of np.std or use Jensen's inequality.
+    std = np.std(estimates, ddof=0)
     return mean, std
 
 
