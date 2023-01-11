@@ -131,12 +131,25 @@ _EXTERNAL_ESTIMATORS_PATH: pathlib.Path = (
     pathlib.Path(__file__).parent.parent.parent.parent / "external"
 )
 
-# *String* representing the path to the R script calculating MI.
-_PATH_TO_R_SCRIPT: str = str(_EXTERNAL_ESTIMATORS_PATH / "rmi.R")
+
+class _RBaseEstimator(ExternalEstimator):
+    """A *partial* implementation, which should be completed
+    by children classes."""
+
+    r_script_path = _EXTERNAL_ESTIMATORS_PATH / "rmi.R"
+
+    def __init__(self, estimator_id: Optional[str]) -> None:
+        super().__init__(estimator_id=estimator_id)
+
+        if not self.r_script_path.exists():
+            raise FileNotFoundError(f"Path to the R script {self.r_script_path} does not exist.")
+
+    def _precommands(self) -> list[str]:
+        return ["Rscript", str(self.r_script_path)]
 
 
-class REstimatorKSG(ExternalEstimator):
-    """The KSG estimators implemented in R."""
+class REstimatorKSG(_RBaseEstimator):
+    """The KSG estimators implemented in the `rmi` package in R."""
 
     def __init__(
         self, estimator_id: Optional[str] = None, variant: Literal[1, 2] = 1, neighbors: int = 10
@@ -152,9 +165,6 @@ class REstimatorKSG(ExternalEstimator):
         """
         super().__init__(estimator_id=estimator_id)
 
-        if not pathlib.Path(_PATH_TO_R_SCRIPT).exists():
-            raise FileNotFoundError(f"Path to the R script {_PATH_TO_R_SCRIPT} does not exist.")
-
         if neighbors < 1:
             raise ValueError(f"Neighbors {neighbors} must be at least 1.")
 
@@ -164,9 +174,6 @@ class REstimatorKSG(ExternalEstimator):
 
     def _default_estimator_id(self) -> str:
         return f"REstimator-KSG{self._variant}-{self._neighbors}_neighbors"
-
-    def _precommands(self) -> list[str]:
-        return ["Rscript", _PATH_TO_R_SCRIPT]
 
     def _postcommands(self) -> list[str]:
         return ["--method", f"KSG{self._variant}", "--neighbors", str(self._neighbors)]
@@ -178,8 +185,8 @@ class REstimatorKSG(ExternalEstimator):
         }
 
 
-class REstimatorLNN(ExternalEstimator):
-    """The LNN estimator implemented in R."""
+class REstimatorLNN(_RBaseEstimator):
+    """The LNN estimator implemented in the `rmi` package in R."""
 
     def __init__(
         self, estimator_id: Optional[str] = None, neighbors: int = 10, truncation: int = 30
@@ -196,9 +203,6 @@ class REstimatorLNN(ExternalEstimator):
 
     def _default_estimator_id(self) -> str:
         return f"REstimator-LNN-{self._neighbors}_neighbors-{self._truncation}_truncation"
-
-    def _precommands(self) -> list[str]:
-        return ["Rscript", _PATH_TO_R_SCRIPT]
 
     def _postcommands(self) -> list[str]:
         return [
