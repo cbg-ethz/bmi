@@ -2,20 +2,25 @@ from pathlib import Path
 from typing import Callable, Iterable, Literal, Optional
 
 import bmi.benchmark.tasks.multinormal as mn
+import bmi.benchmark.tasks.one_dimensional as od
 import bmi.benchmark.tasks.spiral as spiral
 import bmi.benchmark.tasks.student as st
 from bmi.benchmark.core import Task
 from bmi.interface import Pathlike
 
+N_SEEDS: int = 10  # Default number of seeds for each task
 
-def _generate_benchmark_v1() -> Iterable[Task]:
+
+def _generate_benchmark_v1(n_seeds: int) -> Iterable[Task]:
     # Multinormal tasks
-    yield from mn.generate_tasks()
+    yield from mn.generate_tasks(n_seeds=n_seeds)
     # Student tasks
-    yield from st.generate_tasks()
+    yield from st.generate_tasks(n_seeds=n_seeds)
+    # One-dimensional tasks
+    yield from od.generate_tasks(n_seeds=n_seeds)
 
 
-def generate_benchmark(version: Literal[1] = 1) -> Iterable[Task]:
+def generate_benchmark(version: Literal[1] = 1, n_seeds: int = N_SEEDS) -> Iterable[Task]:
     _allowed_versions = [1]
     _error = ValueError(
         f"Benchmark version {version} not recognized. " f"Allowed versions: {_allowed_versions}."
@@ -23,7 +28,7 @@ def generate_benchmark(version: Literal[1] = 1) -> Iterable[Task]:
     if version not in _allowed_versions:
         raise _error
     if version == 1:
-        return _generate_benchmark_v1()
+        return _generate_benchmark_v1(n_seeds=n_seeds)
     else:
         raise _error
 
