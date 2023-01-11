@@ -8,7 +8,7 @@ from bmi.benchmark.core import Task, generate_task
 SEEDS = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 
 
-def task_st_uniform(
+def task_student_uniform(
     dim_x: int,
     dim_y: int,
     df: int,
@@ -26,13 +26,13 @@ def task_st_uniform(
         sampler=sampler,
         n_samples=n_samples,
         seeds=seeds,
-        task_id=f"st-uniform-{dim_x}-{dim_y}-{df}-{n_samples}",
+        task_id=f"student-uniform-{dim_x}-{dim_y}-{df}-{n_samples}",
     )
 
     return task
 
 
-def task_st_sparse(
+def task_student_sparse(
     dim_x: int,
     dim_y: int,
     df: int,
@@ -58,7 +58,8 @@ def task_st_sparse(
         df=df,
     )
 
-    task_id = task_id if task_id is not None else f"st-sparse-{dim_x}-{dim_y}-{df}-{n_samples}"
+    default_task_id = f"student-sparse-{dim_x}-{dim_y}-{df}-{n_samples}"
+    task_id = task_id if task_id is not None else default_task_id
     task = generate_task(
         sampler=sampler,
         n_samples=n_samples,
@@ -74,24 +75,24 @@ def _generate_uniform() -> Iterable[Task]:
     """Uniform dispersion matrix."""
 
     # Covariance for df=2 doesn't exist! Let's see how this goes...
-    yield task_st_uniform(dim_x=5, dim_y=5, df=2, n_samples=5000)
+    yield task_student_uniform(dim_x=5, dim_y=5, df=2, n_samples=5000)
 
     # Larger df have covariance
-    yield task_st_uniform(dim_x=5, dim_y=5, df=3, n_samples=5000)
-    yield task_st_uniform(dim_x=5, dim_y=5, df=5, n_samples=5000)
-    yield task_st_uniform(dim_x=5, dim_y=5, df=10, n_samples=5000)
-    yield task_st_uniform(dim_x=5, dim_y=5, df=30, n_samples=5000)
+    yield task_student_uniform(dim_x=5, dim_y=5, df=3, n_samples=5000)
+    yield task_student_uniform(dim_x=5, dim_y=5, df=5, n_samples=5000)
+    yield task_student_uniform(dim_x=5, dim_y=5, df=10, n_samples=5000)
+    yield task_student_uniform(dim_x=5, dim_y=5, df=30, n_samples=5000)
 
     # Different dimensions with df = 5
-    yield task_st_uniform(dim_x=2, dim_y=2, df=5, n_samples=5000)
-    yield task_st_uniform(dim_x=25, dim_y=25, df=5, n_samples=5000)
+    yield task_student_uniform(dim_x=2, dim_y=2, df=5, n_samples=5000)
+    yield task_student_uniform(dim_x=25, dim_y=25, df=5, n_samples=5000)
 
 
 def _generate_sparse() -> Iterable[Task]:
     """Sparse dispersion matrix."""
-    yield task_st_sparse(dim_x=3, dim_y=3, df=5, n_samples=5000)
-    yield task_st_sparse(dim_x=2, dim_y=5, df=5, n_samples=5000)
-    yield task_st_sparse(dim_x=5, dim_y=5, df=5, n_samples=5000)
+    yield task_student_sparse(dim_x=3, dim_y=3, df=5, n_samples=5000)
+    yield task_student_sparse(dim_x=2, dim_y=5, df=5, n_samples=5000)
+    yield task_student_sparse(dim_x=5, dim_y=5, df=5, n_samples=5000)
 
 
 def generate_tasks() -> Iterable[Task]:
