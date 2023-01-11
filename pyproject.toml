@@ -25,6 +25,9 @@ exclude = '''
   | __pycache__
 '''
 
+[tool.pytype]
+inputs = ["src", "tests"]
+
 [tool.pytest.ini_options]
 addopts = "--cov=src/bmi -n 3"
 testpaths = [
