@@ -17,7 +17,7 @@ using TransferEntropy
 
 
 function get_args()
-    allowed_estimators = ["KSG1", "KSG2", "EntropyKSG", "Histogram", "Transfer", "Kernel"]
+    allowed_estimators = ["KSG1", "KSG2", "Histogram", "Transfer", "Kernel"]
 
     settings = ArgParseSettings()
 
@@ -90,9 +90,7 @@ function get_estimator(args::Dict, verbose::Bool)
     bins = args["bins"]
     bandwidth = args["bandwidth"]
 
-    if name == "EntropyKSG"
-        return Kraskov(k)
-    elseif name == "KSG1"
+    if name == "KSG1"
         return Kraskov1(k)
     elseif name == "KSG2"
         return Kraskov2(k)

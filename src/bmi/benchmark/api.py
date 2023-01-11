@@ -11,6 +11,10 @@ from bmi.benchmark.wrapper import (
     REstimatorLNN,
     run_external_estimator,
     WrappedEstimator,
+    JuliaEstimatorKSG,
+    JuliaEstimatorKernel,
+    JuliaEstimatorHistogram,
+    JuliaEstimatorTransfer,
 )
 from bmi.benchmark.traverse import SaveLoadRunResults, LoadTaskMetadata
 
@@ -22,6 +26,10 @@ __all__ = [
     "run_external_estimator",
     "save_benchmark_tasks",
     "ExternalEstimator",
+    "JuliaEstimatorKSG",
+    "JuliaEstimatorHistogram",
+    "JuliaEstimatorTransfer",
+    "JuliaEstimatorKernel",
     "REstimatorKSG",
     "REstimatorLNN",
     "SaveLoadRunResults",

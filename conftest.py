@@ -43,6 +43,12 @@ TURN_ON_ARGUMENTS = [
         mark_keyword="requires_mine_pytorch",
         inivalue_line_description="mark test as requiring PyTorch MINE implementation.",
     ),
+    TurnOnTestSuiteArgument(
+        cli_flag="--run-julia",
+        help_message="Run tests requiring Julia dependencies.",
+        mark_keyword="requires_julia",
+        inivalue_line_description="mark test as requiring Julia estimators to run.",
+    ),
 ]
 
 

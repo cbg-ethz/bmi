@@ -133,8 +133,9 @@ _EXTERNAL_ESTIMATORS_PATH: pathlib.Path = (
 
 
 class _RBaseEstimator(ExternalEstimator):
-    """A *partial* implementation, which should be completed
-    by children classes."""
+    """*Partial* implementation used as a convenient
+    base class for R wrappers.
+    Child classes should complete it."""
 
     r_script_path = _EXTERNAL_ESTIMATORS_PATH / "rmi.R"
 
@@ -216,6 +217,130 @@ class REstimatorLNN(_RBaseEstimator):
 
     def parameters(self) -> dict:
         return {"neighbors": self._neighbors, "truncation": self._truncation}
+
+
+class _JuliaBaseEstimator(ExternalEstimator):
+    """*Partial* implementation used as a convenient
+    base class for Julia wrappers.
+    Child classes should complete it."""
+
+    julia_script_path = _EXTERNAL_ESTIMATORS_PATH / "mi_estimator.jl"
+
+    def __init__(self, estimator_id: Optional[str]) -> None:
+        super().__init__(estimator_id=estimator_id)
+
+        if not self.julia_script_path.exists():
+            raise FileNotFoundError(
+                f"Path to the R script {self.julia_script_path} does not exist."
+            )
+
+    def _precommands(self) -> list[str]:
+        return ["julia", str(self.julia_script_path)]
+
+
+class JuliaEstimatorKSG(_JuliaBaseEstimator):
+    def __init__(
+        self, estimator_id: Optional[str] = None, variant: Literal[1, 2] = 1, neighbors: int = 10
+    ) -> None:
+        super().__init__(estimator_id=estimator_id)
+        self._variant = variant
+
+        if neighbors < 1:
+            raise ValueError(f"Neighbors must be at least 1, was {neighbors}.")
+        self._neighbors = neighbors
+
+    @staticmethod
+    def _estimator_type(variant: Literal[1, 2]) -> str:
+        if variant == 1:
+            return "KSG1"
+        elif variant == 2:
+            return "KSG2"
+        else:
+            raise ValueError(f"Estimator variant {variant} not recognized.")
+
+    def _default_estimator_id(self) -> str:
+        return f"JuliaEstimator-KSG-{self._neighbors}_neighbors-{self._variant}_variant"
+
+    def _postcommands(self) -> list[str]:
+        return [
+            "--estimator",
+            self._estimator_type(self._variant),
+            "--neighbors",
+            str(self._neighbors),
+        ]
+
+    def parameters(self) -> dict:
+        return {
+            "neighbors": self._neighbors,
+            "estimator_variant_int": self._variant,
+            "estimator_variant_str": self._estimator_type(self._variant),
+        }
+
+
+class JuliaEstimatorHistogram(_JuliaBaseEstimator):
+    def __init__(self, estimator_id: Optional[str] = None, bins: int = 10) -> None:
+        super().__init__(estimator_id=estimator_id)
+        if bins < 2:
+            raise ValueError(f"Bins {bins} must be at least 2.")
+        self._bins = bins
+
+    def _default_estimator_id(self) -> str:
+        return f"JuliaEstimator-Histogram-{self._bins}_bins"
+
+    def _postcommands(self) -> list[str]:
+        return [
+            "--estimator",
+            "Histogram",
+            "--bins",
+            str(self._bins),
+        ]
+
+    def parameters(self) -> dict:
+        return {"bins": self._bins}
+
+
+class JuliaEstimatorTransfer(_JuliaBaseEstimator):
+    def __init__(self, estimator_id: Optional[str] = None, bins: int = 10) -> None:
+        super().__init__(estimator_id=estimator_id)
+        if bins < 2:
+            raise ValueError(f"Bins {bins} must be at least 2.")
+        self._bins = bins
+
+    def _default_estimator_id(self) -> str:
+        return f"JuliaEstimator-Transfer-{self._bins}_bins"
+
+    def _postcommands(self) -> list[str]:
+        return [
+            "--estimator",
+            "Transfer",
+            "--bins",
+            str(self._bins),
+        ]
+
+    def parameters(self) -> dict:
+        return {"bins": self._bins}
+
+
+class JuliaEstimatorKernel(_JuliaBaseEstimator):
+    def __init__(self, estimator_id: Optional[str] = None, bandwidth: float = 1.0) -> None:
+        super().__init__(estimator_id=estimator_id)
+        if bandwidth <= 0:
+            raise ValueError(f"Bandwidth {bandwidth:.2f} must be positive.")
+        self._bandwidth = bandwidth
+
+    def _default_estimator_id(self) -> str:
+        return f"JuliaEstimator-Kernel-{self._bandwidth:.4f}_bandwidth"
+
+    def _postcommands(self) -> list[str]:
+        return [
+            "--estimator",
+            "Kernel",
+            "--bandwidth",
+            str(self._bandwidth),
+        ]
+
+    def parameters(self) -> dict:
+        return {"bandwidth": self._bandwidth}
 
 
 class WrappedEstimator(ITaskEstimator):
