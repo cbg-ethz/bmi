@@ -27,6 +27,9 @@ def task_student_uniform(
         n_samples=n_samples,
         seeds=seeds,
         task_id=f"student-uniform-{dim_x}-{dim_y}-{df}-{n_samples}",
+        task_params=dict(
+            degrees_of_freedom=df,
+        ),
     )
 
     return task
@@ -65,7 +68,11 @@ def task_student_sparse(
         n_samples=n_samples,
         seeds=seeds,
         task_id=task_id,
-        task_params=dict(dispersion_signal=dispersion_signal, dispersion_noise=dispersion_noise),
+        task_params=dict(
+            dispersion_signal=dispersion_signal,
+            dispersion_noise=dispersion_noise,
+            degrees_of_freedom=df,
+        ),
     )
 
     return task
