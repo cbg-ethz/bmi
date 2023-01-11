@@ -273,9 +273,9 @@ def generate_wiggly_task(
 
 def generate_tasks(*, n_seeds: int = 10, n_samples: int = N_SAMPLES) -> Iterable[Task]:
     # Additive uniform tasks
-    yield from _generate_additive_uniform_tasks(n_seeds=n_seeds, n_samples=n_samples)
+    yield from _generate_additive_uniform_tasks(n_samples=n_samples, n_seeds=n_seeds)
     # Student-t task
-    yield generate_student_task(n_seeds=n_samples, n_samples=n_samples)
+    yield generate_student_task(n_samples=n_samples, n_seeds=n_seeds)
     # Uniform margins task
     yield generate_marginal_uniform_task(n_samples=n_samples, n_seeds=n_seeds)
     # Longer-tails (half-cube transform) tasks
