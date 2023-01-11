@@ -8,12 +8,20 @@ import bmi.api as bmi
 
 
 class EstimatorType(Enum):
+    # Core estimators
     KSG = "KSG"
-    R_KSG = "R-KSG"
-    R_LNN = "R-LNN"
-    MINE = "MINE"
     HISTOGRAM = "HISTOGRAM"
     CCA = "CCA"
+    # MINE estimator, requires additional dependencies
+    MINE = "MINE"
+    # R estimators, require additional dependencies
+    R_KSG = "R-KSG"
+    R_LNN = "R-LNN"
+    # Julia estimators, require additional dependencies
+    JULIA_KSG = "JULIA-KSG"
+    JULIA_HISTOGRAM = "JULIA-HISTOGRAM"
+    JULIA_TRANSFER = "JULIA-TRANSFER"
+    JULIA_KERNEL = "JULIA-KERNEL"
 
 
 def _load_mine(
@@ -42,24 +50,54 @@ class Args(Protocol):
     ]  # Metric for Python implementation of KSG
     bins_x: int  # Bins per X dimension for histogram
     bins_y: Optional[int]  # Bins per Y dimension for histogram. If None, defaults to bins_x
-    variant: Literal[1, 2]
+    variant: Literal[1, 2]  # KSG variant
+    # Mine parameters
     device: Literal["cpu", "gpu", "auto"]
     max_epochs: int
+    bandwidth: float  # Kernel bandwidth
+
+
+def create_python_ksg(args) -> bmi.ITaskEstimator:
+    ksg_estimator = bmi.estimators.KSGEnsembleFirstEstimator(
+        neighborhoods=(args.neighbors,),
+        metric_x=args.metric,
+        metric_y=args.metric,
+    )
+    return bmi.benchmark.WrappedEstimator(estimator=ksg_estimator, estimator_id=args.estimator_id)
+
+
+def create_python_histogram(args) -> bmi.ITaskEstimator:
+    histogram_estimator = bmi.estimators.HistogramEstimator(
+        n_bins_x=args.bins_x,
+        n_bins_y=args.bins_y,
+    )
+    return bmi.benchmark.WrappedEstimator(
+        estimator=histogram_estimator,
+        estimator_id=args.estimator_id,
+    )
 
 
 def create_estimator(args: Args) -> bmi.ITaskEstimator:  # noqa: C901
     # Silence the C901 linting error saying that this function is too complex.
     # It is indeed quite long and complex, but what else can we do?
     estimator: EstimatorType = args.estimator
+
+    # Core estimators
     if estimator == EstimatorType.KSG:
-        ksg_estimator = bmi.estimators.KSGEnsembleFirstEstimator(
-            neighborhoods=(args.neighbors,),
-            metric_x=args.metric,
-            metric_y=args.metric,
-        )
+        return create_python_ksg(args)
+    elif estimator == EstimatorType.HISTOGRAM:
+        return create_python_histogram(args)
+    elif estimator == EstimatorType.CCA:
         return bmi.benchmark.WrappedEstimator(
-            estimator=ksg_estimator, estimator_id=args.estimator_id
+            estimator=bmi.estimators.CCAMutualInformationEstimator(),
+            estimator_id=args.estimator_id,
         )
+    # MINE estimator, requires additional dependencies
+    elif estimator == EstimatorType.MINE:
+        return _load_mine(
+            device=args.device, estimator_id=args.estimator_id, max_epochs=args.max_epochs
+        )
+    # R estimators, require additional dependencies
     elif estimator == EstimatorType.R_KSG:
         return bmi.benchmark.REstimatorKSG(
             neighbors=args.neighbors, variant=args.variant, estimator_id=args.estimator_id
@@ -70,23 +108,23 @@ def create_estimator(args: Args) -> bmi.ITaskEstimator:  # noqa: C901
             truncation=args.truncation,
             estimator_id=args.estimator_id,
         )
-    elif estimator == EstimatorType.MINE:
-        return _load_mine(
-            device=args.device, estimator_id=args.estimator_id, max_epochs=args.max_epochs
-        )
-    elif estimator == EstimatorType.HISTOGRAM:
-        histogram_estimator = bmi.estimators.HistogramEstimator(
-            n_bins_x=args.bins_x,
-            n_bins_y=args.bins_y,
-        )
-        return bmi.benchmark.WrappedEstimator(
-            estimator=histogram_estimator,
+    # Julia estimators, require additional dependencies
+    elif estimator == EstimatorType.JULIA_HISTOGRAM:
+        return bmi.benchmark.JuliaEstimatorHistogram(
+            bins=args.bins_x,
             estimator_id=args.estimator_id,
         )
-    elif estimator == EstimatorType.CCA:
-        return bmi.benchmark.WrappedEstimator(
-            estimator=bmi.estimators.CCAMutualInformationEstimator(),
-            estimator_id=args.estimator_id,
+    elif estimator == EstimatorType.JULIA_TRANSFER:
+        return bmi.benchmark.JuliaEstimatorTransfer(
+            bins=args.bins_x, estimator_id=args.estimator_id
+        )
+    elif estimator == EstimatorType.JULIA_KERNEL:
+        return bmi.benchmark.JuliaEstimatorKernel(
+            bandwidth=args.bandwidth, estimator_id=args.estimator_id
+        )
+    elif estimator == EstimatorType.JULIA_KSG:
+        return bmi.benchmark.JuliaEstimatorKSG(
+            estimator_id=args.estimator_id, neighbors=args.neighbors, variant=args.variant
         )
     else:
         raise ValueError(f"Estimator {estimator} not recognized.")
@@ -134,12 +172,13 @@ def create_parser() -> argparse.ArgumentParser:
         "--neighbors",
         type=int,
         default=5,
-        help="Number of neighbors for kNN graph methods: " "both versions of KSG and LNN.",
+        help="Number of neighbors for both versions of KSG and LNN.",
     )
     parser.add_argument(
         "--variant",
         type=int,
         choices=[1, 2],
+        default=1,
         help="The variant of the R KSG estimator to be used.",
     )
     parser.add_argument("--truncation", type=int, default=15, help="Truncation parameter of LNN.")
@@ -175,6 +214,9 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--max-epochs", type=int, default=300, help="Maximum number of epochs of MINE training."
     )
+
+    # Argument for kernel-based methods
+    parser.add_argument("--bandwidth", type=float, default=1.0, help="Kernel bandwidth.")
 
     return parser
 
