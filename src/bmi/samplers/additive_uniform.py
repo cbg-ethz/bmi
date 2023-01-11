@@ -19,7 +19,7 @@ class AdditiveUniformSampler(BaseSampler):
             I(X; Y) =
               1 / (4 * epsilon) if epsilon > 0.5
               epsilon - log(2*epsilon) for epsilon <= 0.5
-        and can be either derived analytically.
+        and can be derived analytically.
         """
         super().__init__(dim_x=1, dim_y=1)
 
