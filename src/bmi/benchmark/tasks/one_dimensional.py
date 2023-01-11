@@ -7,7 +7,6 @@ from jax.scipy.special import erf
 
 import bmi.samplers.api as samplers
 from bmi.benchmark.core import Task, generate_task
-from bmi.interface import ISampler
 
 # TODO(Frederic, Pawel): Otherwise the bimodal Gaussian mixture cannot be created.
 #  We need to invert a strictly increasing function. As we do it via binsearch,
@@ -25,6 +24,9 @@ _RealFunction = Callable[[float], float]
 # *** Additive uniform tasks ***
 
 
+ADDITIVE_UNIFORM_EPSILONS: Iterable[float] = [0.75, 0.1]
+
+
 def generate_additive_uniform_task(
     epsilon: float, n_seeds: int, n_samples: int = N_SAMPLES
 ) -> Task:
@@ -38,12 +40,14 @@ def generate_additive_uniform_task(
 
 
 def _generate_additive_uniform_tasks(n_seeds: int, n_samples: int) -> Iterable[Task]:
-    yield generate_additive_uniform_task(epsilon=2.0, n_seeds=n_seeds, n_samples=n_samples)
-    yield generate_additive_uniform_task(epsilon=0.1, n_seeds=n_seeds, n_samples=n_samples)
+    for epsilon in ADDITIVE_UNIFORM_EPSILONS:
+        yield generate_additive_uniform_task(epsilon=epsilon, n_seeds=n_seeds, n_samples=n_samples)
 
 
 # *** Bivariate Student-t task ***
-def get_student_sampler(df: int = 5, strength: float = DEFAULT_CORRELATION) -> ISampler:
+def get_student_sampler(
+    df: int = 5, strength: float = DEFAULT_CORRELATION
+) -> samplers.SplitStudentT:
     return samplers.SplitStudentT(
         dim_x=1,
         dim_y=1,
@@ -82,7 +86,9 @@ def normal_cdf(x: float) -> float:
     return 0.5 * (1 + erf(x / 2**0.5))
 
 
-def get_marginal_uniform_sampler(gaussian_correlation: float = DEFAULT_CORRELATION) -> ISampler:
+def get_marginal_uniform_sampler(
+    gaussian_correlation: float = DEFAULT_CORRELATION,
+) -> samplers.TransformedSampler:
     gaussian_sampler = samplers.BivariateNormalSampler(correlation=gaussian_correlation)
     return samplers.TransformedSampler(
         base_sampler=gaussian_sampler,
@@ -114,7 +120,9 @@ def half_cube(x: float) -> float:
     return x * jnp.abs(x) ** 0.5
 
 
-def get_half_cube_sampler(gaussian_correlation: float = DEFAULT_CORRELATION) -> ISampler:
+def get_half_cube_sampler(
+    gaussian_correlation: float = DEFAULT_CORRELATION,
+) -> samplers.TransformedSampler:
     sampler = samplers.BivariateNormalSampler(correlation=gaussian_correlation)
     return samplers.TransformedSampler(
         base_sampler=sampler,
@@ -190,12 +198,14 @@ icdf_x = inverse_cdf(lambda x: 0.3 * normal_cdf(x + 0) + 0.7 * normal_cdf(x - 5)
 icdf_y = inverse_cdf(lambda x: 0.5 * normal_cdf(x + 1) + 0.5 * normal_cdf(x - 3))
 
 
-def get_bimodal_sampler(gaussian_correlation: float = DEFAULT_CORRELATION) -> ISampler:
+def get_bimodal_sampler(
+    gaussian_correlation: float = DEFAULT_CORRELATION,
+) -> samplers.TransformedSampler:
     """
     Note:
         This sampler is somewhat experimental.
     """
-    base_sampler = samplers.BivariateNormalSampler(correlation=gaussian_correlation)
+    base_sampler = get_marginal_uniform_sampler(gaussian_correlation=gaussian_correlation)
     return samplers.TransformedSampler(
         base_sampler=base_sampler,
         transform_x=icdf_x,
@@ -234,7 +244,7 @@ def get_wiggly_sampler(
     gaussian_correlation: float = DEFAULT_CORRELATION,
     wiggly_x: Optional[_RealFunction] = None,
     wiggly_y: Optional[_RealFunction] = None,
-) -> ISampler:
+) -> samplers.TransformedSampler:
     wiggly_x = wiggly_x if wiggly_x is not None else default_wiggly_x
     wiggly_y = wiggly_y if wiggly_y is not None else default_wiggly_y
 
