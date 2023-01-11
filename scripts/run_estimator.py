@@ -172,12 +172,13 @@ def create_parser() -> argparse.ArgumentParser:
         "--neighbors",
         type=int,
         default=5,
-        help="Number of neighbors for kNN graph methods: " "both versions of KSG and LNN.",
+        help="Number of neighbors for both versions of KSG and LNN.",
     )
     parser.add_argument(
         "--variant",
         type=int,
         choices=[1, 2],
+        default=1,
         help="The variant of the R KSG estimator to be used.",
     )
     parser.add_argument("--truncation", type=int, default=15, help="Truncation parameter of LNN.")
