@@ -3,7 +3,7 @@ import pytest
 from jax import random
 from sklearn.feature_selection import mutual_info_regression
 
-from bmi.samplers.splitmultinormal import SplitMultinormal
+from bmi.samplers.splitmultinormal import BivariateNormalSampler, SplitMultinormal
 
 
 @pytest.mark.parametrize("y", (2, 5, 10))
@@ -164,3 +164,37 @@ def test_default_zero(dim_x: int, dim_y: int) -> None:
     )
 
     assert np.allclose(sampler._mean, np.zeros(dim_x + dim_y))
+
+
+@pytest.mark.parametrize("correlation", [0.1, 0.6])
+@pytest.mark.parametrize("std_x", [0.1, 2.0])
+@pytest.mark.parametrize("std_y", [0.2, 3.0])
+@pytest.mark.parametrize("mean_x", [0.1, 2.2])
+@pytest.mark.parametrize("mean_y", [0.5, 1.1])
+def test_bivariate_normal(
+    correlation: float, std_x: float, std_y: float, mean_x: float, mean_y: float
+) -> None:
+    sampler = BivariateNormalSampler(
+        correlation=correlation, std_x=std_x, std_y=std_y, mean_x=mean_x, mean_y=mean_y
+    )
+
+    # Test means
+    x, y = sampler.sample(n_points=5000, rng=42)
+
+    assert mean_x == pytest.approx(np.mean(x), abs=0.02 * std_x)
+    assert mean_y == pytest.approx(np.mean(y), abs=0.02 * std_y)
+
+    assert std_x == pytest.approx(np.std(x), rel=0.05)
+    assert std_y == pytest.approx(np.std(y), rel=0.05)
+
+    cov = np.asarray(
+        [
+            [1.0, correlation],
+            [correlation, 1.0],
+        ]
+    )
+
+    assert sampler.correlation() == pytest.approx(correlation)
+    assert sampler.mutual_information() == pytest.approx(
+        SplitMultinormal(dim_x=1, dim_y=1, covariance=cov).mutual_information()
+    )

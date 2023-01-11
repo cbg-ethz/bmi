@@ -7,10 +7,17 @@ from itertools import product
 from typing import Optional
 
 import numpy as np
+import pydantic
 from numpy.typing import ArrayLike
 
-from bmi.interface import IMutualInformationPointEstimator
+from bmi.interface import BaseModel, IMutualInformationPointEstimator
 from bmi.utils import ProductSpace
+
+
+class HistogramEstimatorParams(BaseModel):
+    n_bins_x: pydantic.PositiveInt
+    n_bins_y: pydantic.PositiveInt
+    standardize: bool
 
 
 class HistogramEstimator(IMutualInformationPointEstimator):
@@ -23,24 +30,30 @@ class HistogramEstimator(IMutualInformationPointEstimator):
             n_bins_y: number of bins per each Y dimension. Leave to None to use `n_bins_x`
             standardize: whether to standardize the data set
         """
-        self._n_bins_x = n_bins_x
-        self._n_bins_y = n_bins_y or n_bins_x
-        self._standardize = standardize
+        self._params = HistogramEstimatorParams(
+            n_bins_x=n_bins_x,
+            n_bins_y=n_bins_y or n_bins_x,  # If `n_bins_y` is None, use `n_bins_x`.
+            standardize=standardize,
+        )
+
+    def parameters(self) -> HistogramEstimatorParams:
+        return self._params
 
     def estimate(self, x: ArrayLike, y: ArrayLike) -> float:
         """MI estimate."""
-        space = ProductSpace(x=x, y=y, standardize=self._standardize)
-        bins = [self._n_bins_x for _ in range(space.dim_x)] + [
-            self._n_bins_y for _ in range(space.dim_y)
-        ]
+        n_bins_x = self._params.n_bins_x
+        n_bins_y = self._params.n_bins_y
+
+        space = ProductSpace(x=x, y=y, standardize=self._params.standardize)
+        bins = [n_bins_x for _ in range(space.dim_x)] + [n_bins_y for _ in range(space.dim_y)]
 
         histogram, _ = np.histogramdd(space.xy, bins=bins, density=False)
-        range_x = self._n_bins_x**space.dim_x
-        range_y = self._n_bins_y**space.dim_y
+        range_x = n_bins_x**space.dim_x
+        range_y = n_bins_y**space.dim_y
 
         flat_histogram = np.zeros((range_x, range_y), dtype=float)
-        for i, x in enumerate(product(range(self._n_bins_x), repeat=space.dim_x)):
-            for j, y in enumerate(product(range(self._n_bins_y), repeat=space.dim_y)):
+        for i, x in enumerate(product(range(n_bins_x), repeat=space.dim_x)):
+            for j, y in enumerate(product(range(n_bins_y), repeat=space.dim_y)):
                 index = tuple(x) + tuple(y)
                 flat_histogram[i, j] = histogram[tuple(index)]
 

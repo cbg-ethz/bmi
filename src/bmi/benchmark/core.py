@@ -4,16 +4,17 @@ import numpy as np
 import pandas as pd
 import pydantic
 
-import bmi.benchmark._serialize as se
-from bmi.interface import ISampler
+import bmi.benchmark.filesys.api as fs
+from bmi.interface import BaseModel, ISampler, Pathlike, Seed
 
 
-class TaskMetadata(pydantic.BaseModel):
+class TaskMetadata(BaseModel):
     task_id: str
     dim_x: int
     dim_y: int
     n_samples: int
     mi_true: pydantic.NonNegativeFloat
+    task_params: dict = pydantic.Field(default_factory=dict)
 
 
 class Task:
@@ -24,12 +25,12 @@ class Task:
     """
 
     def __init__(
-        self, metadata: TaskMetadata, samples: Union[se.SamplesDict, pd.DataFrame]
+        self, metadata: TaskMetadata, samples: Union[fs.SamplesDict, pd.DataFrame]
     ) -> None:
         self.metadata = metadata
         # TODO(Pawel): Add dimension validation if dictionary is passed, rather than a data frame
-        self._samples: se.SamplesDict = (
-            se.dataframe_to_dictionary(samples, dim_x=metadata.dim_x, dim_y=metadata.dim_y)
+        self._samples: fs.SamplesDict = (
+            fs.dataframe_to_dictionary(samples, dim_x=metadata.dim_x, dim_y=metadata.dim_y)
             if isinstance(samples, pd.DataFrame)
             else samples
         )
@@ -44,15 +45,18 @@ class Task:
 
         return f"{type(self).__name__}({self.metadata} seeds={seeds_str}"
 
-    def keys(self) -> Set[se.Seed]:
+    def keys(self) -> Set[Seed]:
         return set(self._samples.keys())
 
-    def __getitem__(self, item: se.Seed) -> se.SamplesXY:
+    def __getitem__(self, item: Seed) -> fs.SamplesXY:
         return self._samples[item]
 
-    def __iter__(self) -> Generator[Tuple[se.Seed, se.SamplesXY], None, None]:
+    def __iter__(self) -> Generator[Tuple[Seed, fs.SamplesXY], None, None]:
         for seed, vals in self._samples.items():
             yield seed, vals
+
+    def __len__(self) -> int:
+        return len(self._samples)
 
     def __eq__(self, other) -> bool:
         # Make sure the type is right
@@ -101,7 +105,11 @@ class Task:
     def n_samples(self) -> int:
         return self.metadata.n_samples
 
-    def save(self, path: se.Pathlike, exist_ok: bool = False) -> None:
+    @property
+    def task_params(self) -> dict:
+        return self.metadata.task_params
+
+    def save(self, path: Pathlike, exist_ok: bool = False) -> None:
         """Saves the task to the disk.
 
         Args:
@@ -110,14 +118,14 @@ class Task:
             exist_ok: if True, we can overwrite existing files.
               Otherwise an exception is raised.
         """
-        task_directory = se.TaskDirectory(path)
-        df = se.dictionary_to_dataframe(self._samples)
+        task_directory = fs.TaskDirectory(path)
+        df = fs.dictionary_to_dataframe(self._samples)
         task_directory.save(metadata=self.metadata, samples=df, exist_ok=exist_ok)
 
     @classmethod
-    def load(cls, path: se.Pathlike) -> "Task":
+    def load(cls, path: Pathlike) -> "Task":
         """Loads the task from the disk."""
-        task_directory = se.TaskDirectory(path)
+        task_directory = fs.TaskDirectory(path)
 
         metadata = TaskMetadata(**task_directory.load_metadata())
         samples_df: pd.DataFrame = task_directory.load_samples()
@@ -128,7 +136,13 @@ class Task:
         )
 
 
-def generate_task(sampler: ISampler, n_samples: int, seeds: Iterable[int], task_id: str) -> Task:
+def generate_task(
+    sampler: ISampler,
+    n_samples: int,
+    seeds: Iterable[int],
+    task_id: str,
+    task_params: Optional[dict] = None,
+) -> Task:
     """A factory method generating a task from a given sampler.
 
     Args:
@@ -136,13 +150,17 @@ def generate_task(sampler: ISampler, n_samples: int, seeds: Iterable[int], task_
         n_samples: number of samples to be generated from the sampler
         seeds: list of seeds for which we should generate the samples
         task_id: a unique task id used to identify the task
+        task_params: an optional dictionary with parameters of the task
     """
+    task_params = {} if task_params is None else task_params
+
     metadata = TaskMetadata(
         task_id=task_id,
         dim_x=sampler.dim_x,
         dim_y=sampler.dim_y,
         n_samples=n_samples,
         mi_true=sampler.mutual_information(),
+        task_params=task_params,
     )
 
     samples = {seed: sampler.sample(n_points=n_samples, rng=seed) for seed in seeds}
@@ -151,14 +169,3 @@ def generate_task(sampler: ISampler, n_samples: int, seeds: Iterable[int], task_
         metadata=metadata,
         samples=samples,
     )
-
-
-class RunResult(pydantic.BaseModel):
-    """Class keeping the output of a single estimator run."""
-
-    task_id: str
-    seed: se.Seed
-    estimator_id: str
-    mi_estimate: float
-    time_in_seconds: Optional[float] = None
-    estimator_params: Optional[dict] = None

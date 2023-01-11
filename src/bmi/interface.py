@@ -1,15 +1,35 @@
-"""Most important interfaces of the package."""
+"""Most important interfaces of the package.
+
+Note:
+    The `interface` module CANNOT import anything from the developed package.
+    This restriction is to ensure that any subpackage can import from
+    the `interface` module and that we do not run into the circular imports issue.
+"""
 import pathlib
 from abc import abstractmethod
-from typing import Any, Protocol, Union
+from typing import Any, Optional, Protocol, Union
 
 import numpy as np
+import pydantic
 from numpy.typing import ArrayLike
+
+
+class BaseModel(pydantic.BaseModel):  # pytype: disable=invalid-annotation
+    """As pytype has a false-positive problem with BaseModel and our CI fails,
+    we need to create this dummy class.
+
+    We can remove it once the problem has been solved:
+    https://github.com/google/pytype/issues/1105
+    """
+
+    pass
+
 
 # This should be updated to the PRNGKeyArray (or possibly union with Any)
 # when it becomes a part of public JAX API
 KeyArray = Any
 Pathlike = Union[str, pathlib.Path]
+Seed = int
 
 
 class IMutualInformationPointEstimator(Protocol):
@@ -26,6 +46,11 @@ class IMutualInformationPointEstimator(Protocol):
         Returns:
             mutual information estimate
         """
+        raise NotImplementedError
+
+    @abstractmethod
+    def parameters(self) -> BaseModel:
+        """Returns the parameters of the estimator."""
         raise NotImplementedError
 
 
@@ -68,4 +93,30 @@ class ISampler(Protocol):
     @abstractmethod
     def mutual_information(self) -> float:
         """Mutual information MI(X; Y)."""
+        raise NotImplementedError
+
+
+class RunResult(BaseModel):
+    """Class keeping the output of a single estimator run."""
+
+    task_id: str
+    seed: Seed
+    estimator_id: str
+    mi_estimate: float
+    time_in_seconds: Optional[float] = None
+    estimator_params: dict = pydantic.Field(default_factory=dict)
+    task_params: dict = pydantic.Field(default_factory=dict)
+
+
+class ITaskEstimator(Protocol):
+    @abstractmethod
+    def estimator_id(self) -> str:
+        raise NotImplementedError
+
+    @abstractmethod
+    def parameters(self) -> dict:
+        raise NotImplementedError
+
+    @abstractmethod
+    def estimate(self, task_path: Pathlike, seed: Seed) -> RunResult:
         raise NotImplementedError

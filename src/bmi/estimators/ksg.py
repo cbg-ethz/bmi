@@ -2,6 +2,7 @@
 from typing import Literal, Optional, Sequence, cast
 
 import numpy as np
+import pydantic
 from numpy.typing import ArrayLike
 from scipy.special import digamma as _DIGAMMA
 from sklearn import metrics
@@ -13,18 +14,19 @@ from bmi.utils import ProductSpace, chunker
 _AllowedContinuousMetric = Literal["euclidean", "manhattan", "chebyshev"]
 
 
-def _cast_and_check_neighborhoods(neighborhoods: Sequence[int]) -> list[int]:
-    """Auxiliary function used to make sure that the provided `neighborhoods` are right
-    and standardize a sequence into a list.
+class KSGEnsembleParameters(pydantic.BaseModel):
+    neighborhoods: list[int]
+    standardize: bool
+    metric_x: _AllowedContinuousMetric
+    metric_y: _AllowedContinuousMetric
 
-    Raises:
-        ValueError, if any of `neighborhoods` is not positive
-    """
-    if not len(neighborhoods):
-        raise ValueError("Neighborhoods list must be non-empty.")
-    if min(neighborhoods) < 1:
-        raise ValueError("Each neighborhood must be at least 1.")
-    return list(neighborhoods)
+    @pydantic.validator("neighborhoods")
+    def validate_neighborhoods(cls, neighborhoods: Sequence[int]) -> list[int]:
+        if not len(neighborhoods):
+            raise ValueError("Neighborhoods list must be non-empty.")
+        if min(neighborhoods) < 1:
+            raise ValueError("Each neighborhood must be at least 1.")
+        return list(neighborhoods)
 
 
 class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
@@ -57,39 +59,38 @@ class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
             `KSGChebyshevEstimator` may be faster.
         """
 
-        self._neighborhoods: list[int] = _cast_and_check_neighborhoods(neighborhoods)
-        self._standardize = standardize
+        self._params = KSGEnsembleParameters(
+            neighborhoods=neighborhoods,
+            standardize=standardize,
+            metric_x=metric_x,
+            metric_y=metric_y or metric_x,  # If `metric_y` is None, use `metric_x`
+        )
 
         self._n_jobs: int = n_jobs
         self._chunk_size: int = chunk_size
-
-        self._metric_x: _AllowedContinuousMetric = metric_x
-        self._metric_y: _AllowedContinuousMetric = (
-            metric_y or metric_x
-        )  # If `metric_y` is None, use `metric_x`
 
         self._fitted = False
         self._mi_dict = dict()  # set by fit()
 
     def fit(self, x: ArrayLike, y: ArrayLike) -> None:
-        space = ProductSpace(x, y, standardize=self._standardize)
+        space = ProductSpace(x, y, standardize=self._params.standardize)
 
-        if len(space) <= max(self._neighborhoods):
+        if len(space) <= max(self._params.neighborhoods):
             raise ValueError(
-                f"Maximum neighborhood used is {max(self._neighborhoods)} "
+                f"Maximum neighborhood used is {max(self._params.neighborhoods)} "
                 f"but the number of points provided is only {len(space)}."
             )
 
-        digammas_dict = {k: [] for k in self._neighborhoods}
+        digammas_dict = {k: [] for k in self._params.neighborhoods}
 
         n_points = len(space)
         for batch_index in chunker(n_items=n_points, chunk_size=self._chunk_size):
             # All these arrays have shape (batch_size, n_points)
             distances_x = metrics.pairwise_distances(
-                space.x[batch_index], space.x, metric=self._metric_x, n_jobs=self._n_jobs
+                space.x[batch_index], space.x, metric=self._params.metric_x, n_jobs=self._n_jobs
             )
             distances_y = metrics.pairwise_distances(
-                space.y[batch_index], space.y, metric=self._metric_y, n_jobs=self._n_jobs
+                space.y[batch_index], space.y, metric=self._params.metric_y, n_jobs=self._n_jobs
             )
             # Distance in space `X x Y` is the maximum distance.
             # Shape is also (batch_size, n_points)
@@ -99,7 +100,7 @@ class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
             # Shape is also (batch_size, n_points)
             closest_points = np.argsort(distances_xy, axis=-1)
 
-            for k in self._neighborhoods:
+            for k in self._params.neighborhoods:
                 # Note that the points are 0-indexed and that the "0th neighbor"
                 # is the point itself (as distance(x, x) = 0 is the smallest possible)
                 # Hence, the kth neighbour is at index k
@@ -136,6 +137,9 @@ class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
         predictions = np.asarray(list(self.get_predictions().values()))
         return cast(float, np.mean(predictions))
 
+    def parameters(self) -> KSGEnsembleParameters:
+        return self._params
+
 
 class KSGEnsembleFirstEstimatorSlow(IMutualInformationPointEstimator):
     """Ensemble estimator built using the first approximation (equation (8) in the paper).
@@ -163,38 +167,37 @@ class KSGEnsembleFirstEstimatorSlow(IMutualInformationPointEstimator):
             n_jobs: number of jobs to be launched to compute distances.
               Use -1 to use all processors.
         """
-        self._neighborhoods = _cast_and_check_neighborhoods(neighborhoods)
-        self._standardize = standardize
+        self._params = KSGEnsembleParameters(
+            neighborhoods=neighborhoods,
+            standardize=standardize,
+            metric_x=metric_x,
+            metric_y=metric_y or metric_x,  # If `metric_y` is None, use `metric_x`
+        )
 
         self._n_jobs: int = n_jobs
-
-        self._metric_x: _AllowedContinuousMetric = metric_x
-        self._metric_y: _AllowedContinuousMetric = (
-            metric_y or metric_x
-        )  # If `metric_y` is None, use `metric_x`
 
         self._fitted = False
         self._mi_dict = dict()  # set by fit()
 
     def fit(self, x: ArrayLike, y: ArrayLike) -> None:
-        space = ProductSpace(x=x, y=y, standardize=self._standardize)
+        space = ProductSpace(x=x, y=y, standardize=self._params.standardize)
 
         n_points = len(space)
-        if n_points <= max(self._neighborhoods):
+        if n_points <= max(self._params.neighborhoods):
             raise ValueError(
-                f"Maximum neighborhood used is {max(self._neighborhoods)} "
+                f"Maximum neighborhood used is {max(self._params.neighborhoods)} "
                 f"but the number of points provided is only {n_points}."
             )
 
-        digammas_dict = {k: [] for k in self._neighborhoods}
+        digammas_dict = {k: [] for k in self._params.neighborhoods}
 
         for index in range(n_points):
             # Distances from x[index] to all the points:
             distances_x = metrics.pairwise_distances(
-                space.x[None, index], space.x, metric=self._metric_x, n_jobs=self._n_jobs
+                space.x[None, index], space.x, metric=self._params.metric_x, n_jobs=self._n_jobs
             )[0, :]
             distances_y = metrics.pairwise_distances(
-                space.y[None, index], space.y, metric=self._metric_y, n_jobs=self._n_jobs
+                space.y[None, index], space.y, metric=self._params.metric_y, n_jobs=self._n_jobs
             )[0, :]
 
             # In the product (XxY) space we use the maximum distance
@@ -202,7 +205,7 @@ class KSGEnsembleFirstEstimatorSlow(IMutualInformationPointEstimator):
             # And we sort the point indices by being the closest to the considered one
             closest_points = sorted(range(len(distances_z)), key=lambda i: distances_z[i])
 
-            for k in self._neighborhoods:
+            for k in self._params.neighborhoods:
                 # Note that the points are 0-indexed and that the "0th neighbor"
                 # is the point itself (as distance(x, x) = 0 is the smallest possible)
                 # Hence, the kth neighbour is at index k
@@ -231,3 +234,6 @@ class KSGEnsembleFirstEstimatorSlow(IMutualInformationPointEstimator):
         self.fit(x, y)
         predictions = np.asarray(list(self.get_predictions().values()))
         return cast(float, np.mean(predictions))
+
+    def parameters(self) -> KSGEnsembleParameters:
+        return self._params
