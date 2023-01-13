@@ -1,9 +1,10 @@
 import warnings
 
+import numpy as np
 import pytest
 
 import bmi.benchmark.api as benchmark
-from bmi.samplers.splitmultinormal import BivariateNormalSampler
+from bmi.samplers.splitmultinormal import BivariateNormalSampler, SplitMultinormal
 
 # Factories for the estimators.
 # This is e.g., useful when testing on the server
@@ -38,6 +39,7 @@ def test_r_estimators(
     task.save(task_dir)
 
     estimator = estimator_factory()
+    print(estimator.estimator_id())
 
     result1 = estimator.estimate(task_dir, seed=1)
     result2 = estimator.estimate(task_dir, seed=2)
@@ -61,6 +63,44 @@ def test_r_estimators(
     # Check whether the estimates are somewhat different, as the variance
     # should not be zero
     assert abs(result1.mi_estimate - result2.mi_estimate) > 1e-5
+
+
+@pytest.mark.parametrize("dim_x", [1, 2])
+@pytest.mark.parametrize("dim_y", [1, 2])
+@pytest.mark.parametrize("n_samples", [300])
+def test_bnsl(
+    tmp_path,
+    dim_x: int,
+    dim_y: int,
+    n_samples: int,
+    corr: float = 0.95,
+    task_id: str = "test-task-bnsl",
+) -> None:
+    task_dir = tmp_path / "taskdir"
+    cov = np.eye(dim_x + dim_y)
+    cov[0, dim_x] = corr
+    cov[dim_x, 0] = corr
+
+    sampler = SplitMultinormal(dim_x=dim_x, dim_y=dim_y, covariance=cov)
+    task = benchmark.generate_task(
+        seeds=[1], task_id=task_id, sampler=sampler, n_samples=n_samples
+    )
+    task.save(task_dir)
+
+    estimator = benchmark.REstimatorBNSL(proc=1)
+
+    result = estimator.estimate(task_dir, seed=1)
+
+    # Check whether the task ID is right
+    assert result.task_id == task_id
+
+    # Check whether the seeds are right
+    assert result.seed == 1
+
+    # Check if the MI estimates are somewhat close to the true value.
+    # We use a small sample size, so let's not be too strict.
+    # BNSL seem to have positive bias as well, though...
+    assert result.mi_estimate == pytest.approx(task.mi_true, rel=0.3, abs=0.7)
 
 
 JULIA_ESTIMATOR_FACTORIES = [

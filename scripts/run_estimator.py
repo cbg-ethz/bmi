@@ -17,6 +17,7 @@ class EstimatorType(Enum):
     # R estimators, require additional dependencies
     R_KSG = "R-KSG"
     R_LNN = "R-LNN"
+    R_BNSL = "R-BNSL"
     # Julia estimators, require additional dependencies
     JULIA_KSG = "JULIA-KSG"
     JULIA_HISTOGRAM = "JULIA-HISTOGRAM"
@@ -51,6 +52,7 @@ class Args(Protocol):
     bins_x: int  # Bins per X dimension for histogram
     bins_y: Optional[int]  # Bins per Y dimension for histogram. If None, defaults to bins_x
     variant: Literal[1, 2]  # KSG variant
+    proc: int  # Argument for the BNSL estimator
     # Mine parameters
     device: Literal["cpu", "gpu", "auto"]
     max_epochs: int
@@ -108,6 +110,8 @@ def create_estimator(args: Args) -> bmi.ITaskEstimator:  # noqa: C901
             truncation=args.truncation,
             estimator_id=args.estimator_id,
         )
+    elif estimator == EstimatorType.R_BNSL:
+        return bmi.benchmark.REstimatorBNSL(proc=args.proc, estimator_id=args.estimator_id)
     # Julia estimators, require additional dependencies
     elif estimator == EstimatorType.JULIA_HISTOGRAM:
         return bmi.benchmark.JuliaEstimatorHistogram(
@@ -200,6 +204,15 @@ def create_parser() -> argparse.ArgumentParser:
         type=int,
         default=None,
         help="Number of bins on each dimension of the Y variable." "Defaults to `--bins-x`.",
+    )
+
+    # Argument for BNSL R estimator
+    parser.add_argument(
+        "--proc",
+        type=int,
+        default=1,
+        help="The `proc` argument for the BNSL estimator.",
+        choices=[0, 1, 2],
     )
 
     # Arguments for MINE

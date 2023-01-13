@@ -24,7 +24,7 @@ In the file `rmi.R` we have an R wrapper around the [rmi package](https://cran.r
 Note that you need to install R first and then install the necessary dependencies:
 ```
 $ R
-> install.packages("argparse", "dplyr", "rmi")
+> install.packages("argparse", "dplyr", "rmi", "BNSL")
 ```
 
 You can check if the dependencies have been installed properly by running
