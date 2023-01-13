@@ -68,6 +68,7 @@ def test_r_estimators(
 @pytest.mark.parametrize("dim_x", [1, 2])
 @pytest.mark.parametrize("dim_y", [1, 2])
 @pytest.mark.parametrize("n_samples", [300])
+@pytest.mark.requires_r
 def test_bnsl(
     tmp_path,
     dim_x: int,
