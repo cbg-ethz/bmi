@@ -3,8 +3,10 @@ from typing import Callable, Optional, TypeVar, Union
 import jax
 import jax.numpy as jnp
 import numpy as np
+from jax.scipy.special import erf
 
 import bmi.samplers.base as base
+import bmi.samplers.splitmultinormal as sm
 from bmi.interface import ISampler, KeyArray
 
 SomeArray = Union[jnp.ndarray, np.ndarray]
@@ -109,3 +111,56 @@ class TransformedSampler(base.BaseSampler):
                 "The dimensions are not preserved. The mutual information may be different."
             )
         return self._base_sampler.mutual_information()
+
+
+def swissroll2d(x: float) -> jnp.ndarray:
+    """
+    Args:
+        x: number in range [0, 1]
+
+    Returns:
+        array of shape (2,)
+    """
+    # Rescale and shift the variable
+    t = 1.5 * jnp.pi * (1 + 2 * x)
+    return jnp.asarray([t * jnp.cos(t), t * jnp.sin(t)])
+
+
+class SwissRollSampler(TransformedSampler):
+    def __init__(self, sampler: ISampler) -> None:
+        """
+
+        Args:
+            sampler: the X variable should be sampled from the interval [0, 1]
+        """
+        if sampler.dim_x != 1:
+            raise ValueError("The X variable must be one-dimensional.")
+
+        super().__init__(
+            base_sampler=sampler,
+            transform_x=swissroll2d,
+            transform_y=identity,
+            add_dim_x=1,
+            add_dim_y=0,
+        )
+
+
+def normal_cdf(x: float) -> float:
+    """The CDF of the standard normal distribution."""
+    return 0.5 * (1 + erf(x / 2**0.5))
+
+
+class BivariateUniformMarginsSampler(TransformedSampler):
+    def __init__(self, gaussian_correlation: float) -> None:
+        base_sampler = sm.BivariateNormalSampler(
+            correlation=gaussian_correlation, mean_x=0.0, mean_y=0.0, std_x=1.0, std_y=1.0
+        )
+
+        super().__init__(
+            base_sampler=base_sampler,
+            transform_x=normal_cdf,
+            transform_y=normal_cdf,
+            add_dim_x=0,
+            add_dim_y=0,
+            vectorise=True,
+        )
