@@ -1,3 +1,5 @@
+from typing import Iterable
+
 import bmi.samplers.transformed as tr
 from bmi.benchmark.core import Task, generate_task
 
@@ -13,3 +15,7 @@ def generate_swissroll_task(correlation: float, n_seeds: int, n_samples: int) ->
         task_id=f"swissroll-gaussian_correlation{correlation:.4f}",
         task_params=dict(gaussian_correlation=correlation),
     )
+
+
+def generate_tasks(n_seeds: int, n_samples: int) -> Iterable[Task]:
+    yield generate_swissroll_task(correlation=0.9, n_samples=n_samples, n_seeds=n_seeds)

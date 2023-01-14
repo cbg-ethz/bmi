@@ -1,6 +1,8 @@
 from pathlib import Path
 from typing import Callable, Iterable, Literal, Optional
 
+import bmi.benchmark.tasks.diffeomorphisms as diffeo
+import bmi.benchmark.tasks.embeddings as em
 import bmi.benchmark.tasks.multinormal as mn
 import bmi.benchmark.tasks.one_dimensional as od
 import bmi.benchmark.tasks.spiral as spiral
@@ -9,6 +11,7 @@ from bmi.benchmark.core import Task
 from bmi.interface import Pathlike
 
 N_SEEDS: int = 10  # Default number of seeds for each task
+N_SAMPLES: int = 5_000  # Default number of samples for each task
 
 
 def _generate_benchmark_v1(n_seeds: int) -> Iterable[Task]:
@@ -18,6 +21,10 @@ def _generate_benchmark_v1(n_seeds: int) -> Iterable[Task]:
     yield from st.generate_tasks(n_seeds=n_seeds)
     # One-dimensional tasks
     yield from od.generate_tasks(n_seeds=n_seeds)
+    # Embedding tasks
+    yield from em.generate_tasks(n_seeds=n_seeds, n_samples=N_SAMPLES)
+    # Diffeomorphisms tasks
+    yield from diffeo.generate_tasks(n_seeds=n_seeds)
 
 
 def generate_benchmark(version: Literal[1] = 1, n_seeds: int = N_SEEDS) -> Iterable[Task]:
