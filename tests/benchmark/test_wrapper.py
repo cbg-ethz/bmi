@@ -88,7 +88,7 @@ def test_bnsl(
     )
     task.save(task_dir)
 
-    estimator = benchmark.REstimatorBNSL(proc=1)
+    estimator = benchmark.REstimatorBNSL(proc=0)
 
     result = estimator.estimate(task_dir, seed=1)
 
