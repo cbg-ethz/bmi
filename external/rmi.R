@@ -17,10 +17,15 @@ parser$add_argument("--method", default="KSG1", help="Method to be used. Allowed
 parser$add_argument("--neighbors", type="integer", default=10, help="Number of neighbors (k) to be used.")
 parser$add_argument("--alpha", type="double", default=0.65, help="Hyperparameter of the LNC method. It's ignored for KSG methods.")
 parser$add_argument("--truncation", type="integer", default=30, help="Order of truncation for the LNN method.")
-parser$add_argument("--proc", type="integer", default=0, help="The `proc` argument for the BNSL algorithm.")
+parser$add_argument("--proc", type="integer", default=0, help="The `proc` argument for the BNSL algorithm. Either 0, 1, or 2.")
 
 # Parse arguments
 args <- parser$parse_args()
+
+# Validate the arguments
+if (args$proc > 2 || args$proc < 0) {
+    stop(paste0("--proc must be 0, 1 or 2, but was ", args$method))
+}
 
 # Read the data frame and filter the data corresponding to the right seed
 data <- read.csv(args$FILE)
@@ -54,7 +59,7 @@ if (args$method == "LNC") {
     idx2 <- idx1 + 1
     idx3 <- args$DIMX + args$DIMY
     
-    mi_estimate <- BNSL::mi(data_matrix[,1:idx1], data_matrix[,idx2:idx3])
+    mi_estimate <- BNSL::mi(data_matrix[,1:idx1], data_matrix[,idx2:idx3], proc=args$proc)
 } else {
     stop(paste0("Method ", args$method, " not recognized."))
 }
