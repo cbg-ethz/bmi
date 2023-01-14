@@ -180,10 +180,7 @@ class REstimatorKSG(_RBaseEstimator):
         return ["--method", f"KSG{self._variant}", "--neighbors", str(self._neighbors)]
 
     def parameters(self) -> dict:
-        return {
-            "neighbors": self._neighbors,
-            "variant": self._variant,
-        }
+        return dict(neighbors=self._neighbors, variant=self._variant)
 
 
 class REstimatorLNN(_RBaseEstimator):
@@ -216,7 +213,27 @@ class REstimatorLNN(_RBaseEstimator):
         ]
 
     def parameters(self) -> dict:
-        return {"neighbors": self._neighbors, "truncation": self._truncation}
+        return dict(neighbors=self._neighbors, truncation=self._truncation)
+
+
+class REstimatorBNSL(_RBaseEstimator):
+    def __init__(self, estimator_id: Optional[str] = None, proc: int = 0) -> None:
+        super().__init__(estimator_id=estimator_id)
+        self._proc = proc
+
+    def _default_estimator_id(self) -> str:
+        return f"REstimator-BNSL-{self._proc}_proc"
+
+    def _postcommands(self) -> list[str]:
+        return [
+            "--method",
+            "BNSL",
+            "--proc",
+            str(self._proc),
+        ]
+
+    def parameters(self) -> dict:
+        return dict(proc=self._proc)
 
 
 class _JuliaBaseEstimator(ExternalEstimator):

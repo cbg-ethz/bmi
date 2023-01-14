@@ -7,6 +7,7 @@ from bmi.benchmark.tasks.spiral import generate_spiral_invariance_task
 # isort: off
 from bmi.benchmark.wrapper import (
     ExternalEstimator,
+    REstimatorBNSL,
     REstimatorKSG,
     REstimatorLNN,
     run_external_estimator,
@@ -30,6 +31,7 @@ __all__ = [
     "JuliaEstimatorHistogram",
     "JuliaEstimatorTransfer",
     "JuliaEstimatorKernel",
+    "REstimatorBNSL",
     "REstimatorKSG",
     "REstimatorLNN",
     "SaveLoadRunResults",
