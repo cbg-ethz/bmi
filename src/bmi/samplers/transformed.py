@@ -63,6 +63,9 @@ class TransformedSampler(base.BaseSampler):
           non-default `add_dim_x` or `add_dim_y`), overwrite the
           `mutual_information()` method
         """
+        if add_dim_x < 0 or add_dim_y < 0:
+            raise ValueError("Transformed samplers cannot decrease dimensionality.")
+
         super().__init__(
             dim_x=base_sampler.dim_x + add_dim_x, dim_y=base_sampler.dim_y + add_dim_y
         )
@@ -76,10 +79,6 @@ class TransformedSampler(base.BaseSampler):
         self._vectorized_transform_x = jax.vmap(transform_x) if vectorise else transform_x
         self._vectorized_transform_y = jax.vmap(transform_y) if vectorise else transform_y
         self._base_sampler = base_sampler
-
-        # Boolean flag checking whether the dimension of each variable
-        # is preserved
-        self._dimensions_preserved: bool = (add_dim_x == 0) and (add_dim_y == 0)
 
     def transform(self, x: SomeArray, y: SomeArray) -> tuple[jnp.ndarray, jnp.ndarray]:
         """Transforms given samples by `f x g`.
@@ -106,23 +105,19 @@ class TransformedSampler(base.BaseSampler):
         return self.transform(x, y)
 
     def mutual_information(self) -> float:
-        if not self._dimensions_preserved:
-            raise ValueError(
-                "The dimensions are not preserved. The mutual information may be different."
-            )
         return self._base_sampler.mutual_information()
 
 
-def swissroll2d(x: float) -> jnp.ndarray:
+def swissroll2d(x: jnp.ndarray) -> jnp.ndarray:
     """
     Args:
-        x: number in range [0, 1]
+        x: array of shape (1,) representing number in range [0, 1]
 
     Returns:
         array of shape (2,)
     """
     # Rescale and shift the variable
-    t = 1.5 * jnp.pi * (1 + 2 * x)
+    t = 1.5 * jnp.pi * (1 + 2 * x[0])
     return jnp.asarray([t * jnp.cos(t), t * jnp.sin(t)])
 
 
@@ -139,9 +134,7 @@ class SwissRollSampler(TransformedSampler):
         super().__init__(
             base_sampler=sampler,
             transform_x=swissroll2d,
-            transform_y=identity,
             add_dim_x=1,
-            add_dim_y=0,
         )
 
 

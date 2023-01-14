@@ -117,7 +117,8 @@ def generate_marginal_uniform_task(
 
 
 def half_cube(x: float) -> float:
-    return x * jnp.abs(x) ** 0.5
+    """The mapping x * sqrt(x), i.e., a signed version of x^(3/2) mapping."""
+    return x * jnp.sqrt(jnp.abs(x))
 
 
 def get_half_cube_sampler(

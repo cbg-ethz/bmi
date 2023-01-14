@@ -24,7 +24,7 @@ def _generate_benchmark_v1(n_seeds: int) -> Iterable[Task]:
     # Embedding tasks
     yield from em.generate_tasks(n_seeds=n_seeds, n_samples=N_SAMPLES)
     # Diffeomorphisms tasks
-    yield from diffeo.generate_tasks(n_seeds=n_seeds)
+    yield from diffeo.generate_tasks(n_seeds=n_seeds, n_samples=N_SAMPLES)
 
 
 def generate_benchmark(version: Literal[1] = 1, n_seeds: int = N_SEEDS) -> Iterable[Task]:
