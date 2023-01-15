@@ -24,9 +24,9 @@ def create_parser() -> argparse.ArgumentParser:
         type=int,
         nargs="+",
         help="List of degrees of freedom parameters.",
-        default=[1, 2, 3, 5, 10, 30],
+        default=[1, 2, 3, 5, 10, 25],
     )
-    parser.add_argument("--seed", type=int, default=10, help="Number of seeds.")
+    parser.add_argument("--seed", type=int, default=5, help="Number of seeds.")
     return parser
 
 
