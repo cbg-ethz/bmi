@@ -23,6 +23,7 @@ exclude = '''
 )/
   | README.md
   | __pycache__
+  | estimators.yaml
 '''
 
 [tool.pytype]
