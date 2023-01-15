@@ -225,7 +225,7 @@ def create_parser() -> argparse.ArgumentParser:
         "Defaults to 'auto', which will try to use CUDA if it's available.",
     )
     parser.add_argument(
-        "--max-epochs", type=int, default=300, help="Maximum number of epochs of MINE training."
+        "--max-epochs", type=int, default=500, help="Maximum number of epochs of MINE training."
     )
 
     # Argument for kernel-based methods

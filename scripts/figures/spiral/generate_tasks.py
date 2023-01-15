@@ -17,9 +17,9 @@ def create_parser() -> argparse.ArgumentParser:
         type=float,
         nargs="+",
         help="List of speed parameters for the spiral diffeomorphisms.",
-        default=[1e-2, 0.1, 0.5, 1, 1.5, 2, 2.5, 3],
+        default=[0, 0.1, 0.3, 0.5, 0.7, 1, 1.5, 2, 2.5, 3],
     )
-    parser.add_argument("--seed", type=int, default=10, help="Number of seeds.")
+    parser.add_argument("--seed", type=int, default=5, help="Number of seeds.")
     return parser
 
 
