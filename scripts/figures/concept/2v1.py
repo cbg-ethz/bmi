@@ -33,7 +33,7 @@ def plot_sampler(
 
     mi_true = sampler.mutual_information()
 
-    ax.set_title(f"True: {mi_true:.2f}, Estimate: ${mean:.2f} \\pm {std:.2f}$")
+    ax.set_title(f"True: {mi_true:.2f}. Estimated: ${mean:.2f} \\pm {std:.2f}$")
 
     x, y = sampler.sample(n_points=n_points_plot, rng=42)
     ax.scatter(x[:, 0], x[:, 1], c=y.ravel(), s=1, alpha=0.3, cmap="jet")
@@ -73,7 +73,7 @@ def main() -> None:
         base_sampler=gaussian_sampler, transform_x=spiral_fast, vectorise=True
     )
 
-    fig, axs = plt.subplots(3, figsize=(4, 13))
+    fig, axs = plt.subplots(1, 3, figsize=(9, 3))
 
     samplers = [gaussian_sampler, slow_sampler, fast_sampler]
 
@@ -88,9 +88,9 @@ def main() -> None:
 
     # fig.suptitle("Mutual Information")
 
-    axs[0].set_ylabel("$X$")
-    axs[1].set_ylabel("$f_1(X)$")
-    axs[2].set_ylabel("$f_2(X)$")
+    axs[0].set_xlabel("$X$")
+    axs[1].set_xlabel("$f_1(X)$")
+    axs[2].set_xlabel("$f_2(X)$")
 
     for ax in axs:
         ax.set_xlim(-lims, lims)
