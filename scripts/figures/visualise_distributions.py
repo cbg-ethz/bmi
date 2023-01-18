@@ -46,7 +46,7 @@ def main() -> None:
     x, y = sampler_swissroll.sample(n_points=n_points, rng=seed)
     ax = fig.add_subplot(1, 4, 4, projection="3d")
     ax.scatter(x[:, 0], x[:, 1], y.ravel(), c=y_original, alpha=alpha, s=size)
-    ax.set_title("Correlated uniform variabled\ntransformed with Swiss roll mapping")
+    ax.set_title("Correlated uniform variables\ntransformed with Swiss roll mapping")
 
     fig.tight_layout()
     fig.savefig("transformed_samplers.pdf")
