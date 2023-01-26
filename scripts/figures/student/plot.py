@@ -9,6 +9,15 @@ import pandas as pd
 
 import bmi.api as bmi
 
+ESTIMATORS = {
+    "Julia-Histograms": "Hist. (Julia)",
+    "Julia-KSG-1": "KSG (Julia)",
+    "Python-CCA": "CCA (Python)",
+    "Python-MINE": "MINE (Python)",
+    "R-KSG-1": "KSG (R)",
+    "R-LNN": "LNN (R)",
+}
+
 
 def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
@@ -93,6 +102,11 @@ def main() -> None:
     for i, (estimator_id, mini_df) in enumerate(merged.groupby("estimator_id")):
         # Small multiplicative offset for the X axis, so that the points don't
         # look squished
+        if estimator_id not in ESTIMATORS:
+            print(f"Skipping estimator {estimator_id}...")
+            continue
+        estimator_name = ESTIMATORS[estimator_id]
+
         offset = 1 + rng.uniform() / 25 * (-1) ** i
 
         x_values = x_values.union(mini_df["degrees_of_freedom_x"].values)
@@ -101,7 +115,7 @@ def main() -> None:
         y = mini_df["estimate_mean"].values
         err_y = mini_df["estimate_std"].values
 
-        ax.errorbar(x, y, yerr=err_y, fmt="o", capsize=5, alpha=0.5, label=estimator_id)
+        ax.errorbar(x, y, yerr=err_y, fmt="o", capsize=5, alpha=0.5, label=estimator_name)
 
     x_values = sorted(map(int, x_values))
     normal_mi, true_mi = true_mi_factory(args.strength)
