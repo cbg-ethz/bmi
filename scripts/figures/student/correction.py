@@ -32,11 +32,12 @@ MARKER_LIST = [
 def main() -> None:
     fig, ax = plt.subplots(figsize=(4, 3))
     nus = list(range(1, 30))
-    mns = [(1, 1), (1, 2), (1, 10), (2, 2), (3, 3), (5, 5), (10, 10)]
+    mns = [(1, 1), (1, 2), (1, 10), (2, 2), (3, 3), (5, 5)]
 
     for i, (m, n) in enumerate(mns):
         values = [correction(df=df, m=m, n=n) for df in nus]
-        ax.scatter(nus, values, label=f"$m={m}$,\t$n={n}$", s=4, marker=MARKER_LIST[i])
+        # ax.scatter(nus, values, s=4, marker=MARKER_LIST[i], c=f"C{i+1}")
+        ax.plot(nus, values, c=f"C{i+1}", label=f"$m={m}$,\t$n={n}$")
 
     ax.set_xlabel("Degrees of freedom")
     ax.set_ylabel("MI correction term")

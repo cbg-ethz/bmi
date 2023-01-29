@@ -8,6 +8,14 @@ import pandas as pd
 
 import bmi.api as bmi
 
+RENAME_DICT = {
+    "Julia-Histograms": "Hist. (Julia)",
+    "Python-CCA": "CCA (Python)",
+    "Python-MINE": "MINE (Python)",
+    "R-KSG-1": "KSG (R)",
+    "R-LNN": "LNN (R)",
+}
+
 
 def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
@@ -26,7 +34,7 @@ def plot(
 ) -> plt.Figure:
     speed_list = sorted({res["speed"] for res in plotting_results})
     estimator_list = sorted({res["estimator"] for res in plotting_results})
-    fig, ax = plt.subplots(figsize=(4, 3))
+    fig, ax = plt.subplots(figsize=(6, 3))
 
     ax.hlines(
         mi_true,
@@ -54,8 +62,9 @@ def plot(
         ax.fill_between(
             vals[:, 0], vals[:, 1] - vals[:, 2], vals[:, 1] + vals[:, 2], alpha=0.5, color=f"C{i}"
         )
+    fig.subplots_adjust(left=0.1, right=0.67, bottom=0.2, top=0.97)
+    ax.legend(loc="upper left", bbox_to_anchor=(1.0, 0.9), ncol=1, fancybox=True, shadow=False)
 
-    ax.legend()
     return fig
 
 
@@ -77,19 +86,23 @@ def main() -> None:
 
     plotting_results = []
     for (task_id, estimator_id), group_df in results_df.groupby(["task_id", "estimator_id"]):
+        if estimator_id not in RENAME_DICT:
+            continue
+        estimator_name = RENAME_DICT[estimator_id]
+
         mean = np.mean(group_df["mi_estimate"].values)
         std = np.std(group_df["mi_estimate"].values, ddof=0)
         plotting_results.append(
             {
                 "speed": tasks_dict[task_id].task_params["speed"],
-                "estimator": estimator_id,
+                "estimator": estimator_name,
                 "mean": mean,
                 "std": std,
             }
         )
 
     fig = plot(plotting_results=plotting_results, mi_true=mi_true)
-    fig.tight_layout()
+    # fig.tight_layout()
     fig.savefig(args.OUTPUT)
 
 

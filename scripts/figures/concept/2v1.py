@@ -36,7 +36,8 @@ def plot_sampler(
     ax.set_title(f"True: {mi_true:.2f}. Estimated: ${mean:.2f} \\pm {std:.2f}$")
 
     x, y = sampler.sample(n_points=n_points_plot, rng=42)
-    ax.scatter(x[:, 0], x[:, 1], c=y.ravel(), s=1, alpha=0.3, cmap="jet")
+    artist = ax.scatter(x[:, 0], x[:, 1], c=y.ravel(), s=1, alpha=0.3, cmap="jet")
+    artist.set_rasterized(True)
 
 
 def main() -> None:
@@ -95,9 +96,10 @@ def main() -> None:
     for ax in axs:
         ax.set_xlim(-lims, lims)
         ax.set_ylim(-lims, lims)
+        ax.spines[["right", "top"]].set_visible(False)
 
     fig.tight_layout()
-    fig.savefig("2v1-figure.pdf")
+    fig.savefig("2v1-figure.pdf", dpi=350)
 
 
 if __name__ == "__main__":
