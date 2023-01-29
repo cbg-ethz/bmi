@@ -1,0 +1,10 @@
+# Python estimators
+"Python-CCA": "--estimator CCA"
+"Python-MINE": "--estimator MINE --device gpu"
+# R estimators
+"R-LNN": "--estimator R-LNN --neighbors 10 --truncation 20"
+"R-KSG-1": "--estimator R-KSG --neighbors 10 --variant 1"
+"R-BNSL-0": "--estimator R-BNSL --proc 0"
+# Julia estimators
+"Julia-Histograms": "--estimator JULIA-HISTOGRAM --bins-x 10"
+"Julia-Transfer": "--estimator JULIA-TRANSFER --bins-x 10"
