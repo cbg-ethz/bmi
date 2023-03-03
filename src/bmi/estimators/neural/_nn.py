@@ -80,6 +80,7 @@ def basic_fit(
     batch_size: int = 256,
     max_n_steps: int = 2_000,
     learning_rate: float = 0.1,
+    verbose: bool = False,
 ) -> TrainHistory:
     """Simplest training loop, which samples mini-batches
     from (xs, ys) and maximizes mutual information according to
@@ -117,8 +118,7 @@ def basic_fit(
         batch_ys = ys[batch_indices, ...]
 
         critic, opt_state, loss_value = step(critic, opt_state, batch_xs, batch_ys)
-        # TODO(Pawel, Frederic): Think about making this non-verbose.
-        if epoch % 500 == 0:
+        if verbose and epoch % 500 == 0:
             print(f"Epoch {epoch}, MI: {-loss_value:.2f}")
 
         loss_history.append(loss_value)
