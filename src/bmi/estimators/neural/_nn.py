@@ -81,7 +81,6 @@ def mi_divergence_check(xs: jnp.ndarray) -> Optional[tuple[float, float]]:
     if xs_max > 0.01 and xs_min_after_max < 0.9 * xs_max:
         return float(xs_max), float(xs_min_after_max)
 
-
 def basic_fit(
     rng: jax.random.PRNGKeyArray,
     critic: eqx.Module,
