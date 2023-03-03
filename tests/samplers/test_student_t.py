@@ -44,13 +44,13 @@ def test_samples_produced(x: int, y: int, n_samples: int, df: int, dispersion: f
     ), f"Arrays different: {mean} != {xy_sample.mean(axis=0)}"
 
 
-@pytest.mark.parametrize("pseudocorrelation", (0.2, 0.8))
+@pytest.mark.parametrize("pseudocorrelation", (0.3, 0.8))
 @pytest.mark.parametrize(
     "df",
     (
+        2,
+        5,
         10,
-        20,
-        100,
     ),
 )
 def test_2d(
