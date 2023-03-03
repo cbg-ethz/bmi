@@ -1,7 +1,7 @@
 """Module with some neural network critics implemented
 as well as basic training loop."""
 import dataclasses
-from typing import Callable, Sequence
+from typing import Callable, Optional, Sequence
 
 import equinox as eqx
 import jax
@@ -68,7 +68,18 @@ class MLP(eqx.Module):
 @dataclasses.dataclass
 class TrainHistory:
     loss_history: list[float]
+    test_history: Optional[list[float]]
     final_mi: float
+
+
+def mi_divergence_check(xs: jnp.ndarray) -> Optional[tuple[float, float]]:
+    assert xs.ndim == 1
+    xs_argmax = jnp.argmax(xs)
+    xs_max = xs[xs_argmax]
+    xs_after_max = xs[xs_argmax:]
+    xs_min_after_max = xs_after_max.min()
+    if xs_max > 0.01 and xs_min_after_max < 0.9 * xs_max:
+        return float(xs_max), float(xs_min_after_max)
 
 
 def basic_fit(
@@ -77,6 +88,10 @@ def basic_fit(
     mi_formula: Callable[[Critic, Point, Point], float],
     xs: BatchedPoints,
     ys: BatchedPoints,
+    mi_formula_test: Optional[Callable[[Critic, Point, Point], float]] = None,
+    xs_test: Optional[BatchedPoints] = None,
+    ys_test: Optional[BatchedPoints] = None,
+    test_every_n_steps: int = 250,
     batch_size: int = 256,
     max_n_steps: int = 2_000,
     learning_rate: float = 0.1,
@@ -86,6 +101,8 @@ def basic_fit(
     from (xs, ys) and maximizes mutual information according to
     ``mi_formula`` using trainable ``critic``.
     """
+    mi_formula_test = mi_formula_test or mi_formula
+    testing = xs_test is not None and ys_test is not None and test_every_n_steps is not None
 
     def loss(f: Critic, xs: BatchedPoints, ys: BatchedPoints) -> float:
         """We maximize mutual information by *minimizing* loss."""
@@ -96,6 +113,7 @@ def basic_fit(
     opt_state = optimizer.init(critic)
 
     loss_history = []
+    test_history = []
 
     @jax.jit
     def step(params, opt_state, xs: BatchedPoints, ys: BatchedPoints):
@@ -110,7 +128,7 @@ def basic_fit(
     for epoch, key in enumerate(keys):
         batch_indices = jax.random.choice(
             key,
-            jnp.arange(len(xs)),
+            len(xs),
             shape=(batch_size,),
             replace=False,
         )
@@ -119,11 +137,25 @@ def basic_fit(
 
         critic, opt_state, loss_value = step(critic, opt_state, batch_xs, batch_ys)
         if verbose and epoch % 500 == 0:
-            print(f"Epoch {epoch}, MI: {-loss_value:.2f}")
+            print(f"Epoch {epoch}, train MI: {-loss_value:.2f}")
+
+        if testing and epoch % test_every_n_steps == 0:
+            loss_test = -mi_formula_test(critic, xs_test, ys_test)
+            if verbose:
+                print(f"Epoch {epoch}, test MI: {-loss_test:.2f}")
+            test_history.append(loss_test)
 
         loss_history.append(loss_value)
 
+    if testing:
+        final_mi = -min(test_history)
+    else:
+        # if no testing is used, compute final mi using
+        # testing mi formula on whole dataset
+        final_mi = mi_formula_test(critic, xs, ys)
+
     return TrainHistory(
         loss_history=loss_history,
-        final_mi=-loss_history[-1],
+        test_history=test_history if testing else None,
+        final_mi=final_mi,
     )
