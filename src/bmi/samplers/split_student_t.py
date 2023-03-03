@@ -9,10 +9,21 @@ import bmi.samplers.splitmultinormal as spl
 from bmi.samplers.base import BaseSampler
 
 
-def _f(x: float) -> float:
-    """Auxiliary function used to calculate mutual information correction."""
-    h = x / 2
-    return h * digamma(h) + np.log(gamma(h))
+def _differential_entropy(k: int, dof: int) -> float:
+    """Differential entropy of a :math:`Student-t(0, I_k, dof)`.
+
+    See Eq. (7) of
+      R.B. Arellano-Valle, J.E. Contreras-Reyes, M.G. Genton,
+      Shannon Entropy and Mutual Information for Multivariate
+      Skew-Elliptical Distributions,
+      Scandinavian Journal of Statistics, vol. 40, pp. 46-47, 2013
+    """
+    half_sum = 0.5 * (dof + k)
+    digamma_term = half_sum * (digamma(half_sum) - digamma(0.5 * dof))
+
+    log_term = -np.log(gamma(half_sum)) + np.log(gamma(0.5 * dof)) + 0.5 * k * np.log(dof * np.pi)
+
+    return log_term + digamma_term
 
 
 class SplitStudentT(BaseSampler):
@@ -26,6 +37,10 @@ class SplitStudentT(BaseSampler):
       Shannon Entropy and Mutual Information for Multivariate
       Skew-Elliptical Distributions,
       Scandinavian Journal of Statistics, vol. 40, pp. 46-47, 2013
+
+    Note:
+        The formula for the mutual information is wrong, but can be
+        calculated using the expressions involving differential entropies.
     """
 
     def __init__(
@@ -144,4 +159,7 @@ class SplitStudentT(BaseSampler):
         decomposes as the sum of mutual information of Gaussian variables
         and the correction term.
         """
-        return _f(df) + _f(df + dim_x + dim_y) - _f(df + dim_x) - _f(df + dim_y)
+        h_x = _differential_entropy(k=dim_x, dof=df)
+        h_y = _differential_entropy(k=dim_y, dof=df)
+        h_xy = _differential_entropy(k=dim_x + dim_y, dof=df)
+        return h_x + h_y - h_xy
