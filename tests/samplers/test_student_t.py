@@ -1,10 +1,7 @@
-import warnings
-from math import isclose
-
 import numpy as np
 import pytest
 from jax import random
-from scipy.special import digamma, gamma
+from scipy import stats
 from sklearn.feature_selection import mutual_info_regression
 
 import bmi.samplers.split_student_t as student
@@ -47,13 +44,13 @@ def test_samples_produced(x: int, y: int, n_samples: int, df: int, dispersion: f
     ), f"Arrays different: {mean} != {xy_sample.mean(axis=0)}"
 
 
-@pytest.mark.parametrize("pseudocorrelation", (0.2, 0.8))
+@pytest.mark.parametrize("pseudocorrelation", (0.3, 0.8))
 @pytest.mark.parametrize(
     "df",
     (
+        2,
+        5,
         10,
-        20,
-        100,
     ),
 )
 def test_2d(
@@ -61,7 +58,7 @@ def test_2d(
     df: int,
     var_x: float = 1.0,
     var_y: float = 1.0,
-    n_samples: int = 5000,
+    n_samples: int = 5_000,
 ) -> None:
     # Note: var_x and var_y are *not* really the variances of the distribution,
     # but diagonal parameters of the dispersion matrix.
@@ -90,10 +87,7 @@ def test_2d(
     assert sampler.mutual_information() == pytest.approx(
         sampler.mi_normal() + sampler.mi_correction()
     )
-
-    # We discovered that KSG is not very good at estimating MI of Student-t
-    if not isclose(true_mi, mi_estimate, rel_tol=0.05, abs_tol=0.03):
-        warnings.warn(f"True MI is {true_mi:.2f} and the estimate is {mi_estimate:.2f}.")
+    assert mi_estimate == pytest.approx(true_mi, rel=0.05, abs=0.03)
 
 
 def get_mi_correction(dim_x: int, dim_y: int, df: int) -> float:
@@ -102,40 +96,39 @@ def get_mi_correction(dim_x: int, dim_y: int, df: int) -> float:
     ).mi_correction()
 
 
-@pytest.mark.parametrize("dim_x", (2, 3))
-@pytest.mark.parametrize("dim_y", (3, 4))
-@pytest.mark.parametrize("df", (50, 80))
-def test_mi_correction_goes_to_zero(df: int, dim_x: int, dim_y: int) -> None:
-    """The MI correction term should asymptotically behave like dim_x * dim_y / df
-    for df -> infinity.
+@pytest.mark.parametrize("dim", (1, 2, 3))
+@pytest.mark.parametrize("df", (3, 5, 10))
+@pytest.mark.parametrize("n_samples", (5_000,))
+def test_differential_entropy(dim: int, df: int, n_samples: int) -> None:
+    """The differential entropy of standardized distribution should be approximately
+    equal to the Monte Carlo estimate.
     """
-    assert df * get_mi_correction(dim_x=dim_x, dim_y=dim_y, df=df) == pytest.approx(
-        dim_x * dim_y, rel=0.1
+    formula = student._differential_entropy(k=dim, dof=df)
+
+    loc = np.zeros(dim)
+    shape = np.eye(dim)
+
+    samples = stats.multivariate_t.rvs(
+        loc=loc,
+        shape=shape,
+        df=df,
+        size=n_samples,
+        random_state=111,
     )
 
+    logpdf = stats.multivariate_t.logpdf(samples, loc=loc, shape=shape, df=df)
 
-def _alternative_correction_formula(df: int, dim_x: int, dim_y: int) -> float:
-    # Auxiliary variables, to make the expression look nice.
-    # They should be read as "H"alf of the sum of "variables"
-    h_nu = 0.5 * df
-    h_nu_x = 0.5 * (df + dim_x)
-    h_nu_y = 0.5 * (df + dim_y)
-    h_nu_xy = 0.5 * (df + dim_x + dim_y)
+    # Differential entropy is E[-log p]
+    monte_carlo_estimate = np.mean(-logpdf)
 
-    log_term = np.log(gamma(h_nu) * gamma(h_nu_xy)) - np.log(gamma(h_nu_x) * gamma(h_nu_y))
-    subtract_term = h_nu_x * digamma(h_nu_x) + h_nu_y * digamma(h_nu_y)
-    add_term = h_nu_xy * digamma(h_nu_xy) + h_nu * digamma(h_nu)
-    return log_term - subtract_term + add_term
+    assert formula == pytest.approx(monte_carlo_estimate, rel=0.01, abs=0.01)
 
 
 @pytest.mark.parametrize("dim_x", (1, 2, 10))
 @pytest.mark.parametrize("dim_y", (1, 5, 8))
 @pytest.mark.parametrize("df", (1, 2, 7, 12))
-def test_mi_correction(dim_x: int, dim_y: int, df: int) -> None:
+def test_mi_correction_function(dim_x: int, dim_y: int, df: int) -> None:
     mi1 = student.SplitStudentT.mi_correction_function(df=df, dim_x=dim_x, dim_y=dim_y)
     mi2 = get_mi_correction(dim_x=dim_x, dim_y=dim_y, df=df)
-    mi3 = _alternative_correction_formula(df=df, dim_x=dim_x, dim_y=dim_y)
 
     assert mi1 == pytest.approx(mi2)
-    assert mi2 == pytest.approx(mi3)
-    assert mi3 == pytest.approx(mi1)
