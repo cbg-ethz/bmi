@@ -1,6 +1,6 @@
 import argparse
 from pathlib import Path
-from typing import Callable
+from typing import Callable, cast
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -8,6 +8,15 @@ import numpy as np
 import pandas as pd
 
 import bmi.api as bmi
+from bmi.plot_utils.subplots_from_axsize import subplots_from_axsize
+
+RENAME_DICT = {
+    "Julia-Histograms": "Hist. (Julia)",
+    "Python-CCA": "CCA (Python)",
+    "Python-MINE": "MINE (Python)",
+    "R-KSG-1": "KSG (R)",
+    "R-LNN": "LNN (R)",
+}
 
 ESTIMATORS = {
     "Julia-Histograms": "Hist. (Julia)",
@@ -93,13 +102,18 @@ def main() -> None:
     args = create_parser().parse_args()
     rng = np.random.default_rng(42)
 
-    fig, ax = plt.subplots()
+    fig, ax = subplots_from_axsize(axsize=(3, 2))
+    ax = cast(plt.Axes, ax)
 
     merged = read_results(args.RESULTS)
 
     x_values = set()
 
     for i, (estimator_id, mini_df) in enumerate(merged.groupby("estimator_id")):
+        if estimator_id not in RENAME_DICT:
+            continue
+        estimator_name = RENAME_DICT[estimator_id]
+
         # Small multiplicative offset for the X axis, so that the points don't
         # look squished
         if estimator_id not in ESTIMATORS:
@@ -128,6 +142,7 @@ def main() -> None:
         label="True MI",
     )
 
+    ax.spines[["right", "top"]].set_visible(False)
     ax.set_xscale("log")
     ax.set_xticks(x_values)
     ax.get_xaxis().set_major_formatter(mpl.ticker.ScalarFormatter())
@@ -143,7 +158,7 @@ def main() -> None:
     ax.set_ylabel("Mutual Information")
     ax.set_xlabel("Degrees of freedom")
 
-    ax.legend()
+    ax.legend(fontsize=8)
 
     fig.tight_layout()
     fig.savefig(args.output)
