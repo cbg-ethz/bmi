@@ -124,11 +124,11 @@ class _NeuralEstimator(IMutualInformationPointEstimator):
             if test_check:
                 print(
                     f"WARNING! Test MI reached {test_check[0]:.3f}, "
-                    "but then dropped to {test_check[1]:.3f}. This might "
+                    f"but then dropped to {test_check[1]:.3f}. This might "
                     "indicate overfitting."
                 )
 
-            if len(mi_test) > 1 and mi_test[-1] > 1.01 * mi_test[-2]:
+            elif len(mi_test) > 1 and mi_test[-1] > 1.01 * mi_test[-2]:
                 print(
                     "WARNING! Test MI was still increasing when training stopped. "
                     "This might mean the network has not fully converged."
