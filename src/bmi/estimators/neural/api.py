@@ -12,6 +12,7 @@ from bmi.estimators.neural import _backend_linear, _backend_quadratic
 from bmi.estimators.neural._interfaces import Critic, Point
 from bmi.estimators.neural._nn import MLP, basic_fit, mi_divergence_check
 from bmi.interface import BaseModel, IMutualInformationPointEstimator
+from bmi.utils import ProductSpace
 
 
 class NeuralEstimatorParams(BaseModel):
@@ -23,6 +24,7 @@ class NeuralEstimatorParams(BaseModel):
     learning_rate: pydantic.PositiveFloat
     hidden_layers: list[int]
     seed: int
+    standardize: bool
 
 
 class _NeuralEstimator(IMutualInformationPointEstimator):
@@ -39,10 +41,12 @@ class _NeuralEstimator(IMutualInformationPointEstimator):
         hidden_layers: Sequence[int] = (5,),
         seed: int = 42,
         verbose: bool = False,
-    ):
+        standardize: bool = True,
+    ) -> None:
         self._mi_formula = mi_formula
         self._mi_formula_test = mi_formula_test or mi_formula
         self._verbose = verbose
+        self._standardize = standardize
 
         self._testing = train_test_split is not None and test_every_n_steps is not None
 
@@ -59,6 +63,7 @@ class _NeuralEstimator(IMutualInformationPointEstimator):
             learning_rate=learning_rate,
             hidden_layers=list(hidden_layers),
             seed=seed,
+            standardize=standardize,
         )
 
     def parameters(self) -> NeuralEstimatorParams:
@@ -68,8 +73,10 @@ class _NeuralEstimator(IMutualInformationPointEstimator):
         key = jax.random.PRNGKey(self._params.seed)
         key_init, key_split, key_fit = jax.random.split(key, 3)
 
-        xs = jnp.array(x)
-        ys = jnp.array(y)
+        # Standardize the data if the right option is specified
+        # Note that we standardize before splitting into train/test split
+        space = ProductSpace(x, y, standardize=self._standardize)
+        xs, ys = jnp.asarray(space.x), jnp.asarray(space.y)
 
         if self._testing:
             xs_train, xs_test, ys_train, ys_test = train_test_split(
