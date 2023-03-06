@@ -1,8 +1,17 @@
+"""Allows creating """
 from collections.abc import Iterable
 from typing import Union
 
-import matplotlib.pyplot as plt
-import mpl_toolkits.axes_grid1 as ag
+try:
+    import matplotlib.pyplot as plt  # pytype: disable=import-error
+    import mpl_toolkits.axes_grid1 as ag  # pytype: disable=import-error
+except ModuleNotFoundError:
+    raise ModuleNotFoundError(
+        "Matplotlib is an optional dependency, "
+        "but it needs to be installed to run the plots."
+        "Run 'pip install matplotlib'."
+    )
+
 import numpy as np
 
 
