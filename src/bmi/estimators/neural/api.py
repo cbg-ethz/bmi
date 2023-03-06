@@ -6,7 +6,6 @@ import jax.numpy as jnp
 import pydantic
 import sklearn.model_selection as msel
 from numpy.typing import ArrayLike
-from sklearn.model_selection import train_test_split
 
 from bmi.estimators.neural import _backend_linear, _backend_quadratic
 from bmi.estimators.neural._interfaces import Critic, Point
