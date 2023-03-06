@@ -67,12 +67,12 @@ def infonce(f: Critic, xs: BatchedPoints, ys: BatchedPoints) -> float:
 
 
 def donsker_varadhan(f: Critic, xs: BatchedPoints, ys: BatchedPoints) -> float:
-    f_vmap = jax.vmap(f, in_axes=(None, 0))
+    f_vmap = jax.vmap(f, in_axes=(0, 0))
     return jnp.mean(f_vmap(xs, ys)) - logmeanexp_nodiag(f, xs, ys)
 
 
 def nwj(f, xs, ys) -> float:
-    f_vmap = jax.vmap(f, in_axes=(None, 0))
+    f_vmap = jax.vmap(f, in_axes=(0, 0))
 
     positive = jnp.mean(f_vmap(xs, ys))
     negative = jnp.exp(logmeanexp_nodiag(f, xs, ys, offset=-1.0))
