@@ -25,7 +25,7 @@ class NeuralEstimatorParams(BaseModel):
     seed: int
 
 
-class NeuralEstimator(IMutualInformationPointEstimator):
+class _NeuralEstimator(IMutualInformationPointEstimator):
     def __init__(
         self,
         mi_formula: Callable[[Critic, Point, Point], float],
@@ -130,7 +130,7 @@ class NeuralEstimator(IMutualInformationPointEstimator):
         return train_history.final_mi
 
 
-class InfoNceEstimator(NeuralEstimator):
+class InfoNCEEstimator(_NeuralEstimator):
     def __init__(
         self,
         batch_size: int = 256,
@@ -149,6 +149,7 @@ class InfoNceEstimator(NeuralEstimator):
             max_n_steps=max_n_steps,
             train_test_split=train_test_split,
             test_every_n_steps=test_every_n_steps,
+            batch_size=batch_size,
             learning_rate=learning_rate,
             hidden_layers=hidden_layers,
             seed=seed,
@@ -156,7 +157,7 @@ class InfoNceEstimator(NeuralEstimator):
         )
 
 
-class NwjEstimator(NeuralEstimator):
+class NWJEstimator(_NeuralEstimator):
     def __init__(
         self,
         batch_size: int = 256,
@@ -175,6 +176,7 @@ class NwjEstimator(NeuralEstimator):
             max_n_steps=max_n_steps,
             train_test_split=train_test_split,
             test_every_n_steps=test_every_n_steps,
+            batch_size=batch_size,
             learning_rate=learning_rate,
             hidden_layers=hidden_layers,
             seed=seed,
@@ -182,7 +184,7 @@ class NwjEstimator(NeuralEstimator):
         )
 
 
-class DonsekVaradhanEstimator(NeuralEstimator):
+class DonskerVaradhanEstimator(_NeuralEstimator):
     def __init__(
         self,
         batch_size: int = 256,
@@ -201,8 +203,17 @@ class DonsekVaradhanEstimator(NeuralEstimator):
             max_n_steps=max_n_steps,
             train_test_split=train_test_split,
             test_every_n_steps=test_every_n_steps,
+            batch_size=batch_size,
             learning_rate=learning_rate,
             hidden_layers=hidden_layers,
             seed=seed,
             verbose=verbose,
         )
+
+
+__all__ = [
+    "NeuralEstimatorParams",
+    "InfoNCEEstimator",
+    "NWJEstimator",
+    "DonskerVaradhanEstimator",
+]
