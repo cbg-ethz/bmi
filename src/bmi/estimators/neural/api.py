@@ -1,6 +1,6 @@
 """API of the neural estimators implemented in JAX."""
 
-from typing import Callable, Optional, Sequence
+from typing import Any, Callable, Literal, Optional, Sequence
 
 import jax
 import jax.numpy as jnp
@@ -22,9 +22,9 @@ class NeuralEstimatorParams(BaseModel):
     train_test_split: Optional[float]
     test_every_n_steps: Optional[int]
     learning_rate: pydantic.PositiveFloat
-    hidden_layers: list[int]
     seed: int
     standardize: bool
+    critic_params: Optional[BaseModel]
 
 
 class _NeuralEstimator(IMutualInformationPointEstimator):
@@ -32,21 +32,32 @@ class _NeuralEstimator(IMutualInformationPointEstimator):
         self,
         mi_formula: Callable[[Critic, Point, Point], float],
         mi_formula_name: str,
+        critic_factory: Callable[[Any, int, int], Critic],
+        critic_params: Optional[BaseModel] = None,
         mi_formula_test: Optional[Callable[[Critic, Point, Point], float]] = None,
         batch_size: int = 256,
         max_n_steps: int = 2_000,
         train_test_split: Optional[float] = 0.5,
         test_every_n_steps: Optional[int] = 250,
         learning_rate: float = 0.1,
-        hidden_layers: Sequence[int] = (5,),
         seed: int = 42,
         verbose: bool = False,
         standardize: bool = True,
     ) -> None:
+        """
+        Args:
+            mi_formula: loss function to be used
+            mi_formula_name: name of the loss used
+            critic_factory: factory method for the critic function. Should take as arguments
+              (JAX random key, dim_x, dim_y) and initialize a critic method
+            critic_params: hyperparameters of the critic
+        """
         self._mi_formula = mi_formula
         self._mi_formula_test = mi_formula_test or mi_formula
         self._verbose = verbose
         self._standardize = standardize
+
+        self._critic_factory = critic_factory
 
         self._testing = train_test_split is not None and test_every_n_steps is not None
 
@@ -61,9 +72,9 @@ class _NeuralEstimator(IMutualInformationPointEstimator):
             train_test_split=train_test_split,
             test_every_n_steps=test_every_n_steps,
             learning_rate=learning_rate,
-            hidden_layers=list(hidden_layers),
             seed=seed,
             standardize=standardize,
+            critic_params=critic_params,
         )
 
     def parameters(self) -> NeuralEstimatorParams:
@@ -86,12 +97,7 @@ class _NeuralEstimator(IMutualInformationPointEstimator):
             xs_train, ys_train = xs, ys
             xs_test, ys_test = None, None
 
-        critic = MLP(
-            key=key_init,
-            dim_x=xs.shape[-1],
-            dim_y=ys.shape[-1],
-            hidden_layers=self._params.hidden_layers,
-        )
+        critic = self._critic_factory(key_init, xs.shape[-1], ys.shape[-1])
 
         train_history = basic_fit(
             rng=key_fit,
@@ -137,6 +143,17 @@ class _NeuralEstimator(IMutualInformationPointEstimator):
         return train_history.final_mi
 
 
+class MLPParams(BaseModel):
+    hidden_layers: list[int]
+
+
+def _mlp_init(hidden_layers: Sequence[int]) -> Callable[[Any, int, int], Critic]:
+    def factory(key, dim_x: int, dim_y: int) -> Critic:
+        return MLP(key=key, dim_x=dim_x, dim_y=dim_y, hidden_layers=hidden_layers)
+
+    return factory
+
+
 class InfoNCEEstimator(_NeuralEstimator):
     def __init__(
         self,
@@ -148,17 +165,26 @@ class InfoNCEEstimator(_NeuralEstimator):
         hidden_layers: Sequence[int] = (5,),
         seed: int = 42,
         verbose: bool = False,
-    ):
+        _train_backend: Literal["quadratic", "linear"] = "quadratic",
+    ) -> None:
+        if _train_backend == "quadratic":
+            mi_formula = _backend_quadratic.infonce
+        elif _train_backend == "linear":
+            mi_formula = _backend_linear.infonce
+        else:
+            raise ValueError(f"Backend {_train_backend} not known.")
+
         super().__init__(
-            mi_formula=_backend_quadratic.infonce,
+            mi_formula=mi_formula,
             mi_formula_name="InfoNCE",
+            critic_factory=_mlp_init(hidden_layers),
+            critic_params=MLPParams(hidden_layers=hidden_layers),
             mi_formula_test=_backend_linear.infonce,
             max_n_steps=max_n_steps,
             train_test_split=train_test_split,
             test_every_n_steps=test_every_n_steps,
             batch_size=batch_size,
             learning_rate=learning_rate,
-            hidden_layers=hidden_layers,
             seed=seed,
             verbose=verbose,
         )
@@ -175,17 +201,26 @@ class NWJEstimator(_NeuralEstimator):
         hidden_layers: Sequence[int] = (5,),
         seed: int = 42,
         verbose: bool = False,
-    ):
+        _train_backend: Literal["quadratic", "linear"] = "quadratic",
+    ) -> None:
+        if _train_backend == "quadratic":
+            mi_formula = _backend_quadratic.nwj
+        elif _train_backend == "linear":
+            mi_formula = _backend_linear.nwj
+        else:
+            raise ValueError(f"Backend {_train_backend} not known.")
+
         super().__init__(
-            mi_formula=_backend_quadratic.nwj,
+            mi_formula=mi_formula,
             mi_formula_name="NWJ",
+            critic_factory=_mlp_init(hidden_layers),
+            critic_params=MLPParams(hidden_layers=hidden_layers),
             mi_formula_test=_backend_linear.nwj,
             max_n_steps=max_n_steps,
             train_test_split=train_test_split,
             test_every_n_steps=test_every_n_steps,
             batch_size=batch_size,
             learning_rate=learning_rate,
-            hidden_layers=hidden_layers,
             seed=seed,
             verbose=verbose,
         )
@@ -202,17 +237,26 @@ class DonskerVaradhanEstimator(_NeuralEstimator):
         hidden_layers: Sequence[int] = (5,),
         seed: int = 42,
         verbose: bool = False,
-    ):
+        _train_backend: Literal["quadratic", "linear"] = "quadratic",
+    ) -> None:
+        if _train_backend == "quadratic":
+            mi_formula = _backend_quadratic.donsker_varadhan
+        elif _train_backend == "linear":
+            mi_formula = _backend_linear.donsker_varadhan
+        else:
+            raise ValueError(f"Backend {_train_backend} not known.")
+
         super().__init__(
-            mi_formula=_backend_quadratic.donsker_varadhan,
+            mi_formula=mi_formula,
             mi_formula_name="Donsker-Varadhan",
             mi_formula_test=_backend_linear.donsker_varadhan,
+            critic_factory=_mlp_init(hidden_layers),
+            critic_params=MLPParams(hidden_layers=hidden_layers),
             max_n_steps=max_n_steps,
             train_test_split=train_test_split,
             test_every_n_steps=test_every_n_steps,
             batch_size=batch_size,
             learning_rate=learning_rate,
-            hidden_layers=hidden_layers,
             seed=seed,
             verbose=verbose,
         )
