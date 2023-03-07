@@ -5,8 +5,8 @@ from typing import Callable, Optional, Sequence
 import jax
 import jax.numpy as jnp
 import pydantic
+import sklearn.model_selection as msel
 from numpy.typing import ArrayLike
-from sklearn.model_selection import train_test_split
 
 from bmi.estimators.neural import _backend_linear, _backend_quadratic
 from bmi.estimators.neural._interfaces import Critic, Point
@@ -79,7 +79,7 @@ class _NeuralEstimator(IMutualInformationPointEstimator):
         xs, ys = jnp.asarray(space.x), jnp.asarray(space.y)
 
         if self._testing:
-            xs_train, xs_test, ys_train, ys_test = train_test_split(
+            xs_train, xs_test, ys_train, ys_test = msel.train_test_split(
                 xs, ys, train_size=self._params.train_test_split
             )
         else:
