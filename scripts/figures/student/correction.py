@@ -7,9 +7,12 @@ where the correction term depends on:
 This script plots the correction term as a function
 of the degrees of freedom for several dimensions.
 """
+from typing import cast
+
 import matplotlib.pyplot as plt
 
 import bmi.api as bmi
+from bmi.plot_utils.subplots_from_axsize import subplots_from_axsize
 
 
 def correction(df: int, m: int, n: int) -> float:
@@ -30,7 +33,9 @@ MARKER_LIST = [
 
 
 def main() -> None:
-    fig, ax = plt.subplots(figsize=(4, 3))
+    fig, ax = subplots_from_axsize(axsize=(3, 2))
+    ax = cast(plt.Axes, ax)
+
     nus = list(range(1, 30))
     mns = [(1, 1), (1, 2), (1, 10), (2, 2), (3, 3), (5, 5)]
 
@@ -39,10 +44,11 @@ def main() -> None:
         # ax.scatter(nus, values, s=4, marker=MARKER_LIST[i], c=f"C{i+1}")
         ax.plot(nus, values, c=f"C{i+1}", label=f"$m={m}$,\t$n={n}$")
 
+    ax.spines[["right", "top"]].set_visible(False)
     ax.set_xlabel("Degrees of freedom")
     ax.set_ylabel("MI correction term")
 
-    ax.legend()
+    ax.legend(fontsize=8)
 
     fig.tight_layout()
     fig.savefig("student-t-correction-plot.pdf")
