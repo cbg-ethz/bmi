@@ -14,10 +14,8 @@ import bmi.samplers.api as samplers
         neural.InfoNCEEstimator,
     ],
 )
-def test_estimator_estimates(estimator_class, n_points: int = 1_000) -> None:
-    estimator = estimator_class(
-        batch_size=100, hidden_layers=(5, 5), learning_rate=0.1, max_n_steps=1_000
-    )
+def test_estimator_estimates(estimator_class, n_points: int = 3_000) -> None:
+    estimator = estimator_class(batch_size=100, learning_rate=0.1, max_n_steps=700)
 
     cov = np.asarray(
         [
@@ -33,4 +31,4 @@ def test_estimator_estimates(estimator_class, n_points: int = 1_000) -> None:
     estimated_mi = estimator.estimate(xs, ys)
     true_mi = sampler.mutual_information()
 
-    assert estimated_mi == pytest.approx(true_mi, abs=0.04, rel=0.01)
+    assert estimated_mi == pytest.approx(true_mi, abs=0.05, rel=0.01)

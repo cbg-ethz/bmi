@@ -154,18 +154,25 @@ def _mlp_init(hidden_layers: Sequence[int]) -> Callable[[Any, int, int], Critic]
     return factory
 
 
+_DEFAULT_BATCH_SIZE = 256
+_DEFAULT_N_STEPS: int = 2_000
+_DEFAULT_HIDDEN_LAYERS: tuple[int, ...] = (10, 5)
+_DEFAULT_LEARNING_RATE: float = 0.1
+_DEFAULT_TRAIN_BACKEND: Literal["quadratic", "linear"] = "quadratic"
+
+
 class InfoNCEEstimator(_NeuralEstimator):
     def __init__(
         self,
-        batch_size: int = 256,
-        max_n_steps: int = 2_000,
+        batch_size: int = _DEFAULT_BATCH_SIZE,
+        max_n_steps: int = _DEFAULT_N_STEPS,
         train_test_split: Optional[float] = 0.5,
         test_every_n_steps: Optional[int] = 250,
-        learning_rate: float = 0.1,
-        hidden_layers: Sequence[int] = (5,),
+        learning_rate: float = _DEFAULT_LEARNING_RATE,
+        hidden_layers: Sequence[int] = _DEFAULT_HIDDEN_LAYERS,
         seed: int = 42,
         verbose: bool = False,
-        _train_backend: Literal["quadratic", "linear"] = "quadratic",
+        _train_backend: Literal["quadratic", "linear"] = _DEFAULT_TRAIN_BACKEND,
     ) -> None:
         if _train_backend == "quadratic":
             mi_formula = _backend_quadratic.infonce
@@ -193,15 +200,15 @@ class InfoNCEEstimator(_NeuralEstimator):
 class NWJEstimator(_NeuralEstimator):
     def __init__(
         self,
-        batch_size: int = 256,
-        max_n_steps: int = 2_000,
+        batch_size: int = _DEFAULT_BATCH_SIZE,
+        max_n_steps: int = _DEFAULT_N_STEPS,
         train_test_split: Optional[float] = 0.5,
         test_every_n_steps: Optional[int] = 250,
-        learning_rate: float = 0.1,
-        hidden_layers: Sequence[int] = (5,),
+        learning_rate: float = _DEFAULT_LEARNING_RATE,
+        hidden_layers: Sequence[int] = _DEFAULT_HIDDEN_LAYERS,
         seed: int = 42,
         verbose: bool = False,
-        _train_backend: Literal["quadratic", "linear"] = "quadratic",
+        _train_backend: Literal["quadratic", "linear"] = _DEFAULT_TRAIN_BACKEND,
     ) -> None:
         if _train_backend == "quadratic":
             mi_formula = _backend_quadratic.nwj
@@ -229,15 +236,15 @@ class NWJEstimator(_NeuralEstimator):
 class DonskerVaradhanEstimator(_NeuralEstimator):
     def __init__(
         self,
-        batch_size: int = 256,
-        max_n_steps: int = 2_000,
+        batch_size: int = _DEFAULT_BATCH_SIZE,
+        max_n_steps: int = _DEFAULT_N_STEPS,
         train_test_split: Optional[float] = 0.5,
         test_every_n_steps: Optional[int] = 250,
-        learning_rate: float = 0.1,
-        hidden_layers: Sequence[int] = (5,),
+        learning_rate: float = _DEFAULT_LEARNING_RATE,
+        hidden_layers: Sequence[int] = _DEFAULT_HIDDEN_LAYERS,
         seed: int = 42,
         verbose: bool = False,
-        _train_backend: Literal["quadratic", "linear"] = "quadratic",
+        _train_backend: Literal["quadratic", "linear"] = _DEFAULT_TRAIN_BACKEND,
     ) -> None:
         if _train_backend == "quadratic":
             mi_formula = _backend_quadratic.donsker_varadhan
