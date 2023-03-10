@@ -32,6 +32,13 @@ class KDEParams(BaseModel):
     standardize: bool
 
 
+class DifferentialEntropies(BaseModel):
+    entropy_x: float
+    entropy_y: float
+    entropy_xy: float
+    mutual_information: float
+
+
 class KDEMutualInformationEstimator(IMutualInformationPointEstimator):
     """The kernel density mutual information estimator based on
 
@@ -104,6 +111,13 @@ class KDEMutualInformationEstimator(IMutualInformationPointEstimator):
         self._kde_xy.fit(space.xy)
 
     def estimate(self, x: ArrayLike, y: ArrayLike) -> float:
+        return self.estimate_entropies(x, y).mutual_information
+
+    def parameters(self) -> BaseModel:
+        return self._params
+
+    def estimate_entropies(self, x: ArrayLike, y: ArrayLike) -> DifferentialEntropies:
+        """Calculates differential entropies."""
         space = ProductSpace(x=x, y=y)
         self._fit(space)
 
@@ -111,7 +125,11 @@ class KDEMutualInformationEstimator(IMutualInformationPointEstimator):
         h_y = _differential_entropy(estimator=self._kde_y, samples=space.y)
         h_xy = _differential_entropy(estimator=self._kde_xy, samples=space.xy)
 
-        return h_x + h_y - h_xy
+        mutual_information = h_x + h_y - h_xy
 
-    def parameters(self) -> BaseModel:
-        return self._params
+        return DifferentialEntropies(
+            entropy_x=h_x,
+            entropy_y=h_y,
+            entropy_xy=h_xy,
+            mutual_information=mutual_information,
+        )
