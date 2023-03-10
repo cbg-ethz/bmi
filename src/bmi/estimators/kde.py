@@ -117,8 +117,14 @@ class KDEMutualInformationEstimator(IMutualInformationPointEstimator):
         return self._params
 
     def estimate_entropies(self, x: ArrayLike, y: ArrayLike) -> DifferentialEntropies:
-        """Calculates differential entropies."""
-        space = ProductSpace(x=x, y=y)
+        """Calculates differential entropies.
+
+        Note:
+            Differential entropy is *not* invariant to standardization.
+            In particular, if you want to estimate differential entropy
+            of the original variables, you should use ``standardize=False``.
+        """
+        space = ProductSpace(x=x, y=y, standardize=self._standardize)
         self._fit(space)
 
         h_x = _differential_entropy(estimator=self._kde_x, samples=space.x)
