@@ -14,7 +14,6 @@ def _differential_entropy(estimator: KernelDensity, samples: np.ndarray) -> floa
     """Estimates the differential entropy of a distribution by fitting
     a kernel density estimator and estimating the (negative) mean log-PDF
     from samples."""
-    estimator.fit(samples)
     log_probs = estimator.score_samples(samples)
     return -np.mean(log_probs)
 
@@ -30,6 +29,7 @@ class KDEParams(BaseModel):
     bandwidth_xy: _AllowedBandwith
     bandwidth_x: _AllowedBandwith
     bandwidth_y: _AllowedBandwith
+    standardize: bool
 
 
 class KDEMutualInformationEstimator(IMutualInformationPointEstimator):
@@ -46,7 +46,7 @@ class KDEMutualInformationEstimator(IMutualInformationPointEstimator):
        h(X) = -\\mathbb{E}[ \\log p(X) ].
 
     The logarithm of probability density function :math:`\\log p(X)`
-    is estimated via a kernel density estimator using SciKit-Learn.
+    is estimated via a kernel density estimator (KDE) using SciKit-Learn.
     """
 
     def __init__(
@@ -93,12 +93,19 @@ class KDEMutualInformationEstimator(IMutualInformationPointEstimator):
             kernel_xy=kernel_xy,
             kernel_x=kernel_x,
             kernel_y=kernel_y,
+            standardize=standardize,
         )
 
         self._standardize = standardize
 
+    def _fit(self, space: ProductSpace) -> None:
+        self._kde_x.fit(space.x)
+        self._kde_y.fit(space.y)
+        self._kde_xy.fit(space.xy)
+
     def estimate(self, x: ArrayLike, y: ArrayLike) -> float:
         space = ProductSpace(x=x, y=y)
+        self._fit(space)
 
         h_x = _differential_entropy(estimator=self._kde_x, samples=space.x)
         h_y = _differential_entropy(estimator=self._kde_y, samples=space.y)
