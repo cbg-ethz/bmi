@@ -389,7 +389,7 @@ def training_loop(
     # Final evaluation on the whole data set
     ys_unpaired = _shuffle(final_eval_key, ys)
     final_mi_val = mine_value(f=critic, xs=xs, ys_paired=ys, ys_unpaired=ys_unpaired)
-    history.final_mi = final_mi_val
+    history.final_mi = float(final_mi_val)
 
     return history
 
