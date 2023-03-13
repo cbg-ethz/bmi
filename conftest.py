@@ -38,12 +38,6 @@ TURN_ON_ARGUMENTS = [
         inivalue_line_description="mark test as requiring R dependencies to run.",
     ),
     TurnOnTestSuiteArgument(
-        cli_flag="--run-mine-pytorch",
-        help_message="Run MINE tests based on non-default dependencies (PyTorch, in particular).",
-        mark_keyword="requires_mine_pytorch",
-        inivalue_line_description="mark test as requiring PyTorch MINE implementation.",
-    ),
-    TurnOnTestSuiteArgument(
         cli_flag="--run-julia",
         help_message="Run tests requiring Julia dependencies.",
         mark_keyword="requires_julia",
