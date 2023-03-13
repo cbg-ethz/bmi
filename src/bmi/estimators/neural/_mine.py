@@ -7,14 +7,25 @@ https://arxiv.org/abs/1801.04062v5
 The expression for the gradient
 is given by Equation (12) in Section 3.2.
 """
+import logging
+from typing import Optional, Sequence
+
 import equinox as eqx
 import jax
 import jax.numpy as jnp
 import optax
+import pydantic
 from jax.scipy.special import logsumexp
 from jax.tree_util import tree_map
+from numpy.typing import ArrayLike
 
+from bmi.estimators.base import EstimatorNotFittedException
 from bmi.estimators.neural._interfaces import BatchedPoints, Critic
+from bmi.estimators.neural._nn import MLP
+from bmi.interface import BaseModel, IMutualInformationPointEstimator
+from bmi.utils import ProductSpace
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def mine_value(
@@ -258,6 +269,31 @@ def _sample_unpaired(
     return ys[indices]
 
 
+def _shuffle(key: jax.random.PRNGKeyArray, ys: jnp.ndarray) -> jnp.ndarray:
+    """Shuffles array of shape (batch_dim, ...) along the batch dimension."""
+    indices = jax.random.choice(
+        key,
+        len(ys),
+        shape=(len(ys),),
+        replace=False,
+    )
+    return ys[indices]
+
+
+class MINETrainingHistory(BaseModel):
+    """Class representing the data saved from MINE training."""
+
+    train_step: list[int] = pydantic.Field(
+        description="Step numbers at which training loss was evaluated."
+    )
+    train_objective: list[float] = pydantic.Field(
+        description="Loss at a corresponding step number."
+    )
+    final_mi: float = pydantic.Field(
+        description="Final value of MI, evaluated at the whole training data set."
+    )
+
+
 def training_loop(
     rng: jax.random.PRNGKeyArray,
     critic: eqx.Module,
@@ -267,7 +303,24 @@ def training_loop(
     learning_rate: float = 0.1,
     batch_size: int = 256,
     alpha: float = 0.9,
-):
+    checkpoint_every: int = 250,
+    verbose: bool = False,
+) -> MINETrainingHistory:
+    """Basic training loop for MINE.
+
+    Args:
+        rng: random key
+        critic: critic to be trained
+        xs: samples of the X variable, shape (n_points, dim_x)
+        ys: paired samples of the Y variable, shape (n_points, dim_y)
+        max_n_steps: maximum number of steps
+        learning_rate: learning rate to be used
+        batch_size: batch size
+        alpha: parameter used in exponential smoothing of the gradient,
+          in the open interval (0, 1). Values closer to 1 result in less smoothing
+        checkpoint_every: step intervals at which the training checkpoint should be saved
+        verbose: whether to use a logger to report every ``checkpoint_every`` steps
+    """
 
     # Initialize the optimized
     optimizer = optax.adam(learning_rate=learning_rate)
@@ -302,8 +355,14 @@ def training_loop(
 
     final_eval_key, *step_keys = jax.random.split(rng, max_n_steps + 1)
 
+    # Initialize the history object
+    history = MINETrainingHistory(train_step=[], train_objective=[], final_mi=-1)
+
     for step, key in enumerate(step_keys, 1):
-        key_paired, key_unpaired = jax.random.split(key)
+        # Keys:
+        #  - sample a batch of paired data
+        #  - sample unpaired data
+        key_paired, key_unpaired = jax.random.split(key, 2)
 
         xs_paired, ys_paired = _sample_paired(key_paired, xs=xs, ys=ys, batch_size=batch_size)
         ys_unpaired = _sample_unpaired(key_unpaired, ys=ys, batch_size=batch_size)
@@ -318,10 +377,95 @@ def training_loop(
             alpha=alpha,
         )
 
-        ys_unpaired = jax.random.shuffle(final_eval_key, ys, axis=1)
-        mine_val = mine_value(f=critic, xs=xs, ys_paired=ys, ys_unpaired=ys_unpaired)
-        if step % 50 == 0:
-            print(f"Step {step}:\t{mine_val:.2f}")
+        if step % checkpoint_every == 0:
+            mi_val = mine_value(
+                f=critic, xs=xs_paired, ys_paired=ys_paired, ys_unpaired=ys_unpaired
+            )
+            history.train_step.append(step)
+            history.train_objective.append(mi_val)
+            if verbose:
+                _LOGGER.info(f"MINE training at step {step} reached objective {mi_val:.2f}.")
 
-    ys_unpaired = jax.random.shuffle(final_eval_key, ys, axis=1)
-    return mine_value(f=critic, xs=xs, ys_paired=ys, ys_unpaired=ys_unpaired)
+    # Final evaluation on the whole data set
+    ys_unpaired = _shuffle(final_eval_key, ys)
+    final_mi_val = mine_value(f=critic, xs=xs, ys_paired=ys, ys_unpaired=ys_unpaired)
+    history.final_mi = final_mi_val
+
+    return history
+
+
+class MINEParams(BaseModel):
+    batch_size: pydantic.PositiveInt
+    max_n_steps: pydantic.PositiveInt
+    checkpoint_every: pydantic.PositiveInt
+    learning_rate: pydantic.PositiveFloat
+    seed: int
+    standardize: bool
+    smoothing_alpha: pydantic.confloat(gt=0, lt=1) = pydantic.Field(
+        description="Alpha used for gradient smoothing. "
+        "Values closer to 1 result in less smoothing."
+    )
+    hidden_layers: list[int]
+
+
+class MINEEstimator(IMutualInformationPointEstimator):
+    def __init__(
+        self,
+        batch_size: int = 512,
+        max_n_steps: int = 2_000,
+        checkpoint_every: int = 250,
+        learning_rate: float = 0.1,
+        seed: int = 524,
+        standardize: bool = True,
+        smoothing_alpha: float = 0.9,
+        hidden_layers: Sequence[int] = (10, 5),
+        verbose: bool = False,
+    ) -> None:
+        self._params = MINEParams(
+            batch_size=batch_size,
+            max_n_steps=max_n_steps,
+            checkpoint_every=checkpoint_every,
+            learning_rate=learning_rate,
+            seed=seed,
+            standardize=standardize,
+            smoothing_alpha=smoothing_alpha,
+            hidden_layers=hidden_layers,
+        )
+        self._verbose = verbose
+        self._training_history: Optional[MINETrainingHistory] = None
+
+    def _create_critic(self, dim_x: int, dim_y: int, key: jax.random.PRNGKeyArray) -> MLP:
+        return MLP(dim_x=dim_x, dim_y=dim_y, key=key, hidden_layers=self._params.hidden_layers)
+
+    def fit(self, x: ArrayLike, y: ArrayLike) -> None:
+        key = jax.random.PRNGKey(self._params.seed)
+        key_critic, key_train = jax.random.split(key)
+
+        # Standardize the data if needed
+        space = ProductSpace(x=x, y=y, standardize=self._params.standardize)
+
+        train_history = training_loop(
+            rng=key_train,
+            critic=self._create_critic(dim_x=space.dim_x, dim_y=space.dim_y, key=key_critic),
+            xs=jnp.asarray(space.x),
+            ys=jnp.asarray(space.y),
+            max_n_steps=self._params.max_n_steps,
+            learning_rate=self._params.learning_rate,
+            batch_size=self._params.batch_size,
+            alpha=self._params.smoothing_alpha,
+            checkpoint_every=self._params.checkpoint_every,
+            verbose=self._verbose,
+        )
+        self._training_history = train_history
+
+    def training_history(self) -> MINETrainingHistory:
+        if self._training_history is None:
+            raise EstimatorNotFittedException("Estimator needs to be fitted first.")
+        return self._training_history
+
+    def estimate(self, x: ArrayLike, y: ArrayLike) -> float:
+        self.fit(x, y)
+        return self.training_history().final_mi
+
+    def parameters(self) -> MINEParams:
+        return self._params
