@@ -19,9 +19,9 @@ class TestProductSpace:
         sqrt_cov_x = rng.normal(0, 1, size=(dim_x, dim_x))
         sqrt_cov_y = rng.normal(0.5, 1, size=(dim_y, dim_y))
 
-        x = rng.multivariate_normal(np.ones(dim_x), sqrt_cov_x @ sqrt_cov_x, size=n_points)
+        x = rng.multivariate_normal(np.ones(dim_x), sqrt_cov_x.T @ sqrt_cov_x, size=n_points)
         y = rng.multivariate_normal(
-            rng.normal(loc=1, scale=3.0, size=dim_y), sqrt_cov_y @ sqrt_cov_y, size=n_points
+            rng.normal(loc=1, scale=3.0, size=dim_y), sqrt_cov_y.T @ sqrt_cov_y, size=n_points
         )
         x_copy = x.copy()
         y_copy = y.copy()
