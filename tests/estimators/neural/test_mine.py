@@ -6,7 +6,7 @@ import bmi.estimators.neural._mine as mine
 import bmi.samplers.api as samplers
 
 
-def test_mine_estimator_3d(n_points: int = 5_000) -> None:
+def test_mine_estimator_3d(n_points: int = 8_000) -> None:
     rng = jax.random.PRNGKey(23)
     key_mlp, key_train, key_sampler = jax.random.split(rng, 3)
 
@@ -22,9 +22,9 @@ def test_mine_estimator_3d(n_points: int = 5_000) -> None:
     xs, ys = sampler.sample(n_points=n_points, rng=key_sampler)
 
     estimator = mine.MINEEstimator(
-        hidden_layers=(5, 5),
+        hidden_layers=(8, 5),
         seed=10,
-        max_n_steps=500,
+        max_n_steps=1000,
         batch_size=256,
         learning_rate=0.1,
         smoothing_alpha=0.9,
@@ -38,14 +38,14 @@ def test_mine_estimator_3d(n_points: int = 5_000) -> None:
     assert estimated_mi == pytest.approx(true_mi, abs=0.03, rel=0.01)
 
 
-def test_mine_estimator_2d(n_points: int = 5_000, correlation: float = 0.7) -> None:
+def test_mine_estimator_2d(n_points: int = 8_000, correlation: float = 0.7) -> None:
     distribution = samplers.BivariateNormalSampler(correlation=correlation)
     points_x, points_y = distribution.sample(n_points, rng=19)
 
     estimator = mine.MINEEstimator(
-        hidden_layers=(5, 5),
+        hidden_layers=(8, 5),
         seed=12,
-        max_n_steps=600,
+        max_n_steps=1000,
         batch_size=256,
         standardize=True,
     )

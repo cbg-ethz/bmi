@@ -140,7 +140,7 @@ class _NeuralEstimator(IMutualInformationPointEstimator):
                     "This might mean the network has not fully converged."
                 )
 
-        return train_history.final_mi
+        return float(train_history.final_mi)
 
 
 class MLPParams(BaseModel):
