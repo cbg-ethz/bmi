@@ -54,11 +54,15 @@ class KDEMutualInformationEstimator(IMutualInformationPointEstimator):
 
     The logarithm of probability density function :math:`\\log p(X)`
     is estimated via a kernel density estimator (KDE) using SciKit-Learn.
+
+    Note:
+        This estimator is very sensitive to the choice of the bandwidth
+        and the kernel. We suggest to treat it with caution.
     """
 
     def __init__(
         self,
-        kernel_xy: _AllowedKernel = "cosine",
+        kernel_xy: _AllowedKernel = "tophat",
         kernel_x: Optional[_AllowedKernel] = None,
         kernel_y: Optional[_AllowedKernel] = None,
         bandwidth_xy: _AllowedBandwith = "scott",
