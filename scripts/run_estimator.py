@@ -25,22 +25,6 @@ class EstimatorType(Enum):
     JULIA_KERNEL = "JULIA-KERNEL"
 
 
-def _load_mine(
-    device: Literal["cpu", "gpu", "auto"], estimator_id: Optional[str], max_epochs: int
-) -> bmi.ITaskEstimator:
-    import torch
-
-    import bmi.estimators.external.mine as mine
-
-    if device == "auto":
-        device = "gpu" if torch.cuda.is_available() else "cpu"
-
-    return bmi.benchmark.WrappedEstimator(
-        estimator=mine.MutualInformationNeuralEstimator(device=device, max_epochs=max_epochs),
-        estimator_id=estimator_id,
-    )
-
-
 class Args(Protocol):
     estimator: EstimatorType
     estimator_id: Optional[str]
@@ -53,8 +37,6 @@ class Args(Protocol):
     bins_y: Optional[int]  # Bins per Y dimension for histogram. If None, defaults to bins_x
     variant: Literal[1, 2]  # KSG variant
     proc: int  # Argument for the BNSL estimator
-    # Mine parameters
-    device: Literal["cpu", "gpu", "auto"]
     max_epochs: int
     bandwidth: float  # Kernel bandwidth
 
@@ -96,8 +78,9 @@ def create_estimator(args: Args) -> bmi.ITaskEstimator:  # noqa: C901
         )
     # MINE estimator, requires additional dependencies
     elif estimator == EstimatorType.MINE:
-        return _load_mine(
-            device=args.device, estimator_id=args.estimator_id, max_epochs=args.max_epochs
+        return bmi.benchmark.WrappedEstimator(
+            estimator=bmi.estimators.MINEEstimator(max_n_steps=args.max_epochs),
+            estimator_id="MINE",
         )
     # R estimators, require additional dependencies
     elif estimator == EstimatorType.R_KSG:
@@ -216,14 +199,6 @@ def create_parser() -> argparse.ArgumentParser:
     )
 
     # Arguments for MINE
-    parser.add_argument(
-        "--device",
-        type=str,
-        choices=["cpu", "gpu", "auto"],
-        default="auto",
-        help="Device to be used for MINE training. "
-        "Defaults to 'auto', which will try to use CUDA if it's available.",
-    )
     parser.add_argument(
         "--max-epochs", type=int, default=500, help="Maximum number of epochs of MINE training."
     )

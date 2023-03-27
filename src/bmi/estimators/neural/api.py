@@ -1,5 +1,4 @@
 """API of the neural estimators implemented in JAX."""
-
 from typing import Any, Callable, Literal, Optional, Sequence
 
 import jax
@@ -10,6 +9,7 @@ from numpy.typing import ArrayLike
 
 from bmi.estimators.neural import _backend_linear, _backend_quadratic
 from bmi.estimators.neural._interfaces import Critic, Point
+from bmi.estimators.neural._mine import MINEEstimator, MINEParams
 from bmi.estimators.neural._nn import MLP, basic_fit, mi_divergence_check
 from bmi.interface import BaseModel, IMutualInformationPointEstimator
 from bmi.utils import ProductSpace
@@ -140,7 +140,7 @@ class _NeuralEstimator(IMutualInformationPointEstimator):
                     "This might mean the network has not fully converged."
                 )
 
-        return train_history.final_mi
+        return float(train_history.final_mi)
 
 
 class MLPParams(BaseModel):
@@ -274,4 +274,6 @@ __all__ = [
     "InfoNCEEstimator",
     "NWJEstimator",
     "DonskerVaradhanEstimator",
+    "MINEEstimator",
+    "MINEParams",
 ]

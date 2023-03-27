@@ -1,5 +1,5 @@
 """Module with some neural network critics implemented
-as well as basic training loop."""
+as well as a basic training loop."""
 import dataclasses
 from typing import Callable, Optional, Sequence
 
