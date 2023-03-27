@@ -1,5 +1,6 @@
 from bmi.estimators.correlation import CCAMutualInformationEstimator
 from bmi.estimators.histogram import HistogramEstimator, HistogramEstimatorParams
+from bmi.estimators.kde import KDEMutualInformationEstimator
 
 # isort: off
 from bmi.estimators.ksg import (
@@ -18,9 +19,11 @@ from bmi.estimators.neural.api import (
 
 # isort: on
 
+
 __all__ = [
     "CCAMutualInformationEstimator",
     "HistogramEstimator",
+    "KDEMutualInformationEstimator",
     "KSGEnsembleFirstEstimator",
     "KSGEnsembleFirstEstimatorSlow",
     "DonskerVaradhanEstimator",
