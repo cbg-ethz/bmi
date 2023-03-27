@@ -93,4 +93,7 @@ def subplots_from_axsize(
     if squeeze:
         axs = np.squeeze(axs)
 
-    return fig, axs
+    if len(axs.ravel()) == 1:
+        return fig, axs.ravel()[0]
+    else:
+        return fig, axs
