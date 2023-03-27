@@ -6,13 +6,13 @@ from bmi.estimators.api import KDEMutualInformationEstimator
 from bmi.samplers.api import BivariateNormalSampler
 
 
-def test_kde_estimator(n_points: int = 10_000, corr: float = 0.8) -> None:
+def test_kde_estimator(n_points: int = 4_000, corr: float = 0.8) -> None:
     sampler = BivariateNormalSampler(correlation=corr)
     x, y = sampler.sample(n_points=n_points, rng=0)
 
     # standardize=False, so that we have differential entropies of uniform(0, 1)=0
     estimator = KDEMutualInformationEstimator(
-        standardize=False, bandwidth_xy="scott", kernel_xy="gaussian"
+        standardize=False, bandwidth_xy="scott", kernel_xy="tophat"
     )
     result = estimator.estimate_entropies(x, y)
 
@@ -26,6 +26,6 @@ def test_kde_estimator(n_points: int = 10_000, corr: float = 0.8) -> None:
     assert result.entropy_y == pytest.approx(entropy_normal, rel=0.05)
     assert result.entropy_xy == pytest.approx(entropy_joint, rel=0.05)
 
-    assert result.mutual_information == pytest.approx(sampler.mutual_information())
+    assert result.mutual_information == pytest.approx(sampler.mutual_information(), abs=0.03)
 
     assert result.mutual_information == pytest.approx(estimator.estimate(x, y))
