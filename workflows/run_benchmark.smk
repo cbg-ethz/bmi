@@ -53,13 +53,11 @@ rule apply_estimator:
         n_samples = int(n_samples)
         seed = int(seed.split(".")[0])
 
-        print(f"{seed} {n_samples} {estimator_id} {task_id}")
-
         # Save dummy file
         dummy_result = RunResult(mi_estimate=float("nan"), time_in_seconds=float("nan"), estimator_id=estimator_id, task_id=task_id, seed=seed, n_samples=n_samples)
         dummy_result.dump(output.yaml)
 
-        # Try to overwrite with a true estimator
+        # Try to overwrite the dummy file with the returned estimate
         try:
             estimator = ESTIMATORS[estimator_id]
             result = run_estimator(estimator=estimator, estimator_id=estimator_id, sample_path=input.csv, task_id=task_id, seed=seed)
