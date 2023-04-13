@@ -1,7 +1,9 @@
 from typing import Optional
 
 import pydantic
+import yaml
 
+from bmi.benchmark.utils.dict_dumper import DictDumper
 from bmi.benchmark.utils.timer import Timer
 from bmi.estimators.external.external_estimator import ExternalEstimator
 from bmi.interface import BaseModel, IMutualInformationPointEstimator, Pathlike
@@ -18,6 +20,10 @@ class RunResult(BaseModel):
     n_samples: int
     seed: Optional[int]
     additional_information: dict = pydantic.Field(default_factory=dict)
+
+    def dump(self, path):
+        with open(path, "w") as outfile:
+            yaml.dump(self.dict(), outfile, Dumper=DictDumper)
 
 
 def run_estimator(
