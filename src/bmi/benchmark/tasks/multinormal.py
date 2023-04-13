@@ -2,8 +2,8 @@ from typing import Optional
 
 import numpy as np
 
-from bmi.benchmark.task import Task
 import bmi.samplers.api as samplers
+from bmi.benchmark.task import Task
 
 
 def task_multinormal_dense(
@@ -25,8 +25,8 @@ def task_multinormal_dense(
         task_id=f"multinormal-dense-{dim_x}-{dim_y}",
         task_name=task_name or f"Multinormal (dense) {dim_x} × {dim_y}",
         task_params={
-            'off_diag': off_diag,
-            'covariance': covariance,
+            "off_diag": off_diag,
+            "covariance": covariance,
         },
     )
 
@@ -54,14 +54,20 @@ def task_multinormal_sparse(
         covariance=covariance,
     )
 
+    task_id = (
+        f"multinormal-sparse-{dim_x}-{dim_y}"
+        f"-{n_interacting}"
+        f"-{correlation_signal}-{correlation_noise}"
+    )
+
     return Task(
         sampler=sampler,
-        task_id=f"multinormal-sparse-{dim_x}-{dim_y}-{n_interacting}-{correlation_signal}-{correlation_noise}",
+        task_id=task_id,
         task_name=task_name or f"Multinormal (sparse) {dim_x} × {dim_y}",
         task_params={
-            'n_interacting': n_interacting,
-            'correlation_signal': correlation_signal,
-            'correlation_noise': correlation_noise,
-            'covariance': covariance,
+            "n_interacting": n_interacting,
+            "correlation_signal": correlation_signal,
+            "correlation_noise": correlation_noise,
+            "covariance": covariance,
         },
     )

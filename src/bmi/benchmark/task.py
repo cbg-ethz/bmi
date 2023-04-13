@@ -5,8 +5,8 @@ import pandas as pd
 import pydantic
 import yaml
 
+from bmi.benchmark.utils.dict_dumper import DictDumper
 from bmi.interface import BaseModel, ISampler, Pathlike
-from .utils.dict_dumper import DictDumper
 
 
 class TaskMetadata(BaseModel):
@@ -70,7 +70,7 @@ class Task:
 
         data = pd.DataFrame(
             np.hstack([samples_x, samples_y]),
-            columns=[f'X{i}' for i in range(self.dim_x)] + [f'Y{i}' for i in range(self.dim_y)]
+            columns=[f"X{i}" for i in range(self.dim_x)] + [f"Y{i}" for i in range(self.dim_y)],
         )
         data.to_csv(path, index=False)
 
@@ -79,9 +79,9 @@ class Task:
 
 # TODO(frdrc):
 # > dump_task('path/', task, seeds=[0, 1, 2], samples=[1000, 2000])
-# 
+#
 # should create:
-# 
+#
 # path/
 #   task_id/
 #     metadata.yaml

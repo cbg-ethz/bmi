@@ -2,15 +2,15 @@ from typing import Optional
 
 import pydantic
 
+from bmi.benchmark.utils.timer import Timer
+from bmi.estimators.external.external_estimator import ExternalEstimator
 from bmi.interface import BaseModel, IMutualInformationPointEstimator, Pathlike
 from bmi.utils import read_sample
-from bmi.estimators.external.external_estimator import ExternalEstimator
-from bmi.benchmark.task import TaskMetadata
-from bmi.benchmark.utils.timer import Timer
 
 
 class RunResult(BaseModel):
     """Class keeping the output of a single estimator run."""
+
     mi_estimate: float
     time_in_seconds: float
     estimator_id: str
@@ -24,7 +24,8 @@ def run_estimator(
     estimator: IMutualInformationPointEstimator,
     estimator_id: str,
     sample_path: Pathlike,
-    task_id: str, seed: Optional[int] = None,
+    task_id: str,
+    seed: Optional[int] = None,
     additional_information: Optional[dict] = None,
 ):
     samples_x, samples_y = read_sample(sample_path)

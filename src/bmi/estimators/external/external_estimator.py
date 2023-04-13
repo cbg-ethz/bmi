@@ -21,7 +21,7 @@ def _run_command_and_read_mi(args: list[str]) -> float:
 
 class ExternalEstimator(IMutualInformationPointEstimator):
     def _build_command(self, path: Pathlike, dim_x: int, dim_y: int):
-        raise NotImplemented
+        raise NotImplementedError
 
     def estimate_from_path(self, path: Pathlike):
         dim_x, dim_y = utils.read_sample_dims(path)
@@ -32,4 +32,3 @@ class ExternalEstimator(IMutualInformationPointEstimator):
         with tempfile.NamedTemporaryFile() as file:
             utils.save_sample(file.name, x, y)
             return self.estimate_from_path(file.name)
-

@@ -7,7 +7,7 @@ Note:
 """
 import pathlib
 from abc import abstractmethod
-from typing import Any, Optional, Protocol, Union
+from typing import Any, Protocol, Union
 
 import numpy as np
 import pydantic

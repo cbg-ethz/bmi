@@ -28,7 +28,7 @@ def save_sample(path: Pathlike, samples_x: ArrayLike, samples_y: ArrayLike):
 
     data = pd.DataFrame(
         np.hstack([samples_x, samples_y]),
-        columns=[f'X{i}' for i in range(dim_x)] + [f'Y{i}' for i in range(dim_y)]
+        columns=[f"X{i}" for i in range(dim_x)] + [f"Y{i}" for i in range(dim_y)],
     )
     data.to_csv(path, index=False)
 
@@ -36,8 +36,8 @@ def save_sample(path: Pathlike, samples_x: ArrayLike, samples_y: ArrayLike):
 def read_sample(path: Pathlike):
     data = pd.read_csv(path)
 
-    cols_x = [col for col in data.columns if 'X' in col]
-    cols_y = [col for col in data.columns if 'Y' in col]
+    cols_x = [col for col in data.columns if "X" in col]
+    cols_y = [col for col in data.columns if "Y" in col]
 
     dim_x = len(cols_x)
     dim_y = len(cols_y)
@@ -54,8 +54,8 @@ def read_sample(path: Pathlike):
 def read_sample_dims(path: Pathlike):
     data_header = pd.read_csv(path, nrows=0)
 
-    cols_x = [col for col in data_header.columns if 'X' in col]
-    cols_y = [col for col in data_header.columns if 'Y' in col]
+    cols_x = [col for col in data_header.columns if "X" in col]
+    cols_y = [col for col in data_header.columns if "Y" in col]
 
     dim_x = len(cols_x)
     dim_y = len(cols_y)
