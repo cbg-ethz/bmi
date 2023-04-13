@@ -118,7 +118,9 @@ def swissroll2d(x: jnp.ndarray) -> jnp.ndarray:
     """
     # Rescale and shift the variable
     t = 1.5 * jnp.pi * (1 + 2 * x[0])
-    return jnp.asarray([t * jnp.cos(t), t * jnp.sin(t)])
+    # Return the Swiss-roll shape. Note the 21 in the denominator
+    # to make the scale more similar (but not identical) to the original (0, 1)
+    return jnp.asarray([t * jnp.cos(t), t * jnp.sin(t)]) / 21.0
 
 
 class SwissRollSampler(TransformedSampler):

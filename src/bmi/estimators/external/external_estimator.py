@@ -20,7 +20,7 @@ def _run_command_and_read_mi(args: list[str]) -> float:
 
 
 class ExternalEstimator(IMutualInformationPointEstimator):
-    def _build_command(self, path: Pathlike, dim_x: int, dim_y: int):
+    def _build_command(self, path: Pathlike, dim_x: int, dim_y: int) -> list[str]:
         raise NotImplementedError
 
     def estimate_from_path(self, path: Pathlike):
