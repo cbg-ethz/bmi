@@ -5,7 +5,7 @@ import numpy as np
 import yaml
 
 
-class OurCustomDumper(yaml.SafeDumper):
+class DictDumper(yaml.SafeDumper):
     """The default dumper in PyYAML has problems with the following objects:
       - Paths
       - NumPy arrays and NumPy floats
