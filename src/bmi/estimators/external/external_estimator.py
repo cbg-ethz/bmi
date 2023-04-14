@@ -8,7 +8,7 @@ from bmi.interface import IMutualInformationPointEstimator, Pathlike
 
 
 def _run_command_and_read_mi(args: list[str]) -> float:
-    raw_output = subprocess.check_output(args)
+    raw_output = subprocess.check_output(args, stderr=subprocess.STDOUT)
     output: str = raw_output.decode().strip()
 
     try:

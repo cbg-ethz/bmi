@@ -1,4 +1,5 @@
 from typing import Optional
+import subprocess
 
 import pydantic
 import yaml
@@ -15,6 +16,7 @@ class RunResult(BaseModel):
 
     mi_estimate: float
     time_in_seconds: float
+    success: bool
     estimator_id: str
     task_id: str
     n_samples: int
@@ -34,22 +36,36 @@ def run_estimator(
     seed: Optional[int] = None,
     additional_information: Optional[dict] = None,
 ):
+    additional_information = additional_information or {}
     samples_x, samples_y = read_sample(sample_path)
     n_samples = len(samples_x)
 
-    timer = Timer()
+    try:
+        timer = Timer()
 
-    # external estimators read sample on their own
-    if isinstance(estimator, ExternalEstimator):
-        mi_estimate = estimator.estimate_from_path(sample_path)
-    else:
-        mi_estimate = estimator.estimate(samples_x, samples_y)
+        # external estimators read sample on their own
+        if isinstance(estimator, ExternalEstimator):
+            mi_estimate = estimator.estimate_from_path(sample_path)
+        else:
+            mi_estimate = estimator.estimate(samples_x, samples_y)
 
-    time_in_seconds = timer.check()
+        time_in_seconds = timer.check()
+        success = True
+
+    # something went wrong
+    except Exception as e:
+        mi_estimate = float('nan')
+        time_in_seconds = float('nan')
+        success = False
+        additional_information |= {'error': str(e)}
+        # when a subprocess fails, e.output is set
+        if hasattr(e, 'output'):
+            additional_information |= {'subprocess_output': str(e.output)}
 
     return RunResult(
         mi_estimate=mi_estimate,
         time_in_seconds=time_in_seconds,
+        success=success,
         estimator_id=estimator_id,
         task_id=task_id,
         n_samples=n_samples,
