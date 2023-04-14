@@ -4,6 +4,36 @@ import numpy.testing as nptest
 import pytest
 
 import bmi.utils as utils
+from bmi.samplers.api import SplitMultinormal
+
+
+def test_sample_save_and_read(tmp_path) -> None:
+    """Tests if saving and loading the data to the disk doesn't change anything."""
+    target_path = tmp_path / "my-test-task"
+
+    sampler = SplitMultinormal(dim_x=1, dim_y=1, covariance=np.asarray([[1.0, 0.7], [0.7, 1.0]]))
+    samples_x, samples_y = sampler.sample(n_points=1000, rng=0)
+
+    utils.save_sample(target_path, samples_x, samples_y)
+
+    dim_x, dim_y = utils.read_sample_dims(target_path)
+    assert dim_x == 1
+    assert dim_y == 1
+
+    samples_x_read, samples_y_read = utils.read_sample(target_path)
+
+    assert np.allclose(samples_x, samples_x_read)
+    assert np.allclose(samples_y, samples_y_read)
+
+
+class LoadSampleInWrongFormat:
+    """Tests for loading corrupted samples."""
+
+    @pytest.mark.skip("Not implemented!")
+    def test_dataframe_in_wrong_format(self) -> None:
+        """Checks if an informative error is raised when
+        a data frame in wrong format is passed."""
+        raise NotImplementedError
 
 
 class TestProductSpace:

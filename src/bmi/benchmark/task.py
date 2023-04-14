@@ -1,12 +1,12 @@
 from typing import Optional
 
 import numpy as np
-import pandas as pd
 import pydantic
 import yaml
 
 from bmi.benchmark.utils.dict_dumper import DictDumper
 from bmi.interface import BaseModel, ISampler, Pathlike
+from bmi.utils import save_sample
 
 
 class TaskMetadata(BaseModel):
@@ -67,12 +67,7 @@ class Task:
 
     def save_sample(self, path: Pathlike, n_samples: int, seed: int):
         samples_x, samples_y = self.sample(n_samples, seed)
-
-        data = pd.DataFrame(
-            np.hstack([samples_x, samples_y]),
-            columns=[f"X{i}" for i in range(self.dim_x)] + [f"Y{i}" for i in range(self.dim_y)],
-        )
-        data.to_csv(path, index=False)
+        save_sample(path, samples_x, samples_y)
 
 
 # TODO(frdrc): read_sample('path/to/saved/sample.csv') -> tuple[array, array]
