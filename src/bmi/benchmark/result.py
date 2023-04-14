@@ -1,5 +1,4 @@
 from typing import Optional
-import subprocess
 
 import pydantic
 import yaml
@@ -54,13 +53,13 @@ def run_estimator(
 
     # something went wrong
     except Exception as e:
-        mi_estimate = float('nan')
-        time_in_seconds = float('nan')
+        mi_estimate = float("nan")
+        time_in_seconds = float("nan")
         success = False
-        additional_information |= {'error': str(e)}
+        additional_information |= {"error": str(e)}
         # when a subprocess fails, e.output is set
-        if hasattr(e, 'output'):
-            additional_information |= {'subprocess_output': str(e.output)}
+        if hasattr(e, "output"):
+            additional_information |= {"subprocess_output": str(e.output)}
 
     return RunResult(
         mi_estimate=mi_estimate,

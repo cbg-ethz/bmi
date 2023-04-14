@@ -7,10 +7,6 @@ from bmi.benchmark import BENCHMARK_TASKS, run_estimator
 
 # === CONFIG ===
 
-# maximal memory ~4GiB for each process (rule)
-#resource.setrlimit(resource.RLIMIT_AS, (1<<33, 1<<33))
-
-
 # TODO: Add more estimators.
 ESTIMATORS = {
 #    'MINE': estimators.MINEEstimator(max_n_steps=100, batch_size=32),
