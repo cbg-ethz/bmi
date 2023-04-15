@@ -47,6 +47,10 @@ class Task:
         return self.metadata.task_name
 
     @property
+    def params(self):
+        return self.metadata.task_params
+
+    @property
     def dim_x(self):
         return self.metadata.dim_x
 

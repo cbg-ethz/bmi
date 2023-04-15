@@ -1,5 +1,6 @@
 import bmi.benchmark.tasks.embeddings as embeddings
 import bmi.benchmark.tasks.multinormal as multinormal
+import bmi.benchmark.tasks.spiral as spiral
 import bmi.benchmark.tasks.student as student
 
 EMBEDDINGS_TASKS = [
@@ -34,8 +35,14 @@ STUDENT_TASKS = [
     student.task_student_dense(dim_x=5, dim_y=5, df=10),
 ]
 
+TRANSFORMED_TASKS = [
+    spiral.task_spiral_multinormal_sparse(dim_x=3, dim_y=3),
+    spiral.task_spiral_multinormal_sparse(dim_x=5, dim_y=5),
+    spiral.task_spiral_multinormal_sparse(dim_x=25, dim_y=25),
+]
 
-BENCHMARK_TASKS_LIST = EMBEDDINGS_TASKS + MULTINORMAL_TASKS + STUDENT_TASKS
+
+BENCHMARK_TASKS_LIST = EMBEDDINGS_TASKS + MULTINORMAL_TASKS + STUDENT_TASKS + TRANSFORMED_TASKS
 
 
 __all__ = [
