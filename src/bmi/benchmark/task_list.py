@@ -1,7 +1,12 @@
+import bmi.benchmark.tasks.bimodal_gaussians as bimodal_gaussians
 import bmi.benchmark.tasks.embeddings as embeddings
 import bmi.benchmark.tasks.multinormal as multinormal
 import bmi.benchmark.tasks.student as student
 from bmi.benchmark.tasks.spiral import transform_spiral_task as spiralise
+
+ONE_DIM_TASKS = [
+    bimodal_gaussians.task_bimodal_gaussians(),
+]
 
 EMBEDDINGS_TASKS = [
     embeddings.generate_swissroll_task(gaussian_correlation=0.9, task_name="Swiss roll"),
@@ -42,7 +47,9 @@ TRANSFORMED_TASKS = [
 ]
 
 
-BENCHMARK_TASKS_LIST = EMBEDDINGS_TASKS + MULTINORMAL_TASKS + STUDENT_TASKS + TRANSFORMED_TASKS
+BENCHMARK_TASKS_LIST = (
+    ONE_DIM_TASKS + EMBEDDINGS_TASKS + MULTINORMAL_TASKS + STUDENT_TASKS + TRANSFORMED_TASKS
+)
 
 
 __all__ = [
