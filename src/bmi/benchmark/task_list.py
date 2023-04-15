@@ -1,7 +1,7 @@
 import bmi.benchmark.tasks.embeddings as embeddings
 import bmi.benchmark.tasks.multinormal as multinormal
-import bmi.benchmark.tasks.spiral as spiral
 import bmi.benchmark.tasks.student as student
+from bmi.benchmark.tasks.spiral import transform_spiral_task as spiralise
 
 EMBEDDINGS_TASKS = [
     embeddings.generate_swissroll_task(gaussian_correlation=0.9, task_name="Swiss roll"),
@@ -16,10 +16,10 @@ MULTINORMAL_TASKS = [
     multinormal.task_multinormal_sparse(2, 2),
     multinormal.task_multinormal_sparse(3, 3),
     multinormal.task_multinormal_sparse(5, 5),
+    multinormal.task_multinormal_sparse(25, 25),
     multinormal.task_multinormal_sparse(
         5, 5, correlation_noise=0.0, task_name="Multinormal 5 × 5 (sparse, no noise)"
     ),
-    multinormal.task_multinormal_sparse(25, 25),
 ]
 
 STUDENT_TASKS = [
@@ -36,9 +36,9 @@ STUDENT_TASKS = [
 ]
 
 TRANSFORMED_TASKS = [
-    spiral.task_spiral_multinormal_sparse(dim_x=3, dim_y=3),
-    spiral.task_spiral_multinormal_sparse(dim_x=5, dim_y=5),
-    spiral.task_spiral_multinormal_sparse(dim_x=25, dim_y=25),
+    spiralise(multinormal.task_multinormal_sparse(3, 3)),
+    spiralise(multinormal.task_multinormal_sparse(5, 5)),
+    spiralise(multinormal.task_multinormal_sparse(25, 25)),
 ]
 
 

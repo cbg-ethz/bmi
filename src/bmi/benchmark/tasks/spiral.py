@@ -3,7 +3,6 @@ from typing import Optional
 import bmi.samplers.api as samplers
 import bmi.transforms.rotate as rt
 from bmi.benchmark.task import Task
-from bmi.benchmark.tasks import multinormal
 
 
 def transform_spiral_task(
@@ -33,24 +32,4 @@ def transform_spiral_task(
         task_id=f"spiral-{base_task.id}",
         task_name=task_name or f"Spiral @ {base_task.name}",
         task_params=base_task.params | {"speed": speed},
-    )
-
-
-def task_spiral_multinormal_sparse(
-    dim_x: int,
-    dim_y: int,
-    speed: float = 1 / 3,
-    task_name: Optional[str] = None,
-    **kwargs,
-) -> Task:
-    base_task = multinormal.task_multinormal_sparse(
-        dim_x=dim_x,
-        dim_y=dim_y,
-        **kwargs,
-    )
-
-    return transform_spiral_task(
-        base_task=base_task,
-        speed=speed,
-        task_name=task_name,
     )
