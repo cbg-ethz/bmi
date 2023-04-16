@@ -1,10 +1,13 @@
 import bmi.benchmark.tasks.bimodal_gaussians as bimodal_gaussians
+import bmi.benchmark.tasks.bivariate_normal as binormal
 import bmi.benchmark.tasks.embeddings as embeddings
 import bmi.benchmark.tasks.multinormal as multinormal
 import bmi.benchmark.tasks.student as student
+from bmi.benchmark.tasks.normal_cdf import transform_normal_cdf_task as normal_cdfise
 from bmi.benchmark.tasks.spiral import transform_spiral_task as spiralise
 
 ONE_DIM_TASKS = [
+    normal_cdfise(binormal.task_bivariate_normal(), task_name="Uniform 1 × 1"),
     bimodal_gaussians.task_bimodal_gaussians(),
 ]
 
@@ -41,6 +44,9 @@ STUDENT_TASKS = [
 ]
 
 TRANSFORMED_TASKS = [
+    normal_cdfise(multinormal.task_multinormal_sparse(3, 3), task_name="Uniform 3 × 3"),
+    normal_cdfise(multinormal.task_multinormal_sparse(5, 5), task_name="Uniform 5 × 5"),
+    normal_cdfise(multinormal.task_multinormal_sparse(25, 25), task_name="Uniform 25 × 25"),
     spiralise(multinormal.task_multinormal_sparse(3, 3)),
     spiralise(multinormal.task_multinormal_sparse(5, 5)),
     spiralise(multinormal.task_multinormal_sparse(25, 25)),
