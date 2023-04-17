@@ -1,8 +1,8 @@
-import bmi.samplers.api as samplers
+import bmi.samplers as samplers
 from bmi.benchmark.task import Task
 from bmi.benchmark.tasks.bivariate_normal import task_bivariate_normal
 from bmi.benchmark.tasks.normal_cdf import transform_normal_cdf_task as normal_cdfise
-from bmi.transforms.api import invert_cdf, normal_cdf
+from bmi.transforms import invert_cdf, normal_cdf
 
 
 def task_bimodal_gaussians(

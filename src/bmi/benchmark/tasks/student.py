@@ -2,7 +2,7 @@ from typing import Optional
 
 import numpy as np
 
-import bmi.samplers.api as samplers
+import bmi.samplers as samplers
 from bmi.benchmark.task import Task
 
 

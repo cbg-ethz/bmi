@@ -3,7 +3,7 @@ import pytest
 from jax import random
 from sklearn.feature_selection import mutual_info_regression
 
-from bmi.samplers.additive_uniform import AdditiveUniformSampler
+from bmi.samplers._additive_uniform import AdditiveUniformSampler
 
 
 @pytest.mark.parametrize("epsilon", [0.5, 0.1, 2.0, 5.0])

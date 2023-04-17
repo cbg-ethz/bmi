@@ -1,6 +1,6 @@
-import bmi.samplers.api as samplers
+import bmi.samplers as samplers
 from bmi.benchmark.task import Task
-from bmi.transforms.api import swissroll2d
+from bmi.transforms import swissroll2d
 
 
 def transform_swissroll_task(

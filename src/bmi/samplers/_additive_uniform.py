@@ -10,15 +10,21 @@ from bmi.samplers.base import BaseSampler, cast_to_rng
 
 class AdditiveUniformSampler(BaseSampler):
     def __init__(self, epsilon: float) -> None:
-        """Represents the distribution P(X, Y) under the following model:
-            X ~ Uniform(0, 1)
-            N ~ Uniform(-epsilon, epsilon)
-            Y = X + N
+        """Represents the distribution $P_{XY}$ under the following model:
+
+        $$X \\sim \\mathrm{Uniform}(0, 1)$$
+
+        $$N \\sim \\mathrm{Uniform}(-\\epsilon, \\epsilon)$$
+
+        $$Y = X + N$$
 
         The MI in this case is:
-            I(X; Y) =
-              1 / (4 * epsilon) if epsilon > 0.5
-              epsilon - log(2*epsilon) for epsilon <= 0.5
+
+        $$I(X; Y) = \\begin{cases}
+             \\frac{1}{4 \\epsilon} \\mathrm{~if~} \\epsilon > 0.5    \\\\
+             \\epsilon - \\log(2 \\epsilon) \\mathrm{~otherwise}
+            \\end{cases}$$
+
         and can be derived analytically.
         """
         super().__init__(dim_x=1, dim_y=1)

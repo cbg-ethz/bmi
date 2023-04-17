@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 import bmi.estimators.neural.api as neural
-import bmi.samplers.api as samplers
+import bmi.samplers as samplers
 
 
 @pytest.mark.parametrize(

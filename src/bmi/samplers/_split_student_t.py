@@ -5,7 +5,7 @@ from numpy.typing import ArrayLike
 from scipy import stats
 from scipy.special import digamma, gamma
 
-import bmi.samplers.splitmultinormal as spl
+import bmi.samplers._splitmultinormal as spl
 from bmi.samplers.base import BaseSampler
 
 
@@ -29,18 +29,19 @@ def _differential_entropy(k: int, dof: int) -> float:
 class SplitStudentT(BaseSampler):
     """Multivariate Student-t distribution.
 
-    Sampling is based on Wikipedia:
-      https://en.wikipedia.org/wiki/Multivariate_t-distribution
+    Sampling is based on
+    [Wikipedia](https://en.wikipedia.org/wiki/Multivariate_t-distribution)
 
     Mutual information is based on:
-      R.B. Arellano-Valle, J.E. Contreras-Reyes, M.G. Genton,
-      Shannon Entropy and Mutual Information for Multivariate
-      Skew-Elliptical Distributions,
-      Scandinavian Journal of Statistics, vol. 40, pp. 46-47, 2013
 
-    Note:
-        The formula for the mutual information is wrong, but can be
-        calculated using the expressions involving differential entropies.
+    R.B. Arellano-Valle, J.E. Contreras-Reyes, M.G. Genton,
+    Shannon Entropy and Mutual Information for Multivariate
+    Skew-Elliptical Distributions,
+    Scandinavian Journal of Statistics, vol. 40, pp. 46-47, 2013
+
+    Note that the final formula for the mutual information is slightly wrong,
+    but can be calculated using the expressions involving differential entropies
+    above.
     """
 
     def __init__(
@@ -58,12 +59,12 @@ class SplitStudentT(BaseSampler):
             dim_x: dimension of the X variable
             dim_y: dimension of the Y variable
             df: degrees of freedom, strictly positive. Use `np.inf` for a Gaussian
-            dispersion: dispersion matrix, shape (dim_x + dim_y, dim_x + dim_y)
-            mean: mean of the distribution, shape (dim_x + dim_y,). Default: zero vector
+            dispersion: dispersion matrix, shape `(dim_x + dim_y, dim_x + dim_y)`
+            mean: mean of the distribution, shape `(dim_x + dim_y,)`. Default: zero vector
 
         Note:
-            Dispersion is *not* the covariance matrix. To calculate the covariance matrix,
-            use the `covariance` method.
+            Dispersion is *not* the covariance matrix.
+            To calculate the covariance matrix, use the `covariance` method.
         """
         super().__init__(dim_x=dim_x, dim_y=dim_y)
 
@@ -114,10 +115,10 @@ class SplitStudentT(BaseSampler):
         """Calculates the covariance matrix.
 
         Returns:
-            array, shape (dim_x+dim_y, dim_x+dim_y)
+            array, shape `(dim_x+dim_y, dim_x+dim_y)`
 
         Raises:
-            ValueError, if covariance is not defined (for `df` <= 2)
+            ValueError, if covariance is not defined (for `df` $\\le 2$)
         """
         if self.df <= 2:
             raise ValueError(

@@ -4,7 +4,7 @@ import numpy.testing as nptest
 import pytest
 
 import bmi.utils as utils
-from bmi.samplers.api import SplitMultinormal
+from bmi.samplers import SplitMultinormal
 
 
 def test_sample_save_and_read(tmp_path) -> None:

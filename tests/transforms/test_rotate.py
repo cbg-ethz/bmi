@@ -4,7 +4,7 @@ import jax
 import numpy as np
 import pytest
 
-import bmi.transforms.rotate as rt
+import bmi.transforms._rotate as rt
 
 
 class TestSpiral:

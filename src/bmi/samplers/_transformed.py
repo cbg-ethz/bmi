@@ -19,12 +19,12 @@ def identity(x: _T) -> _T:
 
 
 class TransformedSampler(base.BaseSampler):
-    """Pushforward of a distribution P(X, Y)
+    """Pushforward of a distribution $P_{XY}$
     via a product mapping
-        f x g.
+        $f \\times g$.
 
-    In other words, we have mutual information between f(X) and g(Y)
-    for some mappings f and g.
+    In other words, we have mutual information between $f(X)$ and $g(Y)$
+    for some mappings $f$ and $g$.
 
     Note:
       By default we assume that f and g are diffeomorphisms, so that

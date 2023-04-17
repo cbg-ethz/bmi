@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 from jax import random
 
-from bmi.estimators.histogram import HistogramEstimator
-from bmi.samplers.splitmultinormal import SplitMultinormal
+from bmi.estimators._histogram import HistogramEstimator
+from bmi.samplers._splitmultinormal import SplitMultinormal
 
 
 @pytest.mark.parametrize("n_points", [2000])

@@ -1,7 +1,7 @@
 import pytest
 
 import bmi.estimators.external.r_estimators as r_estimators
-from bmi.samplers.splitmultinormal import BivariateNormalSampler
+from bmi.samplers._splitmultinormal import BivariateNormalSampler
 
 # Factories for the estimators.
 # This is e.g., useful when testing on the server

@@ -3,7 +3,7 @@ import pytest
 
 import bmi.estimators.function_wrapper as fw
 import bmi.estimators.ksg as ksg
-import bmi.samplers.api as samplers
+import bmi.samplers as samplers
 
 
 @pytest.mark.parametrize("mi", (0.5, 0.2))
