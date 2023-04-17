@@ -11,20 +11,20 @@ def transform_spiral_task(
     task_name: Optional[str] = None,
 ) -> Task:
     assert base_task.dim_x > 1, "dim_x has to be at least 2 for rotation to exist"
-    assert base_task.dim_x > 2, "dim_y has to be at least 3 for rotation to exist"
+    assert base_task.dim_y > 2, "dim_y has to be at least 3 for rotation to exist"
 
     base_sampler = base_task.sampler
 
-    x_generator = rt.so_generator(base_task.dim_x, 0, 1)
-    y_generator = rt.so_generator(base_task.dim_y, 1, 2)
+    generator_x = rt.so_generator(base_task.dim_x, 0, 1)
+    generator_y = rt.so_generator(base_task.dim_y, 1, 2)
 
-    x_transform = rt.Spiral(generator=x_generator, speed=speed)
-    y_transform = rt.Spiral(generator=y_generator, speed=speed)
+    transform_x = rt.Spiral(generator=generator_x, speed=speed)
+    transform_y = rt.Spiral(generator=generator_y, speed=speed)
 
     spiral_sampler = samplers.TransformedSampler(
         base_sampler=base_sampler,
-        transform_x=x_transform,
-        transform_y=y_transform,
+        transform_x=transform_x,
+        transform_y=transform_y,
     )
 
     return Task(

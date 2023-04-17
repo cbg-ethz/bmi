@@ -2,8 +2,7 @@ import bmi.samplers.api as samplers
 from bmi.benchmark.task import Task
 from bmi.benchmark.tasks.bivariate_normal import task_bivariate_normal
 from bmi.benchmark.tasks.normal_cdf import transform_normal_cdf_task as normal_cdfise
-from bmi.transforms.invert_cdf import invert_cdf
-from bmi.transforms.normal_cdf import normal_cdf
+from bmi.transforms.api import invert_cdf, normal_cdf
 
 
 def task_bimodal_gaussians(
@@ -18,8 +17,8 @@ def task_bimodal_gaussians(
 
     bimodal_sampler = samplers.TransformedSampler(
         base_sampler=base_sampler,
-        transform_x=lambda x: icdf_x(x),
-        transform_y=lambda y: icdf_y(y),
+        transform_x=icdf_x,
+        transform_y=icdf_y,
     )
 
     return Task(
