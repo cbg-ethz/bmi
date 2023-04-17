@@ -71,19 +71,23 @@ class _Multinormal:
 
 
 class SplitMultinormal(BaseSampler):
-    """Represents two multinormal variables.
+    """Represents two variables with jointly
+    multivariate normal distribution
 
     Covariance matrix should have the block form:
 
-        Cov[XX] Cov[XY]
-        Cov[YX] Cov[YY]
+    $$\\Sigma = \\begin{pmatrix}
+            \\Sigma_{XX} & \\Sigma_{XY} \\\\
+            \\Sigma_{YX} & \\Sigma_{YY}
+    \\end{pmatrix}$$
 
     where:
-      - Cov[XX] is the covariance matrix of X variable (shape (dim_x, dim_x)),
-      - Cov[YY] is the covariance of the Y variable (shape (dim_y, dim_y))
-      - Cov[XY] and Cov[YX] (being transposes of each other, as the matrix is symmetric,
-            of shapes (dim_x, dim_y) or transposed one)
-        describe the interaction between X and Y.
+
+    - $\\Sigma_{XX}$ is the covariance matrix of $X$ variable (shape `(dim_x, dim_x)`),
+    - $\\Sigma_{YY}$ is the covariance of the $Y$ variable (shape `(dim_y, dim_y)`)
+    - $\\Sigma_{XY}$ and $\\Sigma_{YX}$
+      (being transposes of each other, as the matrix is symmetric,
+      of shapes `(dim_x, dim_y)` or transposed one) describe the covariance between $X$ and $Y$.
     """
 
     def __init__(
@@ -94,7 +98,8 @@ class SplitMultinormal(BaseSampler):
         Args:
             dim_x: dimension of the X space
             dim_y: dimension of the Y space
-            mean: mean vector, shape (n,) where n = dim_x + dim_y. Default: zero vector
+            mean: mean vector, shape `(n,)` where `n = dim_x + dim_y`.
+              Default: zero vector
             covariance: covariance matrix, shape (n, n)
         """
         super().__init__(dim_x=dim_x, dim_y=dim_y)
@@ -136,10 +141,14 @@ class SplitMultinormal(BaseSampler):
         Returns:
             mutual information, in nats
         Mutual information is given by
-            0.5 * log( det(covariance_x) * det(covariance_y) / det(full covariance) )
+
+        $$I(X; Y) = \\frac 12 \\log \\left(\\frac{\\det(\\Sigma_{XX})
+        \\det(\\Sigma_{YY})}{\\det(\\Sigma)}\\right)$$
+
         which follows from the formula
-            I(X; Y) = H(X) + H(Y) - H(X, Y)
-        and the entropy of the multinormal distribution.
+            $I(X; Y) = H(X) + H(Y) - H(X, Y)$
+        and the formula for the differential entropy of the multivariate
+        normal distribution.
         """
         h_x = self._x_distribution.entropy()
         h_y = self._y_distribution.entropy()

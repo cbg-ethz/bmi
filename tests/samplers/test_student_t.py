@@ -4,7 +4,7 @@ from jax import random
 from scipy import stats
 from sklearn.feature_selection import mutual_info_regression
 
-import bmi.samplers.split_student_t as student
+import bmi.samplers._split_student_t as student
 
 
 @pytest.mark.parametrize("x", (2, 4))

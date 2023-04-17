@@ -3,7 +3,7 @@ import pytest
 from jax import random
 from sklearn.feature_selection import mutual_info_regression
 
-from bmi.samplers.splitmultinormal import BivariateNormalSampler, SplitMultinormal
+from bmi.samplers._splitmultinormal import BivariateNormalSampler, SplitMultinormal
 
 
 @pytest.mark.parametrize("y", (2, 5, 10))

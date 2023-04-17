@@ -2,7 +2,11 @@
 
 Samplers represent probability distributions with known mutual information.
 
+::: bmi.samplers.SplitMultinormal
 
-## SplitStudentT
-::: bmi.samplers.split_student_t.SplitStudentT
+::: bmi.samplers.SplitStudentT
+
+::: bmi.samplers.AdditiveUniformSampler
+
+::: bmi.samplers.BivariateNormalSampler
 

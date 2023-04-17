@@ -1,5 +1,5 @@
-from bmi.transforms.invert_cdf import invert_cdf
-from bmi.transforms.rotate import Spiral, skew_symmetrize, so_generator
+from bmi.transforms._invert_cdf import invert_cdf
+from bmi.transforms._rotate import Spiral, skew_symmetrize, so_generator
 from bmi.transforms.simple import half_cube, normal_cdf, swissroll2d
 
 __all__ = [

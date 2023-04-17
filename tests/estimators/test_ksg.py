@@ -6,7 +6,7 @@ from jax import random
 from sklearn.feature_selection import mutual_info_regression
 
 import bmi.estimators.ksg as ksg
-from bmi.samplers.splitmultinormal import SplitMultinormal
+from bmi.samplers._splitmultinormal import SplitMultinormal
 
 
 def random_covariance(size: int, jitter: float = 1e-2, rng=0):

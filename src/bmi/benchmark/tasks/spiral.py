@@ -1,7 +1,7 @@
 from typing import Optional
 
 import bmi.samplers as samplers
-import bmi.transforms.rotate as rt
+import bmi.transforms._rotate as rt
 from bmi.benchmark.task import Task
 
 

@@ -1,6 +1,6 @@
+from bmi.estimators._histogram import HistogramEstimator, HistogramEstimatorParams
+from bmi.estimators._kde import KDEMutualInformationEstimator
 from bmi.estimators.correlation import CCAMutualInformationEstimator
-from bmi.estimators.histogram import HistogramEstimator, HistogramEstimatorParams
-from bmi.estimators.kde import KDEMutualInformationEstimator
 
 # isort: off
 from bmi.estimators.ksg import (

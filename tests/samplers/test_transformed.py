@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 import bmi.samplers as samplers
-import bmi.samplers.transformed as tr
+import bmi.samplers._transformed as tr
 
 
 @pytest.mark.parametrize("x", [2, 120, 5.0, "something"])
