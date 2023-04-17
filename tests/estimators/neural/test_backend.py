@@ -6,7 +6,7 @@ import pytest
 
 import bmi.estimators.neural._backend_linear as lin
 import bmi.estimators.neural._backend_quadratic as quad
-from bmi.samplers.api import SplitMultinormal
+from bmi.samplers import SplitMultinormal
 
 
 @pytest.mark.parametrize(

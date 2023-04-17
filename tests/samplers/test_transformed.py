@@ -2,7 +2,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import bmi.samplers.api as samplers
+import bmi.samplers as samplers
 import bmi.samplers.transformed as tr
 
 

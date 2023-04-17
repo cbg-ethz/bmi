@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 import bmi.estimators.neural._mine as mine
-import bmi.samplers.api as samplers
+import bmi.samplers as samplers
 
 
 def test_mine_estimator_3d(n_points: int = 8_000) -> None:

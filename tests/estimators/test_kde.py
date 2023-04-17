@@ -2,8 +2,8 @@
 import numpy as np
 import pytest
 
-from bmi.estimators.api import KDEMutualInformationEstimator
-from bmi.samplers.api import BivariateNormalSampler
+from bmi.estimators import KDEMutualInformationEstimator
+from bmi.samplers import BivariateNormalSampler
 
 
 def test_kde_estimator(n_points: int = 4_000, corr: float = 0.8) -> None:

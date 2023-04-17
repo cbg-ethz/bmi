@@ -1,6 +1,6 @@
 from typing import Optional
 
-import bmi.samplers.api as samplers
+import bmi.samplers as samplers
 import bmi.transforms.rotate as rt
 from bmi.benchmark.task import Task
 

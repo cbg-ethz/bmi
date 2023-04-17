@@ -1,8 +1,8 @@
 """Benchmarking mutual information package."""
 import bmi.benchmark as benchmark
-import bmi.estimators.api as estimators
+import bmi.estimators as estimators
 import bmi.samplers as samplers
-import bmi.transforms.api as transforms
+import bmi.transforms as transforms
 
 # ISort doesn't want to split these into several lines, conflicting with Black
 # isort: off

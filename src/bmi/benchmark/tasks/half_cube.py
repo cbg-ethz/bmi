@@ -1,8 +1,8 @@
 from typing import Optional
 
-import bmi.samplers.api as samplers
+import bmi.samplers as samplers
 from bmi.benchmark.task import Task
-from bmi.transforms.api import half_cube
+from bmi.transforms import half_cube
 
 
 def transform_half_cube_task(

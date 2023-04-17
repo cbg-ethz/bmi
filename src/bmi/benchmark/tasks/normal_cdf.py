@@ -1,8 +1,8 @@
 from typing import Optional
 
-import bmi.samplers.api as samplers
+import bmi.samplers as samplers
 from bmi.benchmark.task import Task
-from bmi.transforms.api import normal_cdf
+from bmi.transforms import normal_cdf
 
 
 def transform_normal_cdf_task(
