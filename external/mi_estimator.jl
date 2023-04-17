@@ -2,8 +2,8 @@
 # A mutual information estimator using TransferEntropy.jl
 # library in Julia
 # Use as:
-# $ julia external/mi_estimator.jl path_to_file_with_samples.csv seed dim_x dim_y
-# Note that the CSV must be formatted as seed, X1, ..., Xn, Y1, ..., Yn
+# $ julia external/mi_estimator.jl path_to_file_with_samples.csv dim_x dim_y
+# Note that the CSV must be formatted as X1, ..., Xn, Y1, ..., Yn
 #
 # To install the dependencies run:
 # $ julia
@@ -23,11 +23,7 @@ function get_args()
 
     @add_arg_table settings begin
     "samples"
-        help = "The path to samples CSV in the format: seed, X1, ..., Xm, Y1, ..., Yn."
-        required = true
-    "seed"
-        help = "The seed of the samples to select."
-        arg_type = Int
+        help = "The path to samples CSV in the format: X1, ..., Xm, Y1, ..., Yn."
         required = true
     "dim_x"
         help = "The dimension of the X variable."
@@ -106,7 +102,7 @@ function get_estimator(args::Dict, verbose::Bool)
 end
 
 
-function get_samples(filename::String, seed::Int, dim_x::Int, dim_y::Int, verbose::Bool)
+function get_samples(filename::String, dim_x::Int, dim_y::Int, verbose::Bool)
     # Parse the file into a data frame
     df = CSV.File(filename) |> DataFrame
 
@@ -114,16 +110,9 @@ function get_samples(filename::String, seed::Int, dim_x::Int, dim_y::Int, verbos
         println("Read $(size(df, 1)) rows from file $filename")
     end
 
-    # Get the samples corresponding to the right seed
-    df = df[df.seed .== seed, :]
-
-    if verbose
-        println("Selected $(size(df, 1)) rows corresponding to seed $seed")
-    end
-
     # Convert the right columns to Dataset
-    x = Dataset(Matrix(df[:, 2:1+dim_x]))
-    y = Dataset(Matrix(df[:, 2+dim_x: 1+dim_x+dim_y]))
+    x = Dataset(Matrix(df[:, 1:dim_x]))
+    y = Dataset(Matrix(df[:, 1+dim_x: dim_x+dim_y]))
 
     if verbose
         println("X variable: $(size(x)). Y variable: $(size(y))")
@@ -145,7 +134,7 @@ function main()
     end
 
     # Parse the samples
-    x, y = get_samples(args["samples"], args["seed"], args["dim_x"], args["dim_y"], verbose)
+    x, y = get_samples(args["samples"], args["dim_x"], args["dim_y"], verbose)
 
     # Run the right mutual information estimator, basing on provided hyperparameters
     estimator = get_estimator(args, verbose)

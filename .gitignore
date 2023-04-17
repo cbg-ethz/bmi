@@ -3,6 +3,9 @@
 /results
 /lightning_logs
 
+# Snakemake
+.snakemake
+
 # Data files
 *.bz2
 *.csv

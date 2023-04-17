@@ -1,48 +1,35 @@
 from typing import Optional
 
-import numpy as np
-
-import bmi.benchmark.core as core
+import bmi.samplers.api as samplers
 import bmi.transforms.rotate as rt
-from bmi.samplers.api import SplitMultinormal, TransformedSampler
-
-SPEED: str = "speed"
+from bmi.benchmark.task import Task
 
 
-def generate_spiral_invariance_task(
-    correlation: float,
-    n_points: int,
-    n_seeds: int,
-    speed: float,
-    dim_x: int = 2,
-    dim_y: int = 1,
-    task_id: Optional[str] = None,
-) -> core.Task:
-    task_id = (
-        task_id
-        or f"spiral-cor_{correlation:.2f}-N_{n_points}-dim_{dim_x}_{dim_y}-speed_{speed:.2f}"
+def transform_spiral_task(
+    base_task: Task,
+    speed: float = 1 / 3,
+    task_name: Optional[str] = None,
+) -> Task:
+    assert base_task.dim_x > 1, "dim_x has to be at least 2 for rotation to exist"
+    assert base_task.dim_y > 2, "dim_y has to be at least 3 for rotation to exist"
+
+    base_sampler = base_task.sampler
+
+    generator_x = rt.so_generator(base_task.dim_x, 0, 1)
+    generator_y = rt.so_generator(base_task.dim_y, 1, 2)
+
+    transform_x = rt.Spiral(generator=generator_x, speed=speed)
+    transform_y = rt.Spiral(generator=generator_y, speed=speed)
+
+    spiral_sampler = samplers.TransformedSampler(
+        base_sampler=base_sampler,
+        transform_x=transform_x,
+        transform_y=transform_y,
     )
 
-    # First, we create a Gaussian sampler
-    # We introduce the non-zero correlation
-    # only between the first dimension of X and first dimension of Y
-    cov = np.eye(dim_x + dim_y)
-    cov[0, dim_x] = correlation
-    cov[dim_x, 0] = correlation
-    base_sampler = SplitMultinormal(dim_x=dim_x, dim_y=dim_y, covariance=cov)
-
-    # Then, we apply the spiral diffeomorphism to the X variable
-    generator = rt.so_generator(dim_x)
-    spiral = rt.Spiral(
-        generator=generator,
-        speed=speed,
-    )
-    sampler = TransformedSampler(base_sampler=base_sampler, transform_x=spiral, vectorise=True)
-
-    return core.generate_task(
-        sampler=sampler,
-        n_samples=n_points,
-        seeds=list(range(n_seeds)),
-        task_id=task_id,
-        task_params={SPEED: speed},
+    return Task(
+        sampler=spiral_sampler,
+        task_id=f"spiral-{base_task.id}",
+        task_name=task_name or f"Spiral @ {base_task.name}",
+        task_params=base_task.params | {"speed": speed},
     )

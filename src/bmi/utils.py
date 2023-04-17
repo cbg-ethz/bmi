@@ -8,8 +8,59 @@ Note:
 from typing import Generator, Union
 
 import numpy as np
+import pandas as pd
 from numpy.typing import ArrayLike
 from sklearn import preprocessing
+
+from bmi.interface import Pathlike
+
+
+def save_sample(path: Pathlike, samples_x: ArrayLike, samples_y: ArrayLike):
+    samples_x = np.asarray(samples_x)
+    samples_y = np.asarray(samples_y)
+
+    assert len(samples_x.shape) == 2
+    assert len(samples_y.shape) == 2
+    assert samples_x.shape[0] == samples_y.shape[0]
+
+    dim_x = samples_x.shape[1]
+    dim_y = samples_y.shape[1]
+
+    data = pd.DataFrame(
+        np.hstack([samples_x, samples_y]),
+        columns=[f"X{i}" for i in range(dim_x)] + [f"Y{i}" for i in range(dim_y)],
+    )
+    data.to_csv(path, index=False)
+
+
+def read_sample(path: Pathlike):
+    data = pd.read_csv(path)
+
+    cols_x = [col for col in data.columns if "X" in col]
+    cols_y = [col for col in data.columns if "Y" in col]
+
+    dim_x = len(cols_x)
+    dim_y = len(cols_y)
+
+    assert dim_x + dim_y == len(data.columns)
+    # TODO(frdrc): would be nice to check order, ie X1, X2, ...
+
+    samples_x = np.array(data[cols_x])
+    samples_y = np.array(data[cols_y])
+
+    return samples_x, samples_y
+
+
+def read_sample_dims(path: Pathlike):
+    data_header = pd.read_csv(path, nrows=0)
+
+    cols_x = [col for col in data_header.columns if "X" in col]
+    cols_y = [col for col in data_header.columns if "Y" in col]
+
+    dim_x = len(cols_x)
+    dim_y = len(cols_y)
+
+    return dim_x, dim_y
 
 
 class ProductSpace:

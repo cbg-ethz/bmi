@@ -1,7 +1,7 @@
 # Wrapper script for estimating mutual information.
 #
 # Use as:
-# $ Rscript SEED FILE DIMX DIMY [optional hyperparameters]
+# $ Rscript FILE DIMX DIMY [optional hyperparameters]
 #
 # To install the requirements run:
 # $ R
@@ -10,31 +10,26 @@
 parser <- argparse::ArgumentParser()
 
 parser$add_argument("FILE", help="Path to the CSV file.")
-parser$add_argument("SEED", type="integer", help="Seed to be taken.")
 parser$add_argument("DIMX", type="integer", help="Dimension of the X variable.")
 parser$add_argument("DIMY", type="integer", help="Dimension of the Y variable.")
 parser$add_argument("--method", default="KSG1", help="Method to be used. Allowed: KSG1, KSG2, LNN, BNSL.")
 parser$add_argument("--neighbors", type="integer", default=10, help="Number of neighbors (k) to be used.")
 parser$add_argument("--alpha", type="double", default=0.65, help="Hyperparameter of the LNC method. It's ignored for KSG methods.")
 parser$add_argument("--truncation", type="integer", default=30, help="Order of truncation for the LNN method.")
-parser$add_argument("--proc", type="integer", default=0, help="The `proc` argument for the BNSL algorithm. Either 0, 1, or 2.")
+parser$add_argument("--proc", type="integer", default=0, help="The `proc` argument for the BNSL algorithm. Either 0, 1, 2 or 10.")
 
 # Parse arguments
 args <- parser$parse_args()
 
 # Validate the arguments
-if (args$proc > 2 || args$proc < 0) {
-    stop(paste0("--proc must be 0, 1 or 2, but was ", args$method))
+if ((args$proc > 2 && args$proc != 10) || args$proc < 0) {
+    stop(paste0("--proc must be 0, 1, 2 or 10, but was ", args$proc))
 }
 
-# Read the data frame and filter the data corresponding to the right seed
+# Read the data frame
 data <- read.csv(args$FILE)
-data <- dplyr::filter(data, data$seed==args$SEED)
 
 splits <- c(args$DIMX, args$DIMY)
-
-# Drop the seed column
-data$seed <- NULL
 
 # TODO(Pawel): Validate the number of columns.
 

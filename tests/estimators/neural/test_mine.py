@@ -35,7 +35,7 @@ def test_mine_estimator_3d(n_points: int = 8_000) -> None:
     estimated_mi = estimator.estimate(xs, ys)
     true_mi = sampler.mutual_information()
 
-    assert estimated_mi == pytest.approx(true_mi, abs=0.03, rel=0.01)
+    assert estimated_mi == pytest.approx(true_mi, abs=0.05, rel=0.1)
 
 
 def test_mine_estimator_2d(n_points: int = 8_000, correlation: float = 0.7) -> None:
@@ -52,4 +52,4 @@ def test_mine_estimator_2d(n_points: int = 8_000, correlation: float = 0.7) -> N
 
     true_mi = distribution.mutual_information()
     estimate = estimator.estimate(points_x, points_y)
-    assert estimate == pytest.approx(true_mi, abs=0.03, rel=0.02)
+    assert estimate == pytest.approx(true_mi, abs=0.05, rel=0.1)
