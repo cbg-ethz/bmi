@@ -35,3 +35,51 @@ testpaths = [
     "tests",
 ]
 
+[tool.isort]
+line_length = 99
+src_paths = ["src", "tests", "scripts"]
+
+
+[tool.poetry]
+name = "bmi"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "bmi", from = "src"}]
+
+[tool.poetry.dependencies]
+# <3.11 because of PyType. Update when it's resolved
+# <3.12 because of SciPy. Update when it's resolved
+python = ">=3.9,<3.11"
+equinox = "^0.10.2"
+jax = "^0.4.8"
+jaxlib = "^0.4.7"
+numpy = "^1.24.2"
+scikit-learn = "^1.2.2"
+optax = "^0.1.4"
+pandas = "^2.0.0"
+pydantic = "^1.10.7"
+pyyaml = "^6.0"
+scipy = "^1.10.1"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.3.0"
+flake8 = "^6.0.0"
+isort = "^5.12.0"
+pre-commit = "^3.2.2"
+pytype = "^2023.4.11"
+pytest = "^7.3.1"
+pytest-cov = "^4.0.0"
+pytest-xdist = "^3.2.1"
+mkdocs-material = "^9.1.6"
+mkdocstrings = {extras = ["python"], version = "^0.21.2"}
+mkdocs-gen-files = "^0.4.0"
+mkdocs-literate-nav = "^0.6.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

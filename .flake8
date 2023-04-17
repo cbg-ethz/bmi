@@ -8,6 +8,7 @@ exclude =
     old,
     build,
     dist,
+    .venv
 
 max-complexity = 8
 
