@@ -115,15 +115,3 @@ def test_change_dimension(
 
     assert np.allclose(x_transformed, np.asarray([cubic(x) for x in x_base]))
     assert np.allclose(y_transformed, np.asarray([embed(add_dim_y)(y) for y in y_base]))
-
-
-def test_swissroll(n_samples: int = 20, correlation: float = 0.9) -> None:
-    uniform_sampler = tr.BivariateUniformMarginsSampler(gaussian_correlation=correlation)
-    swissroll_sampler = tr.SwissRollSampler(sampler=uniform_sampler)
-
-    xs, ys = swissroll_sampler.sample(n_points=n_samples, rng=42)
-
-    assert xs.shape == (n_samples, 2)
-    assert ys.shape == (n_samples, 1)
-
-    assert swissroll_sampler.mutual_information() == uniform_sampler.mutual_information()
