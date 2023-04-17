@@ -16,14 +16,14 @@ parser$add_argument("--method", default="KSG1", help="Method to be used. Allowed
 parser$add_argument("--neighbors", type="integer", default=10, help="Number of neighbors (k) to be used.")
 parser$add_argument("--alpha", type="double", default=0.65, help="Hyperparameter of the LNC method. It's ignored for KSG methods.")
 parser$add_argument("--truncation", type="integer", default=30, help="Order of truncation for the LNN method.")
-parser$add_argument("--proc", type="integer", default=0, help="The `proc` argument for the BNSL algorithm. Either 0, 1, or 2.")
+parser$add_argument("--proc", type="integer", default=0, help="The `proc` argument for the BNSL algorithm. Either 0, 1, 2 or 10.")
 
 # Parse arguments
 args <- parser$parse_args()
 
 # Validate the arguments
-if (args$proc > 2 || args$proc < 0) {
-    stop(paste0("--proc must be 0, 1 or 2, but was ", args$method))
+if ((args$proc > 2 && args$proc != 10) || args$proc < 0) {
+    stop(paste0("--proc must be 0, 1, 2 or 10, but was ", args$proc))
 }
 
 # Read the data frame

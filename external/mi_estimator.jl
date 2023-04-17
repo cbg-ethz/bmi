@@ -3,7 +3,7 @@
 # library in Julia
 # Use as:
 # $ julia external/mi_estimator.jl path_to_file_with_samples.csv dim_x dim_y
-# Note that the CSV must be formatted as seed, X1, ..., Xn, Y1, ..., Yn
+# Note that the CSV must be formatted as X1, ..., Xn, Y1, ..., Yn
 #
 # To install the dependencies run:
 # $ julia
@@ -102,7 +102,7 @@ function get_estimator(args::Dict, verbose::Bool)
 end
 
 
-function get_samples(filename::String, seed::Int, dim_x::Int, dim_y::Int, verbose::Bool)
+function get_samples(filename::String, dim_x::Int, dim_y::Int, verbose::Bool)
     # Parse the file into a data frame
     df = CSV.File(filename) |> DataFrame
 
@@ -134,7 +134,7 @@ function main()
     end
 
     # Parse the samples
-    x, y = get_samples(args["samples"], args["seed"], args["dim_x"], args["dim_y"], verbose)
+    x, y = get_samples(args["samples"], args["dim_x"], args["dim_y"], verbose)
 
     # Run the right mutual information estimator, basing on provided hyperparameters
     estimator = get_estimator(args, verbose)

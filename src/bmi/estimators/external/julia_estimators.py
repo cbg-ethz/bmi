@@ -16,7 +16,10 @@ class KSGParams(BaseModel):
 
 
 class JuliaKSGEstimator(ExternalEstimator):
-    """The KSG estimators implemented in the `TransferEntropy` package in julia."""
+    """
+    The KSG estimators implemented in the `TransferEntropy` package in julia.
+    WARNING: gives suspicious results.
+    """
 
     def __init__(self, variant: Literal[1, 2] = 1, neighbors: int = 10) -> None:
         """
@@ -49,11 +52,13 @@ class JuliaKSGEstimator(ExternalEstimator):
 
 
 class HistogramParams(BaseModel):
-    bins: pydantic.PositiveInt = pydantic.Field(..., ge=2)
+    bins: pydantic.PositiveInt
 
 
 class JuliaHistogramEstimator(ExternalEstimator):
-    """The VisitationFrequency estimator implemented in the `TransferEntropy` package in julia."""
+    """
+    The VisitationFrequency estimator implemented in the `TransferEntropy` package in julia.
+    """
 
     def __init__(self, bins: int = 10) -> None:
         if bins < 2:
@@ -83,11 +88,13 @@ class JuliaHistogramEstimator(ExternalEstimator):
 
 
 class TransferParams(BaseModel):
-    bins: pydantic.PositiveInt = pydantic.Field(..., ge=2)
+    bins: pydantic.PositiveInt
 
 
 class JuliaTransferEstimator(ExternalEstimator):
-    """The TransferOperator estimator implemented in the `TransferEntropy` package in julia."""
+    """
+    The TransferOperator estimator implemented in the `TransferEntropy` package in julia.
+    """
 
     def __init__(self, bins: int = 10) -> None:
         if bins < 2:
@@ -121,7 +128,10 @@ class KernelParams(BaseModel):
 
 
 class JuliaKernelEstimator(ExternalEstimator):
-    """The NaiveKernel estimator implemented in the `TransferEntropy` package in julia."""
+    """
+    The NaiveKernel estimator implemented in the `TransferEntropy` package in julia.
+    WARNING: gives suspicious results.
+    """
 
     def __init__(self, bandwidth: float = 1.0) -> None:
         if bandwidth <= 0.0:
