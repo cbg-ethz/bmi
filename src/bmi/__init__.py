@@ -1,7 +1,42 @@
-"""Our package should be used as:
->>> import bmi.api as bmi
+"""Benchmarking mutual information package."""
+import bmi.benchmark as benchmark
+import bmi.estimators.api as estimators
+import bmi.samplers as samplers
+import bmi.transforms.api as transforms
 
+# ISort doesn't want to split these into several lines, conflicting with Black
+# isort: off
+from bmi.benchmark import (
+    BENCHMARK_TASKS,
+    run_estimator,
+    Task,
+    TaskMetadata,
+    RunResult,
+)
 
-In particular, this `__init__.py` file should be empty.
-See the API module for more information.
-"""
+# isort: on
+
+# ISort doesn't want to split these into several lines, conflicting with Black
+# isort: off
+from bmi.interface import (
+    IMutualInformationPointEstimator,
+    ISampler,
+    Pathlike,
+)
+
+# isort: on
+
+__all__ = [
+    "benchmark",
+    "estimators",
+    "samplers",
+    "transforms",
+    "IMutualInformationPointEstimator",
+    "ISampler",
+    "Pathlike",
+    "RunResult",
+    "Task",
+    "TaskMetadata",
+    "BENCHMARK_TASKS",
+    "run_estimator",
+]
