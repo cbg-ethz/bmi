@@ -1,5 +1,5 @@
 # This pipeline builds the documentation.
-name: build
+name: docs
 
 on:
   push:
