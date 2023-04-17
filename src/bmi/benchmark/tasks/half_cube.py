@@ -6,7 +6,7 @@ from bmi.transforms.api import half_cube
 
 
 def transform_half_cube_task(
-    base_task,
+    base_task: Task,
     task_name: Optional[str] = None,
 ) -> Task:
     base_sampler = base_task.sampler

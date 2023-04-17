@@ -24,7 +24,7 @@ ONE_DIM_TASKS = [
 ]
 
 EMBEDDINGS_TASKS = [
-    embeddings.generate_swissroll_task(gaussian_correlation=0.9, task_name="Swiss roll"),
+    embeddings.transform_swissroll_task(BINORMAL_BASE, task_name="Swiss roll 2 × 1"),
 ]
 
 MULTINORMAL_TASKS = [

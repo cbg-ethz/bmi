@@ -8,7 +8,7 @@ from bmi.benchmark.task import Task
 
 
 def transform_rotate_task(
-    base_task,
+    base_task: Task,
     task_name: Optional[str] = None,
 ) -> Task:
     """Note: we always use the same rotation."""

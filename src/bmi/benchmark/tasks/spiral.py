@@ -6,7 +6,7 @@ from bmi.benchmark.task import Task
 
 
 def transform_spiral_task(
-    base_task,
+    base_task: Task,
     speed: float = 1 / 3,
     task_name: Optional[str] = None,
 ) -> Task:

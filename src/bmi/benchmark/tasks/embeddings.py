@@ -1,14 +1,23 @@
-import bmi.samplers.transformed as tr
+import bmi.samplers.api as samplers
 from bmi.benchmark.task import Task
+from bmi.transforms.api import swissroll2d
 
 
-def generate_swissroll_task(gaussian_correlation: float, task_name: str) -> Task:
-    uniform_sampler = tr.BivariateUniformMarginsSampler(gaussian_correlation=gaussian_correlation)
-    swissroll_sampler = tr.SwissRollSampler(sampler=uniform_sampler)
+def transform_swissroll_task(
+    base_task: Task,
+    task_name: str,  # dims change, better force a new name
+) -> Task:
+    assert base_task.dim_x == 1
+
+    sampler = samplers.TransformedSampler(
+        base_sampler=base_task.sampler,
+        transform_x=swissroll2d,
+        add_dim_x=1,
+    )
 
     return Task(
-        sampler=swissroll_sampler,
-        task_id=f"swissroll-gaussian_correlation{gaussian_correlation:.4f}",
+        sampler=sampler,
+        task_id=f"swissroll_x-{base_task.id}",
         task_name=task_name,
-        task_params=dict(gaussian_correlation=gaussian_correlation),
+        task_params=base_task.params,
     )

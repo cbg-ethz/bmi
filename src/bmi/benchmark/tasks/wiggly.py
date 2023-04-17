@@ -17,7 +17,7 @@ def wiggly_y(x: float) -> float:
 
 
 def transform_wiggly_task(
-    base_task,
+    base_task: Task,
     task_name: Optional[str] = None,
 ) -> Task:
     base_sampler = base_task.sampler

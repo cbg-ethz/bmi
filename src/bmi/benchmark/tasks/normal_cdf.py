@@ -6,7 +6,7 @@ from bmi.transforms.api import normal_cdf
 
 
 def transform_normal_cdf_task(
-    base_task,
+    base_task: Task,
     task_name: Optional[str] = None,
 ) -> Task:
     base_sampler = base_task.sampler
