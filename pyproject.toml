@@ -47,6 +47,7 @@ description = ""
 authors = ["Your Name <you@example.com>"]
 license = "MIT"
 readme = "README.md"
+packages = [{include = "bmi", from = "src"}]
 
 [tool.poetry.dependencies]
 # <3.11 because of PyType. Update when it's resolved
@@ -74,6 +75,9 @@ pytest = "^7.3.1"
 pytest-cov = "^4.0.0"
 pytest-xdist = "^3.2.1"
 mkdocs-material = "^9.1.6"
+mkdocstrings = {extras = ["python"], version = "^0.21.2"}
+mkdocs-gen-files = "^0.4.0"
+mkdocs-literate-nav = "^0.6.0"
 
 
 [build-system]
