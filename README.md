@@ -5,36 +5,43 @@
 
 BMI is the package for estimation of mutual information between continuous random variables and testing new estimators.
 
-- **Documentation**: **TODO**: Add link to the documentation.
+- **Documentation**: [https://cbg-ethz.github.io/bmi/](https://cbg-ethz.github.io/bmi/)
 - **Source code**: [https://github.com/cbg-ethz/bmi](https://github.com/cbg-ethz/bmi)
 - **Bug reports**: [https://github.com/cbg-ethz/bmi/issues](https://github.com/cbg-ethz/bmi/issues)
 
 
-## BMI in five minutes
-
-While we recommend taking a look at the documentation to learn about full package capabilities, below we present the main capabilities of the Python package.
+## Getting started
+While we recommend taking a look at the [documentation](https://cbg-ethz.github.io/bmi/) to learn about full package capabilities, below we present the main capabilities of the Python package.
 (Note that BMI can also be used to test non-Python mutual information estimators.)
 
-### Installation
-**TODO:** Add installation instructions after we push to PyPI.
+You can install the package using:
 
-BMI uses [JAX](https://github.com/google/jax) and by default installs the CPU version of it.
+**TODO:** Add installation instructions after we push to PyPI.
+```bash
+$ pip install "bmi @ https://github.com/cbg-ethz/bmi"
+```
+
+Note: BMI uses [JAX](https://github.com/google/jax) and by default installs the CPU version of it.
 If you have a device supporting CUDA, you can [install the CUDA version of JAX](https://github.com/google/jax#pip-installation-gpu-cuda-installed-via-pip-easier).
 
-### Loading a task
+Now let's take one of the predefined distributions included in the benchmark (named "tasks") and sample 1,000 data points.
+Then, we will run two estimators on this task.
 
-**TODO:** Add this description.
+```python
+import bmi
 
+task = bmi.benchmark.BENCHMARK_TASKS['multinormal-dense-2-5-0.5']
+print(f"Task {task.name} with dimensions {task.dim_x} and {task.dim_y}")
+print(f"Ground truth mutual information: {task.mutual_information():.2f}")
 
-### Running an estimator
+X, Y = task.sample(1000, seed=42)
 
-**TODO:** Add this description.
+cca = bmi.estimators.CCAMutualInformationEstimator()
+print(f"Estimate by CCA: {cca.estimate(X, Y):.2f}")
 
-
-### Generating runtime information
-
-**TODO:** Add this description.
-
+ksg = bmi.estimators.KSGEnsembleFirstEstimator(neighborhoods=(5,))
+print(f"Estimate by KSG: {ksg.estimate(X, Y):.2f}")
+```
 
 ## Citing
 
