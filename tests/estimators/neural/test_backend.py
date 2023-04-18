@@ -4,8 +4,8 @@ from typing import Tuple
 import jax.numpy as jnp
 import pytest
 
-import bmi.estimators.neural._backend_linear as lin
-import bmi.estimators.neural._backend_quadratic as quad
+import bmi.estimators.neural._backend_linear_memory as lin
+import bmi.estimators.neural._backend_quadratic_memory as quad
 from bmi.samplers import SplitMultinormal
 
 

@@ -2,7 +2,7 @@ import jax.random
 import numpy as np
 import pytest
 
-import bmi.estimators.neural._mine as mine
+import bmi.estimators.neural._mine_estimator as mine
 import bmi.samplers as samplers
 
 
