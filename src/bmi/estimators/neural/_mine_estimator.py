@@ -20,8 +20,8 @@ from jax.tree_util import tree_map
 from numpy.typing import ArrayLike
 
 from bmi.estimators.base import EstimatorNotFittedException
-from bmi.estimators.neural._interfaces import BatchedPoints, Critic
-from bmi.estimators.neural._nn import MLP
+from bmi.estimators.neural._critics import MLP
+from bmi.estimators.neural._types import BatchedPoints, Critic
 from bmi.interface import BaseModel, IMutualInformationPointEstimator
 from bmi.utils import ProductSpace
 
