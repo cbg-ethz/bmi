@@ -29,7 +29,7 @@ def test_mine_estimator_3d(n_points: int = 8_000) -> None:
         learning_rate=0.1,
         smoothing_alpha=0.9,
         standardize=True,
-        checkpoint_every=100,
+        test_every_n_steps=100,
     )
 
     estimated_mi = estimator.estimate(xs, ys)
