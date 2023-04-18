@@ -21,6 +21,7 @@ from numpy.typing import ArrayLike
 
 from bmi.estimators.base import EstimatorNotFittedException
 from bmi.estimators.neural._critics import MLP
+from bmi.estimators.neural._training_log import TrainingLog
 from bmi.estimators.neural._types import BatchedPoints, Critic
 from bmi.interface import BaseModel, IMutualInformationPointEstimator
 from bmi.utils import ProductSpace
@@ -280,32 +281,19 @@ def _shuffle(key: jax.random.PRNGKeyArray, ys: jnp.ndarray) -> jnp.ndarray:
     return ys[indices]
 
 
-class MINETrainingHistory(BaseModel):
-    """Class representing the data saved from MINE training."""
-
-    train_step: list[int] = pydantic.Field(
-        description="Step numbers at which training loss was evaluated."
-    )
-    train_objective: list[float] = pydantic.Field(
-        description="Loss at a corresponding step number."
-    )
-    final_mi: float = pydantic.Field(
-        description="Final value of MI, evaluated at the whole training data set."
-    )
-
-
 def training_loop(
     rng: jax.random.PRNGKeyArray,
     critic: eqx.Module,
     xs: BatchedPoints,
     ys: BatchedPoints,
-    max_n_steps: int,
-    learning_rate: float = 0.1,
     batch_size: int = 256,
     alpha: float = 0.9,
-    checkpoint_every: int = 250,
+    test_every_n_steps: int = 250,
+    max_n_steps: int = 2_000,
+    early_stopping: bool = True,
+    learning_rate: float = 0.1,
     verbose: bool = False,
-) -> MINETrainingHistory:
+) -> TrainingLog:
     """Basic training loop for MINE.
 
     Args:
@@ -318,14 +306,15 @@ def training_loop(
         batch_size: batch size
         alpha: parameter used in exponential smoothing of the gradient,
           in the open interval (0, 1). Values closer to 1 result in less smoothing
-        checkpoint_every: step intervals at which the training checkpoint should be saved
-        verbose: whether to use a logger to report every ``checkpoint_every`` steps
+        test_every_n_steps: step intervals at which the training checkpoint should be saved
+        verbose: whether to use a logger to report every ``test_every_n_steps`` steps
     """
 
-    # Initialize the optimized
+    # initialize the optimizer
     optimizer = optax.adam(learning_rate=learning_rate)
     opt_state = optimizer.init(critic)
 
+    # compile the training step
     @jax.jit
     def step_func(
         *,
@@ -349,24 +338,21 @@ def training_loop(
         params = optax.apply_updates(critic, updates)
         return params, opt_state, new_log_carry
 
-    # We initialize this value to be very small at the beginning,
-    # so that the smoothing effect of it is negligible
+    # initialize log_carry to be very small at the beginning,
+    # so that the smoothing effect is negligible at the start
     log_carry = -jnp.inf
 
-    final_eval_key, *step_keys = jax.random.split(rng, max_n_steps + 1)
+    # main training loop
+    training_log = TrainingLog(max_n_steps=max_n_steps, verbose=verbose)
+    keys = jax.random.split(rng, max_n_steps)
+    for n_step, key in enumerate(keys, start=1):
+        key_paired, key_unpaired, key_test = jax.random.split(key, 3)
 
-    # Initialize the history object
-    history = MINETrainingHistory(train_step=[], train_objective=[], final_mi=-1)
-
-    for step, key in enumerate(step_keys, 1):
-        # Keys:
-        #  - sample a batch of paired data
-        #  - sample unpaired data
-        key_paired, key_unpaired = jax.random.split(key, 2)
-
+        # sample
         xs_paired, ys_paired = _sample_paired(key_paired, xs=xs, ys=ys, batch_size=batch_size)
         ys_unpaired = _sample_unpaired(key_unpaired, ys=ys, batch_size=batch_size)
 
+        # run step
         critic, opt_state, log_carry = step_func(
             critic=critic,
             opt_state=opt_state,
@@ -377,27 +363,36 @@ def training_loop(
             alpha=alpha,
         )
 
-        if step % checkpoint_every == 0:
-            mi_val = mine_value(
-                f=critic, xs=xs_paired, ys_paired=ys_paired, ys_unpaired=ys_unpaired
-            )
-            history.train_step.append(step)
-            history.train_objective.append(mi_val)
-            if verbose:
-                _LOGGER.info(f"MINE training at step {step} reached objective {mi_val:.2f}.")
+        # logging train
+        # TODO(frdrc): step doesn't compute a regular forward pass
+        # so we don't get the batch objective for free :(
+        # training_log.log_train_mi(n_step, float('nan'))
+        training_log._tqdm_update()
 
-    # Final evaluation on the whole data set
-    ys_unpaired = _shuffle(final_eval_key, ys)
-    final_mi_val = mine_value(f=critic, xs=xs, ys_paired=ys, ys_unpaired=ys_unpaired)
-    history.final_mi = float(final_mi_val)
+        # logging test
+        if n_step % test_every_n_steps == 0:
+            # test on whole dataset
+            ys_unpaired = _shuffle(key_test, ys)
+            mi_test = mine_value(f=critic, xs=xs, ys_paired=ys, ys_unpaired=ys_unpaired)
+            training_log.log_test_mi(n_step, mi_test)
 
-    return history
+        # early stop?
+        if early_stopping and training_log.early_stop():
+            break
+
+    training_log.finish()
+
+    if verbose:
+        if early_stopping and not training_log.early_stop():
+            print("WARNING: Early stopping enabled but max_n_steps reached.")
+
+    return training_log
 
 
 class MINEParams(BaseModel):
     batch_size: pydantic.PositiveInt
     max_n_steps: pydantic.PositiveInt
-    checkpoint_every: pydantic.PositiveInt
+    test_every_n_steps: pydantic.PositiveInt
     learning_rate: pydantic.PositiveFloat
     seed: int
     standardize: bool
@@ -413,7 +408,7 @@ class MINEEstimator(IMutualInformationPointEstimator):
         self,
         batch_size: int = 512,
         max_n_steps: int = 2_000,
-        checkpoint_every: int = 250,
+        test_every_n_steps: int = 250,
         learning_rate: float = 0.1,
         seed: int = 524,
         standardize: bool = True,
@@ -424,7 +419,7 @@ class MINEEstimator(IMutualInformationPointEstimator):
         self._params = MINEParams(
             batch_size=batch_size,
             max_n_steps=max_n_steps,
-            checkpoint_every=checkpoint_every,
+            test_every_n_steps=test_every_n_steps,
             learning_rate=learning_rate,
             seed=seed,
             standardize=standardize,
@@ -432,7 +427,7 @@ class MINEEstimator(IMutualInformationPointEstimator):
             hidden_layers=hidden_layers,
         )
         self._verbose = verbose
-        self._training_history: Optional[MINETrainingHistory] = None
+        self._training_log: Optional[TrainingLog] = None
 
     def _create_critic(self, dim_x: int, dim_y: int, key: jax.random.PRNGKeyArray) -> MLP:
         return MLP(dim_x=dim_x, dim_y=dim_y, key=key, hidden_layers=self._params.hidden_layers)
@@ -444,7 +439,7 @@ class MINEEstimator(IMutualInformationPointEstimator):
         # Standardize the data if needed
         space = ProductSpace(x=x, y=y, standardize=self._params.standardize)
 
-        train_history = training_loop(
+        training_log = training_loop(
             rng=key_train,
             critic=self._create_critic(dim_x=space.dim_x, dim_y=space.dim_y, key=key_critic),
             xs=jnp.asarray(space.x),
@@ -453,19 +448,19 @@ class MINEEstimator(IMutualInformationPointEstimator):
             learning_rate=self._params.learning_rate,
             batch_size=self._params.batch_size,
             alpha=self._params.smoothing_alpha,
-            checkpoint_every=self._params.checkpoint_every,
+            test_every_n_steps=self._params.test_every_n_steps,
             verbose=self._verbose,
         )
-        self._training_history = train_history
+        self._training_log = training_log
 
-    def training_history(self) -> MINETrainingHistory:
-        if self._training_history is None:
+    def training_log(self) -> TrainingLog:
+        if self._training_log is None:
             raise EstimatorNotFittedException("Estimator needs to be fitted first.")
-        return self._training_history
+        return self._training_log
 
     def estimate(self, x: ArrayLike, y: ArrayLike) -> float:
         self.fit(x, y)
-        return self.training_history().final_mi
+        return self.training_log().final_mi
 
     def parameters(self) -> MINEParams:
         return self._params

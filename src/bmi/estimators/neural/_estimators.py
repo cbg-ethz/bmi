@@ -141,11 +141,7 @@ class NeuralEstimatorBase(IMutualInformationPointEstimator):
             verbose=self._verbose,
         )
 
-        final_mi = training_log.final_mi
-        if final_mi is None:
-            final_mi = float("nan")
-
-        return final_mi
+        return training_log.final_mi
 
 
 class MLPParams(BaseModel):
