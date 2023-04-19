@@ -30,11 +30,26 @@ def logmeanexp(vs):
     return logsumexp(vs) - jnp.log(len(vs))
 
 
+def _mine_value(
+    f: Critic,
+    xs: jnp.ndarray,
+    ys_paired: jnp.ndarray,
+    ys_unpaired: jnp.ndarray,
+):
+    f_vmap = jax.vmap(f, in_axes=(0, 0))
+    p_T = f_vmap(xs, ys_paired)
+    u_T = f_vmap(xs, ys_unpaired)
+
+    return jnp.mean(p_T) - logmeanexp(u_T)
+
+
 def _mine_T_mean_value_and_grad(
     f: Critic,
     xs: jnp.ndarray,
     ys: jnp.ndarray,
 ) -> tuple[jnp.ndarray, jnp.ndarray]:
+    """First term in equation (10) and (12)"""
+
     def T_mean(f, xs, ys):
         f_vmap = jax.vmap(f, in_axes=(0, 0))
         return jnp.mean(f_vmap(xs, ys))
@@ -47,24 +62,13 @@ def _mine_T_lme_value_and_grad(
     xs: jnp.ndarray,
     ys: jnp.ndarray,
 ) -> tuple[jnp.ndarray, jnp.ndarray]:
+    """Second term in equation (10) and (12)"""
+
     def T_lme(f, xs, ys):
         f_vmap = jax.vmap(f, in_axes=(0, 0))
         return logmeanexp(f_vmap(xs, ys))
 
     return jax.value_and_grad(T_lme)(f, xs, ys)
-
-
-def _mine_value(
-    f: Critic,
-    xs: jnp.ndarray,
-    ys_paired: jnp.ndarray,
-    ys_unpaired: jnp.ndarray,
-):
-    f_vmap = jax.vmap(f, in_axes=(0, 0))
-    p_T = f_vmap(xs, ys_paired)
-    u_T = f_vmap(xs, ys_unpaired)
-
-    return jnp.mean(p_T) - logmeanexp(u_T)
 
 
 def _mine_value_neg_grad_log_denom(
@@ -203,6 +207,7 @@ def mine_training(
     keys = jax.random.split(rng, max_n_steps)
     for n_step, key in enumerate(keys, start=1):
         key_sample, key_test = jax.random.split(key)
+
         # sample
         xs_batch, ys_batch_paired, ys_batch_unpaired = _sample_paired_unpaired(
             key_sample, xs=xs, ys=ys, batch_size=batch_size
