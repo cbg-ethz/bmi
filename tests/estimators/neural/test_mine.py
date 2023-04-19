@@ -22,14 +22,7 @@ def test_mine_estimator_3d(n_points: int = 8_000) -> None:
     xs, ys = sampler.sample(n_points=n_points, rng=key_sampler)
 
     estimator = mine.MINEEstimator(
-        hidden_layers=(8, 5),
-        seed=10,
-        max_n_steps=1000,
-        batch_size=256,
-        learning_rate=0.1,
-        smoothing_alpha=0.9,
-        standardize=True,
-        test_every_n_steps=100,
+        verbose=False,
     )
 
     estimated_mi = estimator.estimate(xs, ys)
@@ -44,10 +37,7 @@ def test_mine_estimator_2d(n_points: int = 8_000, correlation: float = 0.7) -> N
 
     estimator = mine.MINEEstimator(
         hidden_layers=(8, 5),
-        seed=12,
-        max_n_steps=1000,
-        batch_size=256,
-        standardize=True,
+        verbose=False,
     )
 
     true_mi = distribution.mutual_information()
