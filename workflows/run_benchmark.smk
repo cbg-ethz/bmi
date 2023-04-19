@@ -1,10 +1,12 @@
 # SnakeMake workflow used to generate benchmark results
 import resource
+import yaml
+
+import pandas as pd
 
 import bmi.estimators as estimators
 import bmi.estimators.external.r_estimators as r_estimators
 import bmi.estimators.external.julia_estimators as julia_estimators
-
 from bmi.benchmark import BENCHMARK_TASKS, run_estimator
 
 
@@ -52,6 +54,7 @@ SEEDS = [0]
 # === RULES ===
 
 rule all:
+    output: 'benchmark/results.csv'
     input:
         expand(
             'benchmark/results/{estimator_id}/{task_id}/{n_samples}-{seed}.yaml',
@@ -60,6 +63,12 @@ rule all:
             n_samples=N_SAMPLES,
             seed=SEEDS,
         )
+    run:
+        results = []
+        for result_path in input:
+            with open(result_path) as f:
+                results.append(yaml.load(f, yaml.SafeLoader))
+        pd.DataFrame(results).to_csv(str(output), index=False)
 
 
 # Sample task given a seed and number of samples.
