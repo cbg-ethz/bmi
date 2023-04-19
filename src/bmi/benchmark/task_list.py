@@ -4,6 +4,7 @@ import bmi.benchmark.tasks.bivariate_normal as binormal
 import bmi.benchmark.tasks.embeddings as embeddings
 import bmi.benchmark.tasks.multinormal as multinormal
 import bmi.benchmark.tasks.student as student
+from bmi.benchmark.tasks.asinh import transform_asinh_task as asinh
 from bmi.benchmark.tasks.half_cube import transform_half_cube_task as half_cube
 from bmi.benchmark.tasks.normal_cdf import transform_normal_cdf_task as normal_cdfise
 from bmi.benchmark.tasks.rotate import transform_rotate_task as rotate
@@ -55,27 +56,34 @@ STUDENT_TASKS = [
     student.task_student_dense(dim_x=5, dim_y=5, df=10),
 ]
 
-TRANS_BASE_3x3 = multinormal.task_multinormal_sparse(3, 3)
-TRANS_BASE_5x5 = multinormal.task_multinormal_sparse(5, 5)
-TRANS_BASE_25x25 = multinormal.task_multinormal_sparse(25, 25)
+TRANS_MULTINORMAL_BASE_3x3 = multinormal.task_multinormal_sparse(3, 3)
+TRANS_MULTINORMAL_BASE_5x5 = multinormal.task_multinormal_sparse(5, 5)
+TRANS_MULTINORMAL_BASE_25x25 = multinormal.task_multinormal_sparse(25, 25)
+
+TRANS_STUDENT_BASE_3x3 = student.task_student_sparse(3, 3, 5)
+TRANS_STUDENT_BASE_5x5 = student.task_student_sparse(5, 5, 5)
+TRANS_STUDENT_BASE_25x25 = student.task_student_sparse(25, 25, 5)
 
 TRANSFORMED_TASKS = [
-    wigglify(TRANS_BASE_3x3),
-    normal_cdfise(TRANS_BASE_3x3),
-    normal_cdfise(TRANS_BASE_5x5),
-    normal_cdfise(TRANS_BASE_25x25),
-    rotate(normal_cdfise(TRANS_BASE_3x3)),
-    rotate(normal_cdfise(TRANS_BASE_5x5)),
-    rotate(normal_cdfise(TRANS_BASE_25x25)),
-    half_cube(TRANS_BASE_3x3),
-    half_cube(TRANS_BASE_5x5),
-    half_cube(TRANS_BASE_25x25),
-    spiralise(TRANS_BASE_3x3),
-    spiralise(TRANS_BASE_5x5),
-    spiralise(TRANS_BASE_25x25),
-    spiralise(normal_cdfise(TRANS_BASE_3x3)),
-    spiralise(normal_cdfise(TRANS_BASE_5x5)),
-    spiralise(normal_cdfise(TRANS_BASE_25x25)),
+    wigglify(TRANS_MULTINORMAL_BASE_3x3),
+    normal_cdfise(TRANS_MULTINORMAL_BASE_3x3),
+    normal_cdfise(TRANS_MULTINORMAL_BASE_5x5),
+    normal_cdfise(TRANS_MULTINORMAL_BASE_25x25),
+    rotate(normal_cdfise(TRANS_MULTINORMAL_BASE_3x3)),
+    rotate(normal_cdfise(TRANS_MULTINORMAL_BASE_5x5)),
+    rotate(normal_cdfise(TRANS_MULTINORMAL_BASE_25x25)),
+    half_cube(TRANS_MULTINORMAL_BASE_3x3),
+    half_cube(TRANS_MULTINORMAL_BASE_5x5),
+    half_cube(TRANS_MULTINORMAL_BASE_25x25),
+    spiralise(TRANS_MULTINORMAL_BASE_3x3),
+    spiralise(TRANS_MULTINORMAL_BASE_5x5),
+    spiralise(TRANS_MULTINORMAL_BASE_25x25),
+    spiralise(normal_cdfise(TRANS_MULTINORMAL_BASE_3x3)),
+    spiralise(normal_cdfise(TRANS_MULTINORMAL_BASE_5x5)),
+    spiralise(normal_cdfise(TRANS_MULTINORMAL_BASE_25x25)),
+    asinh(TRANS_STUDENT_BASE_3x3),
+    asinh(TRANS_STUDENT_BASE_5x5),
+    asinh(TRANS_STUDENT_BASE_25x25),
 ]
 
 
