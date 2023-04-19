@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-import bmi.estimators.neural.api as neural
+import bmi.estimators.neural as neural
 import bmi.samplers as samplers
 
 

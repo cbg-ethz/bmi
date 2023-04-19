@@ -17,3 +17,4 @@ pyyaml
 scipy
 scikit-learn>=1.2.0
 sphinx
+tqdm

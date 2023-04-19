@@ -9,7 +9,7 @@ import jax
 import jax.numpy as jnp
 from jax.scipy.special import logsumexp
 
-from bmi.estimators.neural._interfaces import BatchedPoints, Critic
+from bmi.estimators.neural._types import BatchedPoints, Critic
 
 
 def get_full_scores(f: Critic, xs: BatchedPoints, ys: BatchedPoints) -> jnp.ndarray:

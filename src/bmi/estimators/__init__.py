@@ -8,7 +8,7 @@ from bmi.estimators.ksg import (
     KSGEnsembleFirstEstimatorSlow,
     KSGEnsembleParameters,
 )
-from bmi.estimators.neural.api import (
+from bmi.estimators.neural import (
     DonskerVaradhanEstimator,
     MINEEstimator,
     InfoNCEEstimator,

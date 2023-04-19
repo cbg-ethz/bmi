@@ -7,7 +7,7 @@ import jax
 import jax.numpy as jnp
 from jax.scipy.special import logsumexp
 
-from bmi.estimators.neural._interfaces import BatchedPoints, Critic, Point
+from bmi.estimators.neural._types import BatchedPoints, Critic, Point
 
 
 def logmeanexp_nodiag(f: Critic, xs: BatchedPoints, ys: BatchedPoints, offset: float = 0) -> float:
