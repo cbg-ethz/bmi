@@ -2,17 +2,6 @@
 import resource
 import yaml
 
-# keep jax from using multiple threads on CPU
-import os
-os.environ["XLA_FLAGS"] = (
-    "--xla_cpu_multi_thread_eigen=false "
-    "intra_op_parallelism_threads=1 "
-    "inter_op_parallelism_threads=1"
-)
-os.environ["OPENBLAS_NUM_THREADS"] = "1"
-os.environ["MKL_NUM_THREADS"] = "1"
-os.environ["OMP_NUM_THREAD"] = "1"
-
 import pandas as pd
 
 import bmi.estimators as estimators
@@ -104,7 +93,7 @@ rule apply_estimator:
         seed = int(wildcards.seed)
         
         # this should be about ~4GiB
-        resource.setrlimit(resource.RLIMIT_AS, (1<<33, 1<<33))
+        resource.setrlimit(resource.RLIMIT_DATA, (1<<33, 1<<33))
 
         result = run_estimator(estimator=estimator, estimator_id=estimator_id, sample_path=str(input), task_id=task_id, seed=seed)
         result.dump(str(output))
