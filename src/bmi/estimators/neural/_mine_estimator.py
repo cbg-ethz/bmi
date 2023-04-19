@@ -15,6 +15,7 @@ import jax.numpy as jnp
 import optax
 import pydantic
 from jax.scipy.special import logsumexp
+from jax.tree_util import tree_map
 from numpy.typing import ArrayLike
 
 import bmi.estimators.neural._estimators as _estimators
@@ -25,13 +26,32 @@ from bmi.interface import BaseModel, IMutualInformationPointEstimator
 from bmi.utils import ProductSpace
 
 
-def _mine_T_value_and_grad(
+def logmeanexp(vs):
+    return logsumexp(vs) - jnp.log(len(vs))
+
+
+def _mine_T_mean_value_and_grad(
     f: Critic,
     xs: jnp.ndarray,
     ys: jnp.ndarray,
 ) -> tuple[jnp.ndarray, jnp.ndarray]:
-    f_vmap = jax.vmap(f, in_axes=(0, 0))
-    return jax.value_and_grad(f_vmap)(xs, ys)
+    def T_mean(f, xs, ys):
+        f_vmap = jax.vmap(f, in_axes=(0, 0))
+        return jnp.mean(f_vmap(xs, ys))
+
+    return jax.value_and_grad(T_mean)(f, xs, ys)
+
+
+def _mine_T_lme_value_and_grad(
+    f: Critic,
+    xs: jnp.ndarray,
+    ys: jnp.ndarray,
+) -> tuple[jnp.ndarray, jnp.ndarray]:
+    def T_lme(f, xs, ys):
+        f_vmap = jax.vmap(f, in_axes=(0, 0))
+        return logmeanexp(f_vmap(xs, ys))
+
+    return jax.value_and_grad(T_lme)(f, xs, ys)
 
 
 def _mine_value(
@@ -44,7 +64,7 @@ def _mine_value(
     p_T = f_vmap(xs, ys_paired)
     u_T = f_vmap(xs, ys_unpaired)
 
-    return jnp.mean(p_T) - logsumexp(u_T)
+    return jnp.mean(p_T) - logmeanexp(u_T)
 
 
 def _mine_value_neg_grad_log_denom(
@@ -55,22 +75,22 @@ def _mine_value_neg_grad_log_denom(
     log_denom_prev: float,
     alpha: float,
 ):
-    p_T, p_dT = _mine_T_value_and_grad(f, xs, ys_paired)
-    u_T, u_dT = _mine_T_value_and_grad(f, xs, ys_unpaired)
+    mean_T_p, d_mean_T_p = _mine_T_mean_value_and_grad(f, xs, ys_paired)
+    lme_T_u, d_lme_T_u = _mine_T_lme_value_and_grad(f, xs, ys_unpaired)
 
     # compute denominator (with exponential smoothing)
-    log_denom_batch = logsumexp(u_T)
+    log_denom_batch = lme_T_u
     log_denom = jnp.logaddexp(
         jnp.log(alpha) + log_denom_prev,
         jnp.log(1.0 - alpha) + log_denom_batch,
     )
+    correction = jnp.exp(log_denom_batch - log_denom)
 
     # compute (negative) grad
-    second_term = jnp.mean(u_dT * jnp.exp(u_T - log_denom))
-    neg_grad = second_term - jnp.mean(p_dT)
+    neg_grad = tree_map(lambda first, second: correction * second - first, d_mean_T_p, d_lme_T_u)
 
     # compute value
-    value = jnp.mean(p_T) - log_denom_batch
+    value = mean_T_p - lme_T_u
 
     return value, neg_grad, log_denom
 
@@ -85,7 +105,7 @@ def _sample_paired_unpaired(
     key_paired, key_unpaired = jax.random.split(key)
 
     if batch_size is None:
-        ys_unpaired = jax.random.shuffle(key_unpaired, ys)
+        ys_unpaired = jax.random.permutation(key_unpaired, ys)
         return xs, ys, ys_unpaired
 
     paired_indices = jax.random.choice(
@@ -204,7 +224,7 @@ def mine_training(
 
         # logging test
         if n_step % test_every_n_steps == 0:
-            ys_test_unpaired = jax.random.shuffle(key_test, ys_test)
+            ys_test_unpaired = jax.random.permutation(key_test, ys_test)
             mi_test = _mine_value(
                 f=critic, xs=xs_test, ys_paired=ys_test, ys_unpaired=ys_test_unpaired
             )
