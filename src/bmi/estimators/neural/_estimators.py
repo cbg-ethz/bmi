@@ -22,6 +22,8 @@ _DEFAULT_TEST_EVERY_N: int = 250
 _DEFAULT_HIDDEN_LAYERS: tuple[int, ...] = (16, 8)
 _DEFAULT_LEARNING_RATE: float = 0.1
 _DEFAULT_TRAIN_BACKEND: Literal["quadratic", "linear"] = "quadratic"
+_DEFAULT_STANDARDIZE: bool = True
+_DEFAULT_VERBOSE: bool = True
 _DEFAULT_SEED: int = 42
 
 
@@ -32,8 +34,8 @@ class NeuralEstimatorParams(BaseModel):
     train_test_split: Optional[float]
     test_every_n_steps: int
     learning_rate: pydantic.PositiveFloat
-    seed: int
     standardize: bool
+    seed: int
     critic_params: Optional[BaseModel]
 
 
@@ -73,9 +75,9 @@ class NeuralEstimatorBase(IMutualInformationPointEstimator):
         train_test_split: Optional[float] = _DEFAULT_TRAIN_TEST_SPLIT,
         test_every_n_steps: int = _DEFAULT_TEST_EVERY_N,
         learning_rate: float = _DEFAULT_LEARNING_RATE,
+        standardize: bool = _DEFAULT_STANDARDIZE,
+        verbose: bool = _DEFAULT_VERBOSE,
         seed: int = _DEFAULT_SEED,
-        verbose: bool = False,
-        standardize: bool = True,
     ) -> None:
         """
         Args:
@@ -88,11 +90,8 @@ class NeuralEstimatorBase(IMutualInformationPointEstimator):
         self._mi_formula = mi_formula
         self._mi_formula_test = mi_formula_test or mi_formula
         self._verbose = verbose
-        self._standardize = standardize
 
         self._critic_factory = critic_factory
-
-        self._split = train_test_split is not None
 
         self._params = NeuralEstimatorParams(
             mi_formula=mi_formula_name,
@@ -101,8 +100,8 @@ class NeuralEstimatorBase(IMutualInformationPointEstimator):
             train_test_split=train_test_split,
             test_every_n_steps=test_every_n_steps,
             learning_rate=learning_rate,
-            seed=seed,
             standardize=standardize,
+            seed=seed,
             critic_params=critic_params,
         )
 
@@ -114,7 +113,7 @@ class NeuralEstimatorBase(IMutualInformationPointEstimator):
         key_init, key_split, key_fit = jax.random.split(key, 3)
 
         # standardize the data, note we do so before splitting into train/test
-        space = ProductSpace(x, y, standardize=self._standardize)
+        space = ProductSpace(x, y, standardize=self._params.standardize)
         xs, ys = jnp.asarray(space.x), jnp.asarray(space.y)
 
         # split
@@ -134,8 +133,8 @@ class NeuralEstimatorBase(IMutualInformationPointEstimator):
             mi_formula_test=self._mi_formula_test,
             xs_test=xs_test,
             ys_test=ys_test,
-            test_every_n_steps=self._params.test_every_n_steps,
             batch_size=self._params.batch_size,
+            test_every_n_steps=self._params.test_every_n_steps,
             max_n_steps=self._params.max_n_steps,
             learning_rate=self._params.learning_rate,
             verbose=self._verbose,
@@ -164,8 +163,9 @@ class InfoNCEEstimator(NeuralEstimatorBase):
         test_every_n_steps: int = _DEFAULT_TEST_EVERY_N,
         learning_rate: float = _DEFAULT_LEARNING_RATE,
         hidden_layers: Sequence[int] = _DEFAULT_HIDDEN_LAYERS,
+        standardize: bool = _DEFAULT_STANDARDIZE,
+        verbose: bool = _DEFAULT_VERBOSE,
         seed: int = _DEFAULT_SEED,
-        verbose: bool = False,
         _train_backend: Literal["quadratic", "linear"] = _DEFAULT_TRAIN_BACKEND,
     ) -> None:
         if _train_backend == "quadratic":
@@ -188,8 +188,9 @@ class InfoNCEEstimator(NeuralEstimatorBase):
             test_every_n_steps=test_every_n_steps,
             batch_size=batch_size,
             learning_rate=learning_rate,
-            seed=seed,
+            standardize=standardize,
             verbose=verbose,
+            seed=seed,
         )
 
 
@@ -202,8 +203,9 @@ class NWJEstimator(NeuralEstimatorBase):
         test_every_n_steps: int = _DEFAULT_TEST_EVERY_N,
         learning_rate: float = _DEFAULT_LEARNING_RATE,
         hidden_layers: Sequence[int] = _DEFAULT_HIDDEN_LAYERS,
+        standardize: bool = _DEFAULT_STANDARDIZE,
+        verbose: bool = _DEFAULT_VERBOSE,
         seed: int = _DEFAULT_SEED,
-        verbose: bool = False,
         _train_backend: Literal["quadratic", "linear"] = _DEFAULT_TRAIN_BACKEND,
     ) -> None:
         if _train_backend == "quadratic":
@@ -226,8 +228,9 @@ class NWJEstimator(NeuralEstimatorBase):
             test_every_n_steps=test_every_n_steps,
             batch_size=batch_size,
             learning_rate=learning_rate,
-            seed=seed,
+            standardize=standardize,
             verbose=verbose,
+            seed=seed,
         )
 
 
@@ -240,8 +243,9 @@ class DonskerVaradhanEstimator(NeuralEstimatorBase):
         test_every_n_steps: int = _DEFAULT_TEST_EVERY_N,
         learning_rate: float = _DEFAULT_LEARNING_RATE,
         hidden_layers: Sequence[int] = _DEFAULT_HIDDEN_LAYERS,
+        standardize: bool = _DEFAULT_STANDARDIZE,
+        verbose: bool = _DEFAULT_VERBOSE,
         seed: int = _DEFAULT_SEED,
-        verbose: bool = False,
         _train_backend: Literal["quadratic", "linear"] = _DEFAULT_TRAIN_BACKEND,
     ) -> None:
         if _train_backend == "quadratic":
@@ -264,8 +268,9 @@ class DonskerVaradhanEstimator(NeuralEstimatorBase):
             test_every_n_steps=test_every_n_steps,
             batch_size=batch_size,
             learning_rate=learning_rate,
-            seed=seed,
+            standardize=standardize,
             verbose=verbose,
+            seed=seed,
         )
 
 

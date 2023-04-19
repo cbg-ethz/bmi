@@ -7,7 +7,6 @@ https://arxiv.org/abs/1801.04062v5
 The expression for the gradient
 is given by Equation (12) in Section 3.2.
 """
-import logging
 from typing import Optional, Sequence
 
 import equinox as eqx
@@ -16,278 +15,107 @@ import jax.numpy as jnp
 import optax
 import pydantic
 from jax.scipy.special import logsumexp
-from jax.tree_util import tree_map
 from numpy.typing import ArrayLike
 
-from bmi.estimators.base import EstimatorNotFittedException
+import bmi.estimators.neural._estimators as _estimators
 from bmi.estimators.neural._critics import MLP
 from bmi.estimators.neural._training_log import TrainingLog
 from bmi.estimators.neural._types import BatchedPoints, Critic
 from bmi.interface import BaseModel, IMutualInformationPointEstimator
 from bmi.utils import ProductSpace
 
-_LOGGER = logging.getLogger(__name__)
 
-
-def mine_value(
-    f: Critic, xs: BatchedPoints, ys_paired: BatchedPoints, ys_unpaired: BatchedPoints
-) -> float:
-    """Calculates the MINE estimate on a batch.
-
-    Args:
-        f: critic
-        xs: realizations X variable, shape (batch_size, dim_x)
-        ys_paired: realizations of Y variable matched with X. In other words,
-            zip(xs, ys_paired) is a sample from P(X, Y). Shape (batch_size, dim_y)
-        ys_unpaired: samples from P(Y), shape (batch_size, dim_y)
-            In other words, zip(xs, ys_unpaired) should be a sample from P(X) P(Y).
-    """
+def _mine_T_value_and_grad(
+    f: Critic,
+    xs: jnp.ndarray,
+    ys: jnp.ndarray,
+) -> tuple[jnp.ndarray, jnp.ndarray]:
     f_vmap = jax.vmap(f, in_axes=(0, 0))
-
-    positive = jnp.mean(f_vmap(xs, ys_paired))
-    negative = logsumexp(f_vmap(xs, ys_unpaired))
-
-    return positive - negative + jnp.log(len(xs))
+    return jax.value_and_grad(f_vmap)(xs, ys)
 
 
-def _gradient_first_term(
-    *, f: eqx.Module, xs: BatchedPoints, ys_paired: BatchedPoints
-) -> eqx.Module:
-    """Calculates the first term of Eq. (12).
+def _mine_value(
+    f: Critic,
+    xs: jnp.ndarray,
+    ys_paired: jnp.ndarray,
+    ys_unpaired: jnp.ndarray,
+):
+    f_vmap = jax.vmap(f, in_axes=(0, 0))
+    p_T = f_vmap(xs, ys_paired)
+    u_T = f_vmap(xs, ys_unpaired)
 
-    This is the gradient of f calculated with respect to its parameters
-    and averaged over the batch of paired data.
-
-    Note that it is the gradient of the first term of Eq. (10),
-    so that we can first sum up values and then differentiate.
-    """
-
-    def auxiliary(t: eqx.Module, xs: BatchedPoints, ys: BatchedPoints) -> float:
-        t_vmap = jax.vmap(t, in_axes=(0, 0))
-        ts = t_vmap(xs, ys)
-        return jnp.mean(ts)
-
-    return jax.grad(auxiliary)(f, xs, ys_paired)
+    return jnp.mean(p_T) - logsumexp(u_T)
 
 
-def _gradient_second_term(
-    *, f: eqx.Module, xs: BatchedPoints, ys_unpaired: BatchedPoints
-) -> eqx.Module:
-    """This is the gradient:
-
-    d log E[ exp f_theta(x, y) ]
-    ------------------------------
-             d theta
-
-    where the expectation is taken over
-    pX x pY, that is unpaired data.
-
-    Compare with the second term of Eq. (10).
-    """
-    # We will use the fact that logsumexp
-    # and logmeanexp differ by a constant
-    # which vanishes after differentiation
-
-    def auxiliary(t, xs, ys):
-        t_vmap = jax.vmap(t, in_axes=(0, 0))
-        ts = t_vmap(xs, ys)
-        return logsumexp(ts)
-
-    return jax.grad(auxiliary)(f, xs, ys_unpaired)
-
-
-def _exponential_smoothing(
-    log_new: float,
-    log_old: float,
+def _mine_value_neg_grad_log_denom(
+    f: Critic,
+    xs: jnp.ndarray,
+    ys_paired: jnp.ndarray,
+    ys_unpaired: jnp.ndarray,
+    log_denom_prev: float,
     alpha: float,
-) -> float:
-    """Consider exponential smoothing:
-      alpha * new + (1-alpha) * old
-    for alpha in (0, 1).
+):
+    p_T, p_dT = _mine_T_value_and_grad(f, xs, ys_paired)
+    u_T, u_dT = _mine_T_value_and_grad(f, xs, ys_unpaired)
 
-    We work apply the exponential smoothing having access
-    to the log-values.
-
-
-    Args:
-        log_new: log(new)
-        log_old: log(old)
-        alpha: number from the open interval (0, 1). For
-          values close to 1 the smoothing is weak. For values
-          close to 0 the smoothing is strong
-
-    Returns:
-        float, log(smoothed new)
-    """
-    return jnp.logaddexp(
-        jnp.log(alpha) + log_new,
-        jnp.log(1.0 - alpha) + log_old,
+    # compute denominator (with exponential smoothing)
+    log_denom_batch = logsumexp(u_T)
+    log_denom = jnp.logaddexp(
+        jnp.log(alpha) + log_denom_prev,
+        jnp.log(1.0 - alpha) + log_denom_batch,
     )
 
+    # compute (negative) grad
+    second_term = jnp.mean(u_dT * jnp.exp(u_T - log_denom))
+    neg_grad = second_term - jnp.mean(p_dT)
 
-def _correction(
-    f: eqx.Module,
+    # compute value
+    value = jnp.mean(p_T) - log_denom_batch
+
+    return value, neg_grad, log_denom
+
+
+def _sample_paired_unpaired(
+    key: jax.random.PRNGKeyArray,
     xs: BatchedPoints,
-    ys_unpaired: BatchedPoints,
-    log_previous: float,
-    alpha: float,
-) -> tuple[float, float]:
-    """
-    The ``_gradient_second_term`` is biased.
-
-    We will slightly rescale it by a factor
-
-    A / B,
-
-    where
-    A = E[ exp f_theta(x, y) ]
-    and
-    B = exponential moving average
-      = alpha * A + (1-alpha) * C,
-
-    where C is B obtained at the previous step
-
-    To improve numerical stability, we use
-    log(A) and log(B) instead.
-
-    Args:
-        f: critic
-        xs: points, shape (batch_size, dim_x)
-        ys_unpaired: unmatched points, shape (batch_size, dim_y)
-        log_previous: log(C) which is previous log(B)
-
-    Returns:
-        A/B
-        log(B), to be used at the next step
-    """
-    fs = jax.vmap(f, in_axes=(0, 0))(xs, ys_unpaired)
-    # A = log( E[exp f(x,y) )
-    log_a = logsumexp(fs) - jnp.log(len(fs))
-
-    # B = smoothed version of A
-    log_b = _exponential_smoothing(
-        log_new=log_a,
-        log_old=log_previous,
-        alpha=alpha,
-    )
-
-    # Calculate A/B
-    a_div_b = jnp.exp(log_a - log_b)
-
-    # Return A/B and log(B)
-    return a_div_b, log_b
-
-
-def mine_negative_grads_and_carry(
-    f: eqx.Module,
-    xs: BatchedPoints,
-    ys_paired: BatchedPoints,
-    ys_unpaired: BatchedPoints,
-    log_previous: float,
-    alpha: float,
-) -> tuple[eqx.Module, float]:
-    """Calculates the *negative* gradient of MINE objective
-    according to Eq. (12) of the paper.
-
-    Args:
-        f: Equinox module representing the critic
-        xs: shape (batch_size, dim_x)
-        ys_paired: matched samples of shape (batch_size, dim_y)
-        ys_unpaired: *randomly resampled* samples of shape (batch_size, dim_y)
-        log_previous: the log(denominator) used at the previous step,
-          used to debias the gradient (see Section 3.2 of the paper)
-          via exponential smoothing
-        alpha: float between (0, 1). Values close to 1 result in little
-          smoothing. Values close to 0 result in strong smoothing
-
-    Returns:
-        (negative) gradient to be applied to f parameters, PyTree
-          of the same structure as f
-        updated denominator, to be used to adjust the gradient
-          at the next training step
-
-    Note:
-        MINE objective is to be *maximized* which can be
-        accomplished using gradient ascent.
-
-        However, most of the optimizers works with minimization,
-        so that we return *negative gradients*.
-        Gradient descent using negative gradients is equivalent
-        to the gradient ascent using normal ones.
-    """
-    # TODO(Frederic, Pawel): Consider computing the second term directly.
-    #   with exp(fs) weights divided by the denominator for numerical stability.
-    first_term = _gradient_first_term(f=f, xs=xs, ys_paired=ys_paired)
-    second_term = _gradient_second_term(f=f, xs=xs, ys_unpaired=ys_unpaired)
-
-    correction, log_carried = _correction(
-        f=f, xs=xs, ys_unpaired=ys_unpaired, log_previous=log_previous, alpha=alpha
-    )
-
-    def negative_grad_func(first: jnp.ndarray, second: jnp.ndarray) -> jnp.ndarray:
-        """Auxiliary function to be applied to the leaves in PyTree
-        representing the critic ``f``."""
-        grad = first - correction * second
-        return -grad
-
-    negative_grad = tree_map(negative_grad_func, first_term, second_term)
-
-    return negative_grad, log_carried
-
-
-def _sample_paired(
-    key: jax.random.PRNGKeyArray, xs: BatchedPoints, ys: BatchedPoints, batch_size: int
-) -> tuple[BatchedPoints, BatchedPoints]:
+    ys: BatchedPoints,
+    batch_size: Optional[int],
+) -> tuple[BatchedPoints, BatchedPoints, BatchedPoints]:
     assert len(xs) == len(ys), f"Length mismatch: {len(xs)} != {len(ys)}"
+    key_paired, key_unpaired = jax.random.split(key)
+
+    if batch_size is None:
+        ys_unpaired = jax.random.shuffle(key_unpaired, ys)
+        return xs, ys, ys_unpaired
 
     paired_indices = jax.random.choice(
-        key,
+        key_paired,
         len(xs),
         shape=(batch_size,),
         replace=False,
     )
-    xs_paired = xs[paired_indices, ...]
-    ys_paired = ys[paired_indices, ...]
-
-    return xs_paired, ys_paired
-
-
-def _sample_unpaired(
-    key: jax.random.PRNGKeyArray,
-    ys: BatchedPoints,
-    batch_size: int,
-) -> BatchedPoints:
-    # TODO(Pawel, Frederic): Consider using roll(1)
-    #  to shuffle (and shuffle only once, at the beginning).
-    #  (Currently we can accidentally get a positive pair, but
-    #  it does not look like a serious issue.)
-    indices = jax.random.choice(
-        key,
-        len(ys),
+    unpaired_indices = jax.random.choice(
+        key_unpaired,
+        len(xs),
         shape=(batch_size,),
         replace=False,
     )
-    return ys[indices]
+    xs_paired = xs[paired_indices]
+    ys_paired = ys[paired_indices]
+    ys_unpaired = ys[unpaired_indices]
+
+    return xs_paired, ys_paired, ys_unpaired
 
 
-def _shuffle(key: jax.random.PRNGKeyArray, ys: jnp.ndarray) -> jnp.ndarray:
-    """Shuffles array of shape (batch_dim, ...) along the batch dimension."""
-    indices = jax.random.choice(
-        key,
-        len(ys),
-        shape=(len(ys),),
-        replace=False,
-    )
-    return ys[indices]
-
-
-def training_loop(
+def mine_training(
     rng: jax.random.PRNGKeyArray,
     critic: eqx.Module,
     xs: BatchedPoints,
     ys: BatchedPoints,
-    batch_size: int = 256,
+    xs_test: Optional[BatchedPoints] = None,
+    ys_test: Optional[BatchedPoints] = None,
     alpha: float = 0.9,
+    batch_size: Optional[int] = 256,
     test_every_n_steps: int = 250,
     max_n_steps: int = 2_000,
     early_stopping: bool = True,
@@ -299,16 +127,23 @@ def training_loop(
     Args:
         rng: random key
         critic: critic to be trained
-        xs: samples of the X variable, shape (n_points, dim_x)
-        ys: paired samples of the Y variable, shape (n_points, dim_y)
-        max_n_steps: maximum number of steps
-        learning_rate: learning rate to be used
-        batch_size: batch size
+        xs: samples of X, shape (n_points, dim_x)
+        ys: paired samples of Y, shape (n_points, dim_y)
+        xs_test: samples of X used for computing test MI, shape (n_points_test, dim_x),
+          if None will reuse xs
+        ys_test: paired samples of Y used for computing test MI, shape (n_points_test, dim_y),
+          if None will reuse ys
         alpha: parameter used in exponential smoothing of the gradient,
           in the open interval (0, 1). Values closer to 1 result in less smoothing
+        batch_size: batch size
         test_every_n_steps: step intervals at which the training checkpoint should be saved
-        verbose: whether to use a logger to report every ``test_every_n_steps`` steps
+        max_n_steps: maximum number of steps
+        early_stopping: whether training should stop early when test MI stops growing
+        learning_rate: learning rate to be used
+        verbose: print info during training
     """
+    xs_test = xs_test if xs_test is not None else xs
+    ys_test = ys_test if ys_test is not None else ys
 
     # initialize the optimizer
     optimizer = optax.adam(learning_rate=learning_rate)
@@ -316,64 +151,63 @@ def training_loop(
 
     # compile the training step
     @jax.jit
-    def step_func(
+    def step(
         *,
         critic,
         opt_state,
         xs: BatchedPoints,
         ys_paired: BatchedPoints,
         ys_unpaired: BatchedPoints,
-        log_carry: float,
+        log_denom_carry: float,
         alpha: float,
     ):
-        neg_grads, new_log_carry = mine_negative_grads_and_carry(
+        value, neg_grad, log_denom_carry = _mine_value_neg_grad_log_denom(
             f=critic,
             xs=xs,
             ys_paired=ys_paired,
             ys_unpaired=ys_unpaired,
+            log_denom_prev=log_denom_carry,
             alpha=alpha,
-            log_previous=log_carry,
         )
-        updates, opt_state = optimizer.update(neg_grads, opt_state, critic)
-        params = optax.apply_updates(critic, updates)
-        return params, opt_state, new_log_carry
 
-    # initialize log_carry to be very small at the beginning,
+        updates, opt_state = optimizer.update(neg_grad, opt_state, critic)
+        critic = optax.apply_updates(critic, updates)
+        return critic, opt_state, value, log_denom_carry
+
+    # initialize log_denom_carry to be very small at the beginning,
     # so that the smoothing effect is negligible at the start
-    log_carry = -jnp.inf
+    log_denom_carry = -jnp.inf
 
     # main training loop
     training_log = TrainingLog(max_n_steps=max_n_steps, verbose=verbose)
     keys = jax.random.split(rng, max_n_steps)
     for n_step, key in enumerate(keys, start=1):
-        key_paired, key_unpaired, key_test = jax.random.split(key, 3)
-
+        key_sample, key_test = jax.random.split(key)
         # sample
-        xs_paired, ys_paired = _sample_paired(key_paired, xs=xs, ys=ys, batch_size=batch_size)
-        ys_unpaired = _sample_unpaired(key_unpaired, ys=ys, batch_size=batch_size)
+        xs_batch, ys_batch_paired, ys_batch_unpaired = _sample_paired_unpaired(
+            key_sample, xs=xs, ys=ys, batch_size=batch_size
+        )
 
         # run step
-        critic, opt_state, log_carry = step_func(
+        critic, opt_state, mi_train, log_denom_carry = step(
             critic=critic,
             opt_state=opt_state,
-            xs=xs_paired,
-            ys_paired=ys_paired,
-            ys_unpaired=ys_unpaired,
-            log_carry=log_carry,
+            xs=xs_batch,
+            ys_paired=ys_batch_paired,
+            ys_unpaired=ys_batch_unpaired,
+            log_denom_carry=log_denom_carry,
             alpha=alpha,
         )
 
         # logging train
-        # TODO(frdrc): step doesn't compute a regular forward pass
-        # so we don't get the batch objective for free :(
-        # training_log.log_train_mi(n_step, float('nan'))
-        training_log._tqdm_update()
+        training_log.log_train_mi(n_step, mi_train)
 
         # logging test
         if n_step % test_every_n_steps == 0:
-            # test on whole dataset
-            ys_unpaired = _shuffle(key_test, ys)
-            mi_test = mine_value(f=critic, xs=xs, ys_paired=ys, ys_unpaired=ys_unpaired)
+            ys_test_unpaired = jax.random.shuffle(key_test, ys_test)
+            mi_test = _mine_value(
+                f=critic, xs=xs_test, ys_paired=ys_test, ys_unpaired=ys_test_unpaired
+            )
             training_log.log_test_mi(n_step, mi_test)
 
         # early stop?
@@ -392,75 +226,81 @@ def training_loop(
 class MINEParams(BaseModel):
     batch_size: pydantic.PositiveInt
     max_n_steps: pydantic.PositiveInt
+    train_test_split: Optional[float]
     test_every_n_steps: pydantic.PositiveInt
     learning_rate: pydantic.PositiveFloat
-    seed: int
-    standardize: bool
     smoothing_alpha: pydantic.confloat(gt=0, lt=1) = pydantic.Field(
         description="Alpha used for gradient smoothing. "
         "Values closer to 1 result in less smoothing."
     )
+    standardize: bool
+    seed: int
     hidden_layers: list[int]
 
 
 class MINEEstimator(IMutualInformationPointEstimator):
     def __init__(
         self,
-        batch_size: int = 512,
-        max_n_steps: int = 2_000,
-        test_every_n_steps: int = 250,
-        learning_rate: float = 0.1,
-        seed: int = 524,
-        standardize: bool = True,
+        batch_size: int = _estimators._DEFAULT_BATCH_SIZE,
+        max_n_steps: int = _estimators._DEFAULT_N_STEPS,
+        train_test_split: Optional[float] = _estimators._DEFAULT_TRAIN_TEST_SPLIT,
+        test_every_n_steps: int = _estimators._DEFAULT_TEST_EVERY_N,
+        learning_rate: float = _estimators._DEFAULT_LEARNING_RATE,
+        hidden_layers: Sequence[int] = _estimators._DEFAULT_HIDDEN_LAYERS,
         smoothing_alpha: float = 0.9,
-        hidden_layers: Sequence[int] = (10, 5),
-        verbose: bool = False,
+        standardize: bool = _estimators._DEFAULT_STANDARDIZE,
+        verbose: bool = _estimators._DEFAULT_VERBOSE,
+        seed: int = _estimators._DEFAULT_SEED,
     ) -> None:
         self._params = MINEParams(
             batch_size=batch_size,
             max_n_steps=max_n_steps,
+            train_test_split=train_test_split,
             test_every_n_steps=test_every_n_steps,
             learning_rate=learning_rate,
-            seed=seed,
-            standardize=standardize,
             smoothing_alpha=smoothing_alpha,
-            hidden_layers=hidden_layers,
+            standardize=standardize,
+            seed=seed,
+            hidden_layers=list(hidden_layers),
         )
         self._verbose = verbose
         self._training_log: Optional[TrainingLog] = None
 
+    def parameters(self) -> MINEParams:
+        return self._params
+
     def _create_critic(self, dim_x: int, dim_y: int, key: jax.random.PRNGKeyArray) -> MLP:
         return MLP(dim_x=dim_x, dim_y=dim_y, key=key, hidden_layers=self._params.hidden_layers)
 
-    def fit(self, x: ArrayLike, y: ArrayLike) -> None:
+    def estimate(self, x: ArrayLike, y: ArrayLike) -> float:
         key = jax.random.PRNGKey(self._params.seed)
-        key_critic, key_train = jax.random.split(key)
+        key_init, key_split, key_fit = jax.random.split(key, 3)
 
-        # Standardize the data if needed
-        space = ProductSpace(x=x, y=y, standardize=self._params.standardize)
+        # standardize the data, note we do so before splitting into train/test
+        space = ProductSpace(x, y, standardize=self._params.standardize)
+        xs, ys = jnp.asarray(space.x), jnp.asarray(space.y)
 
-        training_log = training_loop(
-            rng=key_train,
-            critic=self._create_critic(dim_x=space.dim_x, dim_y=space.dim_y, key=key_critic),
-            xs=jnp.asarray(space.x),
-            ys=jnp.asarray(space.y),
+        # split
+        xs_train, xs_test, ys_train, ys_test = _estimators.train_test_split(
+            xs, ys, train_size=self._params.train_test_split, key=key_split
+        )
+
+        # initialize critic
+        critic = self._create_critic(dim_x=space.dim_x, dim_y=space.dim_y, key=key_init)
+
+        training_log = mine_training(
+            rng=key_fit,
+            critic=critic,
+            xs=xs_train,
+            ys=ys_train,
+            xs_test=xs_test,
+            ys_test=ys_test,
+            alpha=self._params.smoothing_alpha,
+            batch_size=self._params.batch_size,
+            test_every_n_steps=self._params.test_every_n_steps,
             max_n_steps=self._params.max_n_steps,
             learning_rate=self._params.learning_rate,
-            batch_size=self._params.batch_size,
-            alpha=self._params.smoothing_alpha,
-            test_every_n_steps=self._params.test_every_n_steps,
             verbose=self._verbose,
         )
-        self._training_log = training_log
 
-    def training_log(self) -> TrainingLog:
-        if self._training_log is None:
-            raise EstimatorNotFittedException("Estimator needs to be fitted first.")
-        return self._training_log
-
-    def estimate(self, x: ArrayLike, y: ArrayLike) -> float:
-        self.fit(x, y)
-        return self.training_log().final_mi
-
-    def parameters(self) -> MINEParams:
-        return self._params
+        return training_log.final_mi
