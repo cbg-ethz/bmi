@@ -5,7 +5,7 @@
 #
 # To install the requirements run:
 # $ R
-# > install.packages("argparse", "dplyr", "rmi", "BNSL")
+# > install.packages(c("argparse", "dplyr", "rmi", "BNSL"))
 
 parser <- argparse::ArgumentParser()
 
