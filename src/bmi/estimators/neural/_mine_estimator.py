@@ -249,7 +249,7 @@ def mine_training(
 class MINEParams(BaseModel):
     batch_size: pydantic.PositiveInt
     max_n_steps: pydantic.PositiveInt
-    train_test_split: Optional[float]
+    train_test_split: Optional[pydantic.confloat(gt=0.0, lt=1.0)]
     test_every_n_steps: pydantic.PositiveInt
     learning_rate: pydantic.PositiveFloat
     smoothing_alpha: pydantic.confloat(gt=0, lt=1) = pydantic.Field(

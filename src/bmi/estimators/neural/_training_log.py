@@ -1,4 +1,7 @@
 """Utility class for keeping information about training and displaying tqdm."""
+from typing import Union
+
+import jax
 import jax.numpy as jnp
 import tqdm
 
@@ -11,14 +14,28 @@ class TrainingLog:
         train_smooth_factor: float = 0.1,
         verbose: bool = True,
         enable_tqdm: bool = True,
-    ):
+        history_in_additional_information: bool = True,
+    ) -> None:
+        """
+        Args:
+            max_n_steps: maximum number of training steps allowed
+            early_stopping: whether early stopping is turned on
+            train_smooth_factor: TODO(Frederic, Pawel): Add description.
+            verbose: whether to print information during the training
+            enable_tqdm: whether to use tqdm's progress bar during training
+            history_in_additional_information: whether the generated additional
+              information should contain training history (evaluated loss on
+              training and test populations). We recommend keeping this flag
+              turned on.
+        """
         self.max_n_steps = max_n_steps
         self.early_stopping = early_stopping
         self.train_smooth_window = int(max_n_steps * train_smooth_factor)
         self.verbose = verbose
+        self._history_in_additional_information = history_in_additional_information
 
-        self._mi_train_history = []
-        self._mi_test_history = []
+        self._mi_train_history: list[tuple[int, float]] = []
+        self._mi_test_history: list[tuple[int, float]] = []
         self._mi_test_best = None
         self._logs_since_mi_test_best = 0
         self._tqdm = None
@@ -27,18 +44,26 @@ class TrainingLog:
         if verbose and enable_tqdm:
             self._tqdm_init()
 
-    def log_train_mi(self, n_step: int, mi: float):
-        self._mi_train_history.append((n_step, mi))
+    def log_train_mi(self, n_step: int, mi: Union[float, jax.Array]) -> None:
+        """
+        Args:
+            mi: float or JAX's float-like, e.g., Array(0.5)
+        """
+        self._mi_train_history.append((n_step, float(mi)))
         self._tqdm_update()
 
-    def log_test_mi(self, n_step: int, mi: float):
+    def log_test_mi(self, n_step: int, mi: Union[float, jax.Array]) -> None:
+        """
+        Args:
+            mi: float or JAX's float-like, e.g., Array(0.5)
+        """
         if self._mi_test_best is None or self._mi_test_best < mi:
             self._mi_test_best = mi
             self._logs_since_mi_test_best = 0
         else:
             self._logs_since_mi_test_best += 1
 
-        self._mi_test_history.append((n_step, mi))
+        self._mi_test_history.append((n_step, float(mi)))
 
         if self.verbose and self._tqdm is None:
             print(f"MI test: {mi:.2f} (step={n_step})")
@@ -54,7 +79,25 @@ class TrainingLog:
 
     @property
     def additional_information(self) -> dict:
-        return self._additional_information
+        n_steps, _ = self._mi_train_history[-1]
+
+        # Additional information we can return
+        basic = self._additional_information | {
+            "n_training_steps": n_steps,
+        }
+
+        # Training history, which can be large and is
+        # returned only if requested
+        history = (
+            {
+                "training_history": self._mi_train_history,
+                "test_history": self._mi_test_history,
+            }
+            if self._history_in_additional_information
+            else {}
+        )
+
+        return basic | history
 
     def early_stop(self) -> bool:
         return self.early_stopping and self._logs_since_mi_test_best > 1
