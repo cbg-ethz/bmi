@@ -82,7 +82,10 @@ class TrainingLog:
 
     @property
     def additional_information(self) -> dict:
-        n_steps, _ = self._mi_train_history[-1]
+        if self._mi_train_history:
+            n_steps, _ = self._mi_train_history[-1]
+        else:
+            n_steps = 0
 
         # Additional information we can return
         info = self._additional_information | {
