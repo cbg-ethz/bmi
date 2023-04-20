@@ -35,20 +35,21 @@ ESTIMATORS = {
     #'Julia-KSG-I-5': julia_estimators.JuliaKSGEstimator(variant=1, neighbors=5),
 }
 
-TASKS = {
-    task_id: BENCHMARK_TASKS[task_id]
-    for task_id in BENCHMARK_TASKS.keys() & {
-        '1v1-bimodal-0.75',
-        'student-dense-1-1-5-0.75',
-        'swissroll_x-1v1-normal-0.75',
-        'multinormal-sparse-3-3-2-0.8-0.1',
-        'multinormal-sparse-5-5-2-0.8-0.1',
-    }
-}
+TASKS = BENCHMARK_TASKS
+#TASKS = {
+#    task_id: BENCHMARK_TASKS[task_id]
+#    for task_id in BENCHMARK_TASKS.keys() & {
+#        '1v1-bimodal-0.75',
+#        'student-dense-1-1-5-0.75',
+#        'swissroll_x-1v1-normal-0.75',
+#        'multinormal-sparse-3-3-2-0.8-0.1',
+#        'multinormal-sparse-5-5-2-0.8-0.1',
+#    }
+#}
 
-N_SAMPLES = [10000]
+N_SAMPLES = [1000, 3000, 10000]
 
-SEEDS = [0]
+SEEDS = [0, 1, 2]
 
 
 # === RULES ===
