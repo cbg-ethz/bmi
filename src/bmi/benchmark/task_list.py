@@ -53,6 +53,7 @@ STUDENT_TASKS = [
     student.task_student_sparse(dim_x=2, dim_y=2, df=5),
     student.task_student_sparse(dim_x=3, dim_y=3, df=5),
     student.task_student_sparse(dim_x=5, dim_y=5, df=5),
+    student.task_student_sparse(dim_x=25, dim_y=25, df=5),
     student.task_student_dense(dim_x=5, dim_y=5, df=2),
     student.task_student_dense(dim_x=5, dim_y=5, df=3),
     student.task_student_dense(dim_x=5, dim_y=5, df=10),
