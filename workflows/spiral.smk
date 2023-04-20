@@ -110,10 +110,6 @@ rule assemble_results:
     input:
         get_inputs_to_assemble
     output: 'generated/spiral/results_csv/{n_samples}-{correlation}.csv'
-    params:
-        speed=SPEEDS,
-        seed=SEEDS,
-        estimator_id=ESTIMATOR_IDS
     run:
         def flatten_dict(d, sep='_'):
             items = []
