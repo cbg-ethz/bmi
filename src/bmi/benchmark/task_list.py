@@ -12,10 +12,12 @@ from bmi.benchmark.tasks.spiral import transform_spiral_task as spiralise
 from bmi.benchmark.tasks.wiggly import transform_wiggly_task as wigglify
 
 BINORMAL_BASE = binormal.task_bivariate_normal(gaussian_correlation=0.75)
+UNIFORM_BASE = normal_cdfise(BINORMAL_BASE)
 BISTUDENT_BASE = student.task_student_dense(dim_x=1, dim_y=1, df=5, off_diag=0.75)
 
 ONE_DIM_TASKS = [
-    normal_cdfise(BINORMAL_BASE),
+    BINORMAL_BASE,
+    UNIFORM_BASE,
     additive_noise.task_additive_noise(epsilon=0.10),
     additive_noise.task_additive_noise(epsilon=0.75),
     bimodal_gaussians.task_bimodal_gaussians(),
@@ -25,7 +27,7 @@ ONE_DIM_TASKS = [
 ]
 
 EMBEDDINGS_TASKS = [
-    embeddings.transform_swissroll_task(BINORMAL_BASE, task_name="Swiss roll 2 × 1"),
+    embeddings.transform_swissroll_task(UNIFORM_BASE, task_name="Swiss roll 2 × 1"),
 ]
 
 MULTINORMAL_TASKS = [
