@@ -69,7 +69,7 @@ rule all:
         for result_path in input:
             with open(result_path) as f:
                 result = yaml.load(f, yaml.SafeLoader)
-                result['mi_true'] = BENCHMARK_TASKS[result['task_id']]
+                result['mi_true'] = BENCHMARK_TASKS[result['task_id']].mutual_information
                 results.append(result)
         pd.DataFrame(results).to_csv(str(output), index=False)
 
