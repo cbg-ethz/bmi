@@ -22,7 +22,7 @@ import bmi.estimators.neural._estimators as _estimators
 from bmi.estimators.neural._critics import MLP
 from bmi.estimators.neural._training_log import TrainingLog
 from bmi.estimators.neural._types import BatchedPoints, Critic
-from bmi.interface import BaseModel, IMutualInformationPointEstimator
+from bmi.interface import BaseModel, EstimateResult, IMutualInformationPointEstimator
 from bmi.utils import ProductSpace
 
 
@@ -203,7 +203,9 @@ def mine_training(
     log_denom_carry = -jnp.inf
 
     # main training loop
-    training_log = TrainingLog(max_n_steps=max_n_steps, verbose=verbose)
+    training_log = TrainingLog(
+        max_n_steps=max_n_steps, early_stopping=early_stopping, verbose=verbose
+    )
     keys = jax.random.split(rng, max_n_steps)
     for n_step, key in enumerate(keys, start=1):
         key_sample, key_test = jax.random.split(key)
@@ -236,14 +238,10 @@ def mine_training(
             training_log.log_test_mi(n_step, mi_test)
 
         # early stop?
-        if early_stopping and training_log.early_stop():
+        if training_log.early_stop():
             break
 
     training_log.finish()
-
-    if verbose:
-        if early_stopping and not training_log.early_stop():
-            print("WARNING: Early stopping enabled but max_n_steps reached.")
 
     return training_log
 
@@ -251,7 +249,7 @@ def mine_training(
 class MINEParams(BaseModel):
     batch_size: pydantic.PositiveInt
     max_n_steps: pydantic.PositiveInt
-    train_test_split: Optional[float]
+    train_test_split: Optional[pydantic.confloat(gt=0.0, lt=1.0)]
     test_every_n_steps: pydantic.PositiveInt
     learning_rate: pydantic.PositiveFloat
     smoothing_alpha: pydantic.confloat(gt=0, lt=1) = pydantic.Field(
@@ -297,7 +295,7 @@ class MINEEstimator(IMutualInformationPointEstimator):
     def _create_critic(self, dim_x: int, dim_y: int, key: jax.random.PRNGKeyArray) -> MLP:
         return MLP(dim_x=dim_x, dim_y=dim_y, key=key, hidden_layers=self._params.hidden_layers)
 
-    def estimate(self, x: ArrayLike, y: ArrayLike) -> float:
+    def estimate_with_info(self, x: ArrayLike, y: ArrayLike) -> EstimateResult:
         key = jax.random.PRNGKey(self._params.seed)
         key_init, key_split, key_fit = jax.random.split(key, 3)
 
@@ -328,4 +326,10 @@ class MINEEstimator(IMutualInformationPointEstimator):
             verbose=self._verbose,
         )
 
-        return training_log.final_mi
+        return EstimateResult(
+            mi_estimate=training_log.final_mi,
+            additional_information=training_log.additional_information,
+        )
+
+    def estimate(self, x: ArrayLike, y: ArrayLike) -> float:
+        return self.estimate_with_info(x, y).mi_estimate
