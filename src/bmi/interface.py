@@ -7,7 +7,7 @@ Note:
 """
 import pathlib
 from abc import abstractmethod
-from typing import Any, Protocol, Union
+from typing import Any, Optional, Protocol, Union
 
 import numpy as np
 import pydantic
@@ -32,6 +32,12 @@ Pathlike = Union[str, pathlib.Path]
 Seed = int
 
 
+class EstimateResult(BaseModel):
+    mi_estimate: float
+    time_in_seconds: Optional[float] = None
+    additional_information: dict = pydantic.Field(default_factory=dict)
+
+
 class IMutualInformationPointEstimator(Protocol):
     """Interface for the mutual information estimator."""
 
@@ -47,6 +53,10 @@ class IMutualInformationPointEstimator(Protocol):
             mutual information estimate
         """
         raise NotImplementedError
+
+    def estimate_with_info(self, x: ArrayLike, y: ArrayLike) -> EstimateResult:
+        """Allows for reporting additional information about the run."""
+        return EstimateResult(mi_estimate=self.estimate(x, y))
 
     @abstractmethod
     def parameters(self) -> BaseModel:

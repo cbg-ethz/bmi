@@ -12,7 +12,7 @@ from bmi.estimators.neural import _backend_linear_memory, _backend_quadratic_mem
 from bmi.estimators.neural._basic_training import basic_training
 from bmi.estimators.neural._critics import MLP
 from bmi.estimators.neural._types import BatchedPoints, Critic, Point
-from bmi.interface import BaseModel, IMutualInformationPointEstimator
+from bmi.interface import BaseModel, EstimateResult, IMutualInformationPointEstimator
 from bmi.utils import ProductSpace
 
 _DEFAULT_BATCH_SIZE = 256
@@ -108,7 +108,7 @@ class NeuralEstimatorBase(IMutualInformationPointEstimator):
     def parameters(self) -> NeuralEstimatorParams:
         return self._params
 
-    def estimate(self, x: ArrayLike, y: ArrayLike) -> float:
+    def estimate_with_info(self, x: ArrayLike, y: ArrayLike) -> EstimateResult:
         key = jax.random.PRNGKey(self._params.seed)
         key_init, key_split, key_fit = jax.random.split(key, 3)
 
@@ -140,7 +140,13 @@ class NeuralEstimatorBase(IMutualInformationPointEstimator):
             verbose=self._verbose,
         )
 
-        return training_log.final_mi
+        return EstimateResult(
+            mi_estimate=training_log.final_mi,
+            additional_information=training_log.additional_information,
+        )
+
+    def estimate(self, x: ArrayLike, y: ArrayLike) -> float:
+        return self.estimate_with_info(x, y).mi_estimate
 
 
 class MLPParams(BaseModel):

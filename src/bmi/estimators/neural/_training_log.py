@@ -7,11 +7,13 @@ class TrainingLog:
     def __init__(
         self,
         max_n_steps: int,
+        early_stopping: bool,
         train_smooth_factor: float = 0.1,
         verbose: bool = True,
         enable_tqdm: bool = True,
     ):
         self.max_n_steps = max_n_steps
+        self.early_stopping = early_stopping
         self.train_smooth_window = int(max_n_steps * train_smooth_factor)
         self.verbose = verbose
 
@@ -20,6 +22,7 @@ class TrainingLog:
         self._mi_test_best = None
         self._logs_since_mi_test_best = 0
         self._tqdm = None
+        self._additional_information = {}
 
         if verbose and enable_tqdm:
             self._tqdm_init()
@@ -49,16 +52,24 @@ class TrainingLog:
 
         return self._mi_test_best
 
+    @property
+    def additional_information(self) -> dict:
+        return self._additional_information
+
     def early_stop(self) -> bool:
-        return self._logs_since_mi_test_best > 1
+        return self.early_stopping and self._logs_since_mi_test_best > 1
 
     def finish(self):
         self._tqdm_close()
+        self.detect_warnings()
 
-        if self.verbose:
-            self.print_warnings()
+    def detect_warnings(self):  # noqa: C901
+        # early stopping
+        if self.early_stopping and not self.early_stop():
+            self._additional_information["early_stopping_not_triggered"] = True
+            if self.verbose:
+                print("WARNING: Early stopping enabled but max_n_steps reached.")
 
-    def print_warnings(self):
         # analyze training
         train_mi = jnp.array([mi for _step, mi in self._mi_train_history])
         w = self.train_smooth_window
@@ -69,22 +80,27 @@ class TrainingLog:
             train_mi_smooth_max = float(train_mi_smooth.max())
             train_mi_smooth_fin = float(train_mi_smooth[-1])
             if train_mi_smooth_max > 1.05 * train_mi_smooth_fin:
-                print(
-                    f"WARNING: Smoothed training MI fell compared to highest value: "
-                    f"max={train_mi_smooth_max:.3f} vs "
-                    f"final={train_mi_smooth_fin:.3f}"
-                )
+                self._additional_information["max_training_mi_decreased"] = True
+                if self.verbose:
+                    print(
+                        f"WARNING: Smoothed training MI fell compared to highest value: "
+                        f"max={train_mi_smooth_max:.3f} vs "
+                        f"final={train_mi_smooth_fin:.3f}"
+                    )
 
         w = self.train_smooth_window
         if len(train_mi_smooth) >= w:
             train_mi_smooth_fin = float(train_mi_smooth[-1])
             train_mi_smooth_prv = float(train_mi_smooth[-w])
             if train_mi_smooth_fin > 1.05 * train_mi_smooth_prv:
-                print(
-                    f"WARNING: Smoothed raining MI was still increasing when training stopped: "
-                    f"final={train_mi_smooth_fin:.3f} vs "
-                    f"{w} step(s) ago={train_mi_smooth_prv:.3f}"
-                )
+                self._additional_information["training_mi_still_increasing"] = True
+                if self.verbose:
+                    print(
+                        f"WARNING: Smoothed raining MI was still "
+                        f"increasing when training stopped: "
+                        f"final={train_mi_smooth_fin:.3f} vs "
+                        f"{w} step(s) ago={train_mi_smooth_prv:.3f}"
+                    )
 
     def _tqdm_init(self):
         self._tqdm = tqdm.tqdm(
