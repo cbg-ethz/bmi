@@ -35,7 +35,7 @@ def get_ks(dim_x: int, dim_y: int) -> list[int]:
 rule all:
     input:
         expand(
-            'generated/sparsity/results_csv/{dim_x}-{dim_y}-{signal}-{noise}-{n_samples}.csv',
+            'generated/sparsity/figures/{dim_x}-{dim_y}-{signal}-{noise}-{n_samples}.pdf',
             dim_x=[25],
             dim_y=[25],
             signal=[0.8],
@@ -43,11 +43,66 @@ rule all:
             n_samples=[1_000],
         )
 
+def visualise_estimate(df: pd.DataFrame, ax: plt.Axes):
+    for estimator_id, group in df.groupby("estimator_id"):
+        sns.regplot(
+            data=group,
+            x="n_interacting",
+            y="mi_estimate",
+            ax=ax,
+            x_estimator=np.mean,
+            lowess=True,
+            label=ESTIMATOR_NAMES[estimator_id],
+        )
+
+    sns.regplot(
+        data=group,
+        x="n_interacting",
+        y="mi_true",
+        ax=ax,
+        x_estimator=np.mean,
+        lowess=True,
+        label="Ground truth",
+        color="black",
+        line_kws={"linestyle": "--", "color": "k"}
+    )
+
+    ax.set_xlabel("Number of interacting variables")
+    ax.set_ylabel("Estimate")
+
+    ax.legend()
+
+def visualise_relative_bias(df: pd.DataFrame, ax: plt.Axes):
+    for estimator_id, group in df.groupby("estimator_id"):
+        sns.regplot(
+            data=group,
+            x="n_interacting",
+            y="relative_bias",
+            ax=ax,
+            x_estimator=np.mean,
+            lowess=True,
+            label=ESTIMATOR_NAMES[estimator_id],
+        )
+
+    ax.set_xlabel("Number of interacting variables")
+    ax.set_ylabel("Relative bias")
+    ax.legend()
+
+
 rule plot:
     input: 'generated/sparsity/results_csv/{dim_x}-{dim_y}-{signal}-{noise}-{n_samples}.csv',
     output: 'generated/sparsity/figures/{dim_x}-{dim_y}-{signal}-{noise}-{n_samples}.pdf'
     run:
-        pass
+        df = pd.read_csv("generated/sparsity/results_csv/25-25-0.8-0.1-1000.csv")
+        df["relative_bias"] = (df["mi_true"] - df["mi_estimate"]) / df["mi_true"]
+
+        fig, axs = plt.subplots(1, 2, figsize=(10, 4))
+
+        visualise_estimate(df, ax=axs[0])
+        visualise_relative_bias(df, ax=axs[1])
+
+        fig.tight_layout()
+        fig.savefig(str(output), dpi=350)
 
 def get_inputs_to_assemble(wildcards) -> list[str]:
     """Constructs a list of files to be pulled to the data frame.
