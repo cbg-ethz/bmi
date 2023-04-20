@@ -68,7 +68,9 @@ rule all:
         results = []
         for result_path in input:
             with open(result_path) as f:
-                results.append(yaml.load(f, yaml.SafeLoader))
+                result = yaml.load(f, yaml.SafeLoader)
+                result['mi_true'] = BENCHMARK_TASKS[result['task_id']]
+                results.append(result)
         pd.DataFrame(results).to_csv(str(output), index=False)
 
 
@@ -96,6 +98,12 @@ rule apply_estimator:
         # this should be about ~4GiB
         resource.setrlimit(resource.RLIMIT_DATA, (1<<33, 1<<33))
 
-        result = run_estimator(estimator=estimator, estimator_id=estimator_id, sample_path=str(input), task_id=task_id, seed=seed)
+        result = run_estimator(
+            estimator=estimator,
+            estimator_id=estimator_id,
+            sample_path=str(input),
+            task_id=task_id,
+            seed=seed,
+        )
         result.dump(str(output))
 
