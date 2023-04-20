@@ -14,7 +14,8 @@ class TrainingLog:
         train_smooth_factor: float = 0.1,
         verbose: bool = True,
         enable_tqdm: bool = True,
-        history_in_additional_information: bool = True,
+        train_history_in_additional_information: bool = False,
+        test_history_in_additional_information: bool = True,
     ) -> None:
         """
         Args:
@@ -32,7 +33,9 @@ class TrainingLog:
         self.early_stopping = early_stopping
         self.train_smooth_window = int(max_n_steps * train_smooth_factor)
         self.verbose = verbose
-        self._history_in_additional_information = history_in_additional_information
+
+        self._train_history_in_additional_information = train_history_in_additional_information
+        self._test_history_in_additional_information = test_history_in_additional_information
 
         self._mi_train_history: list[tuple[int, float]] = []
         self._mi_test_history: list[tuple[int, float]] = []
@@ -82,22 +85,16 @@ class TrainingLog:
         n_steps, _ = self._mi_train_history[-1]
 
         # Additional information we can return
-        basic = self._additional_information | {
+        info = self._additional_information | {
             "n_training_steps": n_steps,
         }
 
-        # Training history, which can be large and is
-        # returned only if requested
-        history = (
-            {
-                "training_history": self._mi_train_history,
-                "test_history": self._mi_test_history,
-            }
-            if self._history_in_additional_information
-            else {}
-        )
+        if self._train_history_in_additional_information:
+            info |= {"training_history": self._mi_train_history}
+        if self._test_history_in_additional_information:
+            info |= {"test_history": self._mi_test_history}
 
-        return basic | history
+        return info
 
     def early_stop(self) -> bool:
         return self.early_stopping and self._logs_since_mi_test_best > 1

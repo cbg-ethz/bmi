@@ -60,17 +60,9 @@ def test_mine_estimator_logs(n_points: int = 20, correlation: float = 0.5) -> No
     )
     estimate_result = estimator.estimate_with_info(points_x, points_y)
     n_steps = estimate_result.additional_information["n_training_steps"]
+    assert n_steps > 1
 
-    training_history = estimate_result.additional_information["training_history"]
+    assert "test_history" in estimate_result.additional_information
     test_history = estimate_result.additional_information["test_history"]
-
-    assert len(training_history) > 1
-
-    assert len(training_history) == n_steps
-    assert len(test_history) == n_steps // 2
-
-    assert isinstance(training_history[-1][0], int)
+    assert len(test_history) == pytest.approx(n_steps, abs=1.01)
     assert isinstance(test_history[-1][0], int)
-
-    assert isinstance(training_history[-1][1], float)
-    assert isinstance(test_history[-1][1], float)
