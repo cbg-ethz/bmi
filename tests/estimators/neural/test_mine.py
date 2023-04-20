@@ -50,13 +50,14 @@ def test_mine_estimator_logs(n_points: int = 20, correlation: float = 0.5) -> No
     distribution = samplers.BivariateNormalSampler(correlation=correlation)
     points_x, points_y = distribution.sample(n_points, rng=101)
 
+    test_every_n_steps = 2
     estimator = mine.MINEEstimator(
         hidden_layers=(3, 2),
         verbose=False,
         max_n_steps=10,
         batch_size=max(5, n_points // 10),
         train_test_split=0.5,
-        test_every_n_steps=2,
+        test_every_n_steps=test_every_n_steps,
     )
     estimate_result = estimator.estimate_with_info(points_x, points_y)
     n_steps = estimate_result.additional_information["n_training_steps"]
@@ -64,5 +65,5 @@ def test_mine_estimator_logs(n_points: int = 20, correlation: float = 0.5) -> No
 
     assert "test_history" in estimate_result.additional_information
     test_history = estimate_result.additional_information["test_history"]
-    assert len(test_history) == pytest.approx(n_steps, abs=1.01)
+    assert len(test_history) * test_every_n_steps == pytest.approx(n_steps, abs=1.01)
     assert isinstance(test_history[-1][0], int)
