@@ -2,6 +2,7 @@
 /tasks
 /results
 /lightning_logs
+/generated
 
 # Snakemake
 .snakemake

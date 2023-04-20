@@ -10,10 +10,8 @@ import yaml
 
 import bmi
 
-N_POINTS: int = 1_000
-CORRELATION: float = 0.8
-N_SEED: int = 3
-SPEEDS: list[float] = [0, 0.1, 0.3, 0.5, 0.7, 1, 1.5, 2, 2.5, 3]
+SEEDS: list[int] = [0, 1, 2]
+SPEEDS: list[float] = [0, 0.5, 1]  # [0, 0.1, 0.3, 0.5, 0.7, 1, 1.5, 2, 2.5, 3]
 
 
 ESTIMATORS = {
@@ -21,6 +19,7 @@ ESTIMATORS = {
     'KSG-5': bmi.estimators.KSGEnsembleFirstEstimator(neighborhoods=(5,)),
     'CCA': bmi.estimators.CCAMutualInformationEstimator(),
 }
+
 # Estimator names on the generated figure
 ESTIMATOR_NAMES = {
     'KSG-5': "KSG",
@@ -28,14 +27,15 @@ ESTIMATOR_NAMES = {
 }
 
 assert tuple(sorted(ESTIMATOR_NAMES.keys())) == tuple(sorted(ESTIMATORS.keys())), "Estimator IDs don't agree."
+ESTIMATOR_IDS = sorted(ESTIMATOR_NAMES.keys())
 
 
-def spiral_task(speed: float, correlation) -> bmi.benchmark.Task:
+def spiral_task(speed: float, correlation: float) -> bmi.benchmark.Task:
     # Correlation cor(X1, Y) is non-zero.
     # We have cor(X1, X2) = cor(X2, Y) = 0.
     covariance = np.eye(3)
-    covariance[0, 2] = CORRELATION
-    covariance[2, 0] = CORRELATION
+    covariance[0, 2] = correlation
+    covariance[2, 0] = correlation
 
     generator = bmi.transforms.so_generator(2,0,1)
 
@@ -58,9 +58,10 @@ rule all:
     input:
         expand(
             'generated/spiral/figures/{n_samples}-{correlation}.pdf',
-            n_samples=[N_POINTS],
-            correlation=[CORRELATION],
+            n_samples=[1000],
+            correlation=[0.8],
         )
+
 
 rule plot:
     input: 'generated/spiral/results_csv/{n_samples}-{correlation}.csv'
@@ -94,18 +95,27 @@ rule plot:
         fig.savefig(str(output), dpi=350)
 
 
+def get_inputs_to_assemble(wildcards):
+    lst = []
+    for speed in SPEEDS:
+        for estimator_id in ESTIMATOR_IDS:
+            for seed in SEEDS:
+                name = f'generated/spiral/results/{estimator_id}/{wildcards.n_samples}-{seed}-{wildcards.correlation}-{speed}.yaml'
+                lst.append(name)
+    return lst
+
+
 rule assemble_results:
     # Assembles results from YAML files into one CSV
-    output: 'generated/spiral/results_csv/{n_samples}-{correlation}.csv'
     input:
-        expand(
-            'generated/spiral/results/{estimator_id}-{n_samples}-{seed}-{correlation}-{speed}.yaml',
-            estimator_id=ESTIMATORS,
-            seed=range(N_SEED),
-            speed=SPEEDS,
-            n_samples=[N_POINTS],
-            correlation=[CORRELATION],
-        )
+        get_inputs_to_assemble
+    output: 'generated/spiral/results_csv/{n_samples}-{correlation}.csv'
+    params:
+        speed=SPEEDS,
+        seed=SEEDS,
+        estimator_id=ESTIMATOR_IDS
+    wildcard_constraints:
+        estimator_id='|'.join(ESTIMATOR_IDS)
     run:
         def flatten_dict(d, sep='_'):
             items = []
@@ -149,7 +159,7 @@ rule sample_task:
 
 rule apply_estimator:
     # Apply estimator to a given sample and save result
-    output: 'generated/spiral/results/{estimator_id}-{n_samples}-{seed}-{correlation}-{speed}.yaml'
+    output: 'generated/spiral/results/{estimator_id}/{n_samples}-{seed}-{correlation}-{speed}.yaml'
     input: 'generated/spiral/samples/{n_samples}-{seed}-{correlation}-{speed}.csv'
     run:
         correlation = float(wildcards.correlation)
