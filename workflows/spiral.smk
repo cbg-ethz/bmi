@@ -114,8 +114,6 @@ rule assemble_results:
         speed=SPEEDS,
         seed=SEEDS,
         estimator_id=ESTIMATOR_IDS
-    wildcard_constraints:
-        estimator_id='|'.join(ESTIMATOR_IDS)
     run:
         def flatten_dict(d, sep='_'):
             items = []
