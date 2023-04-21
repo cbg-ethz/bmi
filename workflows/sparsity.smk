@@ -93,7 +93,7 @@ rule plot:
     input: 'generated/sparsity/results_csv/{dim_x}-{dim_y}-{signal}-{noise}-{n_samples}.csv',
     output: 'generated/sparsity/figures/{dim_x}-{dim_y}-{signal}-{noise}-{n_samples}.pdf'
     run:
-        df = pd.read_csv("generated/sparsity/results_csv/25-25-0.8-0.1-1000.csv")
+        df = pd.read_csv(str(input))
         df["relative_bias"] = (df["mi_true"] - df["mi_estimate"]) / df["mi_true"]
 
         fig, axs = plt.subplots(1, 2, figsize=(10, 4))
