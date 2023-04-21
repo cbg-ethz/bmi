@@ -1,7 +1,7 @@
 # Tasks and results (dirs or symlinks) for benchmark
 /tasks
 /results
-/lightning_logs
+/generated
 
 # Snakemake
 .snakemake
