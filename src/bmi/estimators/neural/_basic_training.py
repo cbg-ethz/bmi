@@ -66,7 +66,9 @@ def basic_training(
         return critic, opt_state, -loss_step
 
     # main training loop
-    training_log = TrainingLog(max_n_steps=max_n_steps, verbose=verbose)
+    training_log = TrainingLog(
+        max_n_steps=max_n_steps, early_stopping=early_stopping, verbose=verbose
+    )
     keys = jax.random.split(rng, max_n_steps)
     for n_step, key in enumerate(keys, start=1):
         # run step
@@ -82,13 +84,9 @@ def basic_training(
             training_log.log_test_mi(n_step, mi_test)
 
         # early stop?
-        if early_stopping and training_log.early_stop():
+        if training_log.early_stop():
             break
 
     training_log.finish()
-
-    if verbose:
-        if early_stopping and not training_log.early_stop():
-            print("WARNING: Early stopping enabled but max_n_steps reached.")
 
     return training_log

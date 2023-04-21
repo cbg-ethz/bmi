@@ -34,7 +34,7 @@ def run_estimator(
     task_id: str,
     seed: Optional[int] = None,
     additional_information: Optional[dict] = None,
-):
+) -> RunResult:
     additional_information = additional_information or {}
     samples_x, samples_y = read_sample(sample_path)
     n_samples = len(samples_x)
@@ -44,12 +44,18 @@ def run_estimator(
 
         # external estimators read sample on their own
         if isinstance(estimator, ExternalEstimator):
-            mi_estimate = estimator.estimate_from_path(sample_path)
+            estimate_result = estimator.estimate_with_info_from_path(sample_path)
         else:
-            mi_estimate = estimator.estimate(samples_x, samples_y)
+            estimate_result = estimator.estimate_with_info(samples_x, samples_y)
 
-        time_in_seconds = timer.check()
+        time_measured = timer.check()
+
+        # prepare info for run result
+        mi_estimate = estimate_result.mi_estimate
+        time_reported = estimate_result.time_in_seconds
+        time_in_seconds = time_reported if time_reported is not None else time_measured
         success = True
+        additional_information |= estimate_result.additional_information
 
     # something went wrong
     except Exception as e:
@@ -69,5 +75,5 @@ def run_estimator(
         task_id=task_id,
         n_samples=n_samples,
         seed=seed,
-        additional_information=additional_information or {},
+        additional_information=additional_information,
     )
