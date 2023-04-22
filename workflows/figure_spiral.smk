@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 
 import matplotlib.pyplot as plt
-import seaborn as sns
+
+import yaml
 
 import bmi
 from common_estimators import ESTIMATORS, ESTIMATOR_NAMES, ESTIMATOR_COLORS
@@ -17,10 +18,10 @@ def spiral_task(speed: float, correlation: float) -> bmi.benchmark.Task:
     covariance[0, 2] = correlation
     covariance[2, 0] = correlation
 
-    generator = bmi.transforms.so_generator(2,0,1)
+    generator = bmi.transforms.so_generator(2, 0, 1)
 
     sampler = bmi.samplers.TransformedSampler(
-        base_sampler=bmi.samplers.SplitMultinormal(dim_x=2,dim_y=1,covariance=covariance),
+        base_sampler=bmi.samplers.SplitMultinormal(dim_x=2, dim_y=1, covariance=covariance),
         transform_x=bmi.transforms.Spiral(generator=generator,speed=speed),
     )
     return bmi.benchmark.Task(
@@ -59,13 +60,28 @@ rule all:
         fig, ax = plt.subplots()
 
         #ax.hlines([data['mi_true'].mean()], min(SPEEDS), max(SPEEDS), colors="k",linestyles="--")
-        data['speed'] = data['task_params'].apply(lambda x: eval(x)['speed'])
+        data['speed'] = data['task_params'].apply(lambda x: yaml.safe_load(x)['speed'])
 
-        for estimator_id, group in data.groupby("estimator_id"):
+        print(data['task_params'].head())
+
+        mi_true = data['mi_true'].mean()
+
+        ax.hlines(
+            mi_true,
+            xmin=data['speed'].min(),
+            xmax=data['speed'].max(),
+            linestyles="dashed",
+            label="True",
+            colors="black",
+        )
+
+        means = data.groupby(["task_id", "estimator_id"]).mean().reset_index()
+
+        for estimator_id, group in means.groupby("estimator_id"):
             ax.scatter(
                 group['speed'],
                 group['mi_estimate'],
-                #label=ESTIMATOR_NAMES[estimator_id],
+                label=ESTIMATOR_NAMES[estimator_id],
                 color=ESTIMATOR_COLORS[estimator_id],
                 alpha=0.3,
             )
