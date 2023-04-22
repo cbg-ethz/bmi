@@ -53,8 +53,12 @@ workdir: "generated/figure_spiral/"
 
 # === RULES ===
 rule all:
+    input:
+        'figures/performance.pdf', 'figures/visualisation.pdf'
+
+rule plot_performance:
     input: 'results.csv'
-    output: 'figure.pdf'
+    output: 'figures/performance.pdf'
     run:
         data = pd.read_csv(str(input))
         fig, ax = plt.subplots()
@@ -104,3 +108,9 @@ rule all:
         fig.savefig(str(output), dpi=350)
 
 include: "_core_rules.smk"
+
+
+rule plot_spiral_visalisation:
+    output: 'figures/visualisation.pdf'
+    script:
+        "scripts/plot_spiral.py"
