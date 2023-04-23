@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import yaml
 
 import bmi
-from common_estimators import ESTIMATORS, ESTIMATOR_NAMES, ESTIMATOR_COLORS
+from _common_figure_utils import ESTIMATORS, ESTIMATOR_NAMES, ESTIMATOR_COLORS
 
 
 ESTIMATORS = dict(list(ESTIMATORS.items())[:2])

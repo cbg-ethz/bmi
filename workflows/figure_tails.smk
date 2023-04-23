@@ -6,14 +6,16 @@ import bmi.benchmark.tasks.multinormal as multinormal
 import bmi.benchmark.tasks.student as student
 from bmi.benchmark.tasks.power import transform_power_task as powerise
 
-from common_estimators import ESTIMATORS
-from common_plotting import read_results, format_axs, plot_mi
 from bmi.plot_utils.subplots_from_axsize import subplots_from_axsize
-
+from _common_figure_utils import (
+    ESTIMATORS,
+    read_results, format_axs, plot_mi
+)
 
 
 # === CONFIG ===
-#ESTIMATORS = dict(list(ESTIMATORS.items())[:1])
+
+# ESTIMATORS from _common_figure_utils
 
 TASKS = {
     task.id: task for task in [
