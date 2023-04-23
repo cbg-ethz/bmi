@@ -16,7 +16,7 @@ from bmi.interface import BaseModel, EstimateResult, IMutualInformationPointEsti
 from bmi.utils import ProductSpace
 
 _DEFAULT_BATCH_SIZE = 256
-_DEFAULT_N_STEPS: int = 2_000
+_DEFAULT_N_STEPS: int = 10_000
 _DEFAULT_TRAIN_TEST_SPLIT: float = 0.5
 _DEFAULT_TEST_EVERY_N: int = 250
 _DEFAULT_HIDDEN_LAYERS: tuple[int, ...] = (16, 8)
