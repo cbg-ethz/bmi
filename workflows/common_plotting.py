@@ -3,8 +3,6 @@ import matplotlib
 import pandas as pd
 import yaml
 
-from bmi.plot_utils.subplots_from_axsize import subplots_from_axsize
-
 matplotlib.use("agg")
 
 
@@ -39,19 +37,10 @@ def read_results(
     return results
 
 
-def prepare_fig_axs(
-    axx=2.0,
-    axy=1.5,
-    **kwargs,
-):
-    fig, axs = subplots_from_axsize(axsize=(axx, axy), **kwargs)
-
-    # formatting
+def format_axs(axs):
     for ax in axs.reshape(-1):
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
-
-    return fig, axs
 
 
 def plot_mi(ax, results, x_col):
@@ -64,6 +53,15 @@ def plot_mi(ax, results, x_col):
             label=ce.ESTIMATOR_NAMES[estimator_id],
         )
 
-    ax.legend()
+    data_mean = results.groupby(x_col)[["mi_true"]].mean().reset_index()
+    ax.plot(
+        data_mean[x_col],
+        data_mean["mi_true"],
+        linestyle=":",
+        color="black",
+        label="True MI",
+    )
+
+    ax.set_ylim(bottom=0.0)
     ax.set_xlabel(x_col)
     ax.set_ylabel("MI estimate [nats]")

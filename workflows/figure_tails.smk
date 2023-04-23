@@ -7,7 +7,9 @@ import bmi.benchmark.tasks.student as student
 from bmi.benchmark.tasks.power import transform_power_task as powerise
 
 from common_estimators import ESTIMATORS
-from common_plotting import read_results, prepare_fig_axs, plot_mi
+from common_plotting import read_results, format_axs, plot_mi
+from bmi.plot_utils.subplots_from_axsize import subplots_from_axsize
+
 
 
 # === CONFIG ===
@@ -40,9 +42,14 @@ rule figure_tails:
     output: 'figures/tails.pdf'
     run:
         results = read_results(str(input))
-        fig, axs = prepare_fig_axs(ncols=2)
+        fig, axs = subplots_from_axsize(
+            axsize=(2.0, 1.5), ncols=2,
+            left=0.6, right=1.75,
+        )
+        format_axs(axs)
         plot_mi(axs[0], results, 'alpha')
         plot_mi(axs[1], results, 'dof')
+        axs[1].legend(bbox_to_anchor=(1.1, 1.05))
         fig.savefig(str(output))
 
 include: "_core_rules.smk"
