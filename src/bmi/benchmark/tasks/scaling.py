@@ -7,6 +7,15 @@ import bmi.samplers as samplers
 from bmi.benchmark.task import Task
 
 
+def _rescale(x) -> np.ndarray:
+    """Wrapper around SciKit's function,
+    as we need 64-bit precision -- otherwise
+    a warning is raised.
+    """
+    x_new = np.asarray(x, dtype=np.float64)
+    return preproc.scale(x_new)
+
+
 def transform_rescale(
     base_task: Task,
     task_name: Optional[str] = None,
@@ -15,8 +24,8 @@ def transform_rescale(
 
     sampler = samplers.TransformedSampler(
         base_sampler=base_sampler,
-        transform_x=preproc.scale,
-        transform_y=preproc.scale,
+        transform_x=_rescale,
+        transform_y=_rescale,
         vectorise=False,
     )
 
@@ -48,6 +57,12 @@ def transform_uniformise(
     n_quantiles: int = 100,
     random_seed: int = 0,
 ) -> Task:
+    """
+
+    Args:
+        n_quantiles: number of quantiles to be used
+        random_seed: random seed for the preprocessing method
+    """
     transform = _quantile_transform_wrapper(
         n_quantiles=n_quantiles, distribution="uniform", random_state=random_seed
     )
