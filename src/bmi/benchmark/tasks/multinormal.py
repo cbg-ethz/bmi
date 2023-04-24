@@ -26,7 +26,7 @@ def task_multinormal_dense(
         task_name=task_name or f"Multinormal {dim_x} × {dim_y} (dense)",
         task_params={
             "off_diag": off_diag,
-            "covariance": covariance,
+            "covariance": covariance.tolist(),
         },
     )
 
@@ -68,6 +68,6 @@ def task_multinormal_sparse(
             "n_interacting": n_interacting,
             "correlation_signal": correlation_signal,
             "correlation_noise": correlation_noise,
-            "covariance": covariance,
+            "covariance": covariance.tolist(),
         },
     )
