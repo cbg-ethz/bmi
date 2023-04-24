@@ -39,37 +39,37 @@ class Task:
         )
 
     @property
-    def id(self):
+    def id(self) -> str:
         return self.metadata.task_id
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.metadata.task_name
 
     @property
-    def params(self):
+    def params(self) -> dict:
         return self.metadata.task_params
 
     @property
-    def dim_x(self):
+    def dim_x(self) -> int:
         return self.metadata.dim_x
 
     @property
-    def dim_y(self):
+    def dim_y(self) -> int:
         return self.metadata.dim_y
 
     @property
-    def mutual_information(self):
+    def mutual_information(self) -> float:
         return self.metadata.mi_true
 
-    def save_metadata(self, path: Pathlike):
+    def save_metadata(self, path: Pathlike) -> None:
         with open(path, "w") as outfile:
             yaml.dump(self.metadata.dict(), outfile, Dumper=DictDumper)
 
     def sample(self, n_samples: int, seed: int) -> tuple[np.ndarray, np.ndarray]:
         return self.sampler.sample(n_points=n_samples, rng=seed)
 
-    def save_sample(self, path: Pathlike, n_samples: int, seed: int):
+    def save_sample(self, path: Pathlike, n_samples: int, seed: int) -> None:
         samples_x, samples_y = self.sample(n_samples, seed)
         save_sample(path, samples_x, samples_y)
 
