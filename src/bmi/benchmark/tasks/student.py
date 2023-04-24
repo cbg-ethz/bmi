@@ -29,7 +29,7 @@ def task_student_dense(
         task_params={
             "dof": df,
             "off_diag": off_diag,
-            "dispersion": dispersion,
+            "dispersion": dispersion.tolist(),
         },
     )
 
@@ -74,6 +74,6 @@ def task_student_sparse(
             "dof": df,
             "correlation_signal": correlation_signal,
             "correlation_noise": correlation_noise,
-            "dispersion": dispersion,
+            "dispersion": dispersion.tolist(),
         },
     )

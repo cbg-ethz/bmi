@@ -7,8 +7,6 @@ from bmi.plot_utils.subplots_from_axsize import subplots_from_axsize
 from _common_figure_utils import (
     read_results,
     plot_benchmark_mi_estimate,
-    plot_benchmark_n_samples,
-    plot_benchmark_neural_fails,
 )
 
 
@@ -28,29 +26,38 @@ ESTIMATORS = {
     'R-KSG-I-10': r_estimators.RKSGEstimator(variant=1, neighbors=10),
     #'R-KSG-II-5': r_estimators.RKSGEstimator(variant=2, neighbors=5),
     #'R-KSG-II-10': r_estimators.RKSGEstimator(variant=2, neighbors=10),
-    #'R-BNSL': r_estimators.RBNSLEstimator(),
-    #'R-LNN': r_estimators.RLNNEstimator(),
+    'R-BNSL': r_estimators.RBNSLEstimator(),
+    'R-LNN': r_estimators.RLNNEstimator(),
 
     'Julia-Hist-10': julia_estimators.JuliaHistogramEstimator(bins=10),
-    #'Julia-Kernel': julia_estimators.JuliaKernelEstimator(),
+    'Julia-Kernel': julia_estimators.JuliaKernelEstimator(),
     'Julia-Transfer-30': julia_estimators.JuliaTransferEstimator(bins=30),
     #'Julia-KSG-I-5': julia_estimators.JuliaKSGEstimator(variant=1, neighbors=5),
 }
 
-TASKS = BENCHMARK_TASKS
+TASKS = {
+    task_id: BENCHMARK_TASKS[task_id]
+    for task_id in {
+        '1v1-bimodal-0.75',
+        'student-dense-1-1-5-0.75',
+        'swissroll_x-normal_cdf-1v1-normal-0.75',
+        'multinormal-sparse-3-3-2-0.8-0.1',
+        'multinormal-sparse-5-5-2-0.8-0.1',
+    }
+}
 
-N_SAMPLES = [1000, 3000, 10000]
+N_SAMPLES = [10000]
 
-SEEDS = [0, 1, 2]
+SEEDS = [0, 1]
 
 
 # === WORKDIR ===
-workdir: "generated/benchmark/"
+workdir: "generated/benchmark_qualifiers/"
 
 
 # === RULES ===
 rule all:
-    input: 'figures/mi_estimate.pdf', 'figures/n_samples.pdf', 'figures/neural.pdf'
+    input: 'figures/mi_estimate.pdf'
 
 rule figure_mi_estimate:
     input: 'results.csv'
@@ -62,30 +69,6 @@ rule figure_mi_estimate:
             left=1.2, bottom=4.
         )
         plot_benchmark_mi_estimate(ax, results, ESTIMATORS, TASKS)
-        fig.savefig(str(output))
-
-rule figure_n_samples:
-    input: 'results.csv'
-    output: 'figures/n_samples.pdf'
-    run:
-        results = read_results(str(input))
-        fig, ax = subplots_from_axsize(
-            axsize=(len(TASKS) * 0.4, len(ESTIMATORS) * 0.35),
-            left=1.2, bottom=4.
-        )
-        plot_benchmark_n_samples(ax, results, ESTIMATORS, TASKS)
-        fig.savefig(str(output))
-
-rule figure_neural:
-    input: 'results.csv'
-    output: 'figures/neural.pdf'
-    run:
-        results = read_results(str(input))
-        fig, ax = subplots_from_axsize(
-            axsize=(len(TASKS) * 0.3, 4 * 0.3),
-            left=1.2, bottom=4.
-        )
-        plot_benchmark_neural_fails(ax, results, ESTIMATORS, TASKS)
         fig.savefig(str(output))
 
 include: "_core_rules.smk"

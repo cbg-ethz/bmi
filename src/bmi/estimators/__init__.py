@@ -15,6 +15,7 @@ from bmi.estimators.neural import (
     NWJEstimator,
     MINEParams,
     NeuralEstimatorParams,
+    NeuralEstimatorBase,
 )
 
 # isort: on
@@ -32,6 +33,7 @@ __all__ = [
     "NWJEstimator",
     "MINEParams",
     "NeuralEstimatorParams",
+    "NeuralEstimatorBase",
     "HistogramEstimatorParams",
     "KSGEnsembleParameters",
 ]
