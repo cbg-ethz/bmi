@@ -6,6 +6,10 @@ import numpy as np
 
 import bmi
 
+# *************************************************
+# *************** Utility functions ***************
+# *************************************************
+
 
 def binsearch(
     func: Callable[[float], float],
@@ -52,7 +56,11 @@ def binsearch(
         return None
 
 
-# *** Sparse Gaussian task factory ***
+# ******************************************************
+# *************** Basic Gaussian sampler ***************
+# ******************************************************
+
+
 def get_sparse_gaussian_sampler(correlation: float, dim: int, noise: float = 0.1) -> bmi.ISampler:
     """Generates the sparse Gaussian sampler we will use."""
     covariance = bmi.samplers.parametrised_correlation_matrix(
@@ -108,6 +116,11 @@ def generate_sparse_gaussian_task(
     )
 
 
+# **********************************************************
+# *************** Spiralled Gaussian sampler ***************
+# **********************************************************
+
+
 def generate_spiral_task(
     mi: float,
     family_name: str,
@@ -129,5 +142,30 @@ def generate_spiral_task(
         base_task=base_gaussian_task,
         speed=speed,
         task_name=f"Spiral with {mi:.2f} MI",
+    )
+    return task
+
+
+# ***********************************************************
+# *************** Half-cubed Gaussian sampler ***************
+# ***********************************************************
+
+
+def generate_half_cube_task(
+    mi: float, family_name: str, dim: int, noise: float = 0.1
+) -> Optional[bmi.Task]:
+    base_gaussian_task = generate_sparse_gaussian_task(
+        mi=mi,
+        dim=dim,
+        noise=noise,
+        family_name=family_name,
+    )
+    # Maybe monad behaviour without monads
+    if base_gaussian_task is None:
+        return None
+
+    task = bmi.benchmark.tasks.transform_half_cube_task(
+        base_task=base_gaussian_task,
+        task_name=f"Half-cube with {mi:.2f} MI",
     )
     return task

@@ -19,7 +19,7 @@ ESTIMATORS = {
     "KSG": bmi.estimators.KSGEnsembleFirstEstimator(),
 }
 ESTIMATOR_NAMES = {key: key for key in ESTIMATORS}
-ESTIMATOR_COLORS = {key: f"C{i+4}" for i, key in enumerate(ESTIMATORS)}
+ESTIMATOR_COLORS = {key: f"C{i}" for i, key in enumerate(ESTIMATORS)}
 
 # Description of the distribution families plotted at each plot axis
 # This is the dictionary of the format
@@ -32,6 +32,7 @@ ESTIMATOR_COLORS = {key: f"C{i+4}" for i, key in enumerate(ESTIMATORS)}
 DISTRIBUTION_FAMILIES = {
     "Sparse Gaussian": lambda mi, family_name: hmu.generate_sparse_gaussian_task(mi=mi, family_name=family_name, dim=3),
     "Spiral": lambda mi, family_name: hmu.generate_spiral_task(mi=mi, family_name=family_name, dim=3, speed=1/3),
+    "Half-cube": lambda mi, family_name: hmu.generate_half_cube_task(mi=mi, family_name=family_name, dim=3),
 }
 
 RAW_TASK_LIST = [
