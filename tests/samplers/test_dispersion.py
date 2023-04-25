@@ -40,9 +40,9 @@ def test_covariance_agrees_with_mixing(
         lambd=lambd,
     )
 
-    mixing = params.mixing()
+    mixing = params.mixing
     assert mixing.shape == (dim_x + dim_y, params.n_latent)
-    cov = params.covariance()
+    cov = params.covariance
     assert cov.shape == (dim_x + dim_y, dim_x + dim_y)
 
     nptest.assert_allclose(cov, np.einsum("il,jl->ij", mixing, mixing))
@@ -107,7 +107,7 @@ def test_mixing_manually(
         ]
     )
 
-    nptest.assert_allclose(expected_mixing, params.mixing())
+    nptest.assert_allclose(expected_mixing, params.mixing)
 
 
 @pytest.mark.parametrize("dim_x", (1, 3))
@@ -120,9 +120,9 @@ def test_correlation(dim_x: int, dim_y: int) -> None:
         n_interacting=1,
         lambd=1.0,
     )
-    corr = params.correlation()
+    corr = params.correlation
 
-    assert params.covariance().shape == corr.shape
+    assert params.covariance.shape == corr.shape
     nptest.assert_allclose(np.diag(corr), np.ones(dim_x + dim_y))
     assert np.min(corr) >= 0
     assert np.max(corr) == pytest.approx(1.0)
@@ -138,8 +138,8 @@ def test_dense(alpha: float, epsilon: float) -> None:
         epsilon=epsilon,
     )
 
-    corr = params.correlation()
-    value = params.correlation_strength()
+    corr = params.correlation
+    value = params.correlation_strength
 
     assert sorted(np.unique(corr.ravel())) == pytest.approx([value, 1.0])
 
@@ -159,7 +159,7 @@ def test_sparse(beta: float, lambd: float, eta: Optional[float], epsilon: float 
     )
 
     # We have strong interactions
-    assert params.correlation()[0, 1] < params.correlation_interacting()
+    assert params.correlation[0, 1] < params.correlation_interacting
 
-    assert params.correlation()[0, 2] == pytest.approx(params.correlation_interacting())
-    assert params.correlation()[1, 2] == pytest.approx(0, abs=0.005)
+    assert params.correlation[0, 2] == pytest.approx(params.correlation_interacting)
+    assert params.correlation[1, 2] == pytest.approx(0, abs=0.005)

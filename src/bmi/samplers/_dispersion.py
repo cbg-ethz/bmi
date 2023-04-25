@@ -215,6 +215,7 @@ class GaussianLVMParametrization:
             ]
         )
 
+    @property
     def mixing(self) -> np.ndarray:
         """Matrix desscribing the linear mapping
         from the described latent variables to (X, Y).
@@ -240,6 +241,7 @@ class GaussianLVMParametrization:
             + (self.dim_y - self.n_interacting)
         )
 
+    @property
     def covariance(self) -> np.ndarray:
         for variable in [self.beta_y, self.epsilon_y, self.eta_y]:
             assert variable is not None
@@ -281,11 +283,13 @@ class GaussianLVMParametrization:
 
         return covariance
 
+    @property
     def correlation(self) -> np.ndarray:
-        covariance = self.covariance()
+        covariance = self.covariance
         variance = np.diag(covariance)
         return covariance / np.sqrt(np.outer(variance, variance))
 
+    @property
     def latent_variable_labels(self) -> list[str]:
         return (
             ["$U_\\mathrm{all}$", "$U_X$", "$U_Y$"]
@@ -296,6 +300,7 @@ class GaussianLVMParametrization:
             + [f"$W_{i + 1}$" for i in range(self.n_interacting, self.dim_y)]
         )
 
+    @property
     def xy_labels(self) -> list[str]:
         return [f"$X_{i+1}$" for i in range(self.dim_x)] + [
             f"$Y_{j+1}$" for j in range(self.dim_y)
@@ -322,6 +327,7 @@ class DenseLVMParametrization(GaussianLVMParametrization):
             eta_y=0.0,
         )
 
+    @property
     def correlation_strength(self) -> float:
         """Apart from correlations Cor(X_i, X_i)=Cor(Y_i, Y_i)=1
         all the correlations are the same and given by this value.
@@ -362,6 +368,7 @@ class SparseLVMParametrization(GaussianLVMParametrization):
             eta_y=eta,
         )
 
+    @property
     def correlation_interacting(self) -> float:
         """Correlation between X_i and Y_i for i < `n_interacting`.
         (Other correlations Cor(X_i, Y_j)=0).
