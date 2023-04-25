@@ -140,6 +140,81 @@ class GaussianLVMParametrization:
         self.beta_y = self.beta_x if self.beta_y is None else self.beta_y
         self.eta_y = self.eta_x if self.eta_y is None else self.eta_y
 
+    def _z_coefficients(self, i: int) -> np.ndarray:
+        """For an index i (starting at 0) returns the array
+        of coefficients corresponding to contributions of Z_j
+        variables to either X_i or Y_i.
+
+        Returns:
+            array of shape (n_interacting,)
+        """
+        z_coef = np.zeros(self.n_interacting, dtype=float)
+        if i < self.n_interacting:
+            z_coef[i] = self.lambd
+        return z_coef
+
+    def _mixing_x(self, i: int) -> np.ndarray:
+        """The array of shape (n_latent,) describing X_i.
+
+        Args:
+            i: index from the set {0, ..., dim_x-1}
+        """
+        u_coef = np.asarray([self.alpha, self.beta_x, 0.0], dtype=float)
+        z_coef = self._z_coefficients(i)
+
+        e_coef = np.zeros(self.dim_x, dtype=float)
+        e_coef[i] = self.epsilon_x
+
+        f_coef = np.zeros(self.dim_y, dtype=float)
+
+        v_coef = np.zeros(self.dim_x - self.n_interacting, dtype=float)
+        if i >= self.n_interacting:
+            v_coef[i - self.n_interacting] = self.eta_x
+
+        w_coef = np.zeros(self.dim_y - self.n_interacting, dtype=float)
+
+        return np.concatenate(
+            [
+                u_coef,
+                z_coef,
+                e_coef,
+                f_coef,
+                v_coef,
+                w_coef,
+            ]
+        )
+
+    def _mixing_y(self, i: int) -> np.ndarray:
+        """The array of shape (n_latent,) describing Y_i.
+
+        Args:
+            i: index from the set {0, ..., dim_y-1}
+        """
+        u_coef = np.asarray([self.alpha, 0.0, self.beta_y], dtype=float)
+        z_coef = self._z_coefficients(i)
+
+        e_coef = np.zeros(self.dim_x, dtype=float)
+
+        f_coef = np.zeros(self.dim_y, dtype=float)
+        f_coef[i] = self.epsilon_y
+
+        v_coef = np.zeros(self.dim_x - self.n_interacting, dtype=float)
+
+        w_coef = np.zeros(self.dim_y - self.n_interacting, dtype=float)
+        if i >= self.n_interacting:
+            w_coef[i - self.n_interacting] = self.eta_y
+
+        return np.concatenate(
+            [
+                u_coef,
+                z_coef,
+                e_coef,
+                f_coef,
+                v_coef,
+                w_coef,
+            ]
+        )
+
     def mixing(self) -> np.ndarray:
         """Matrix desscribing the linear mapping
         from the described latent variables to (X, Y).
@@ -149,7 +224,10 @@ class GaussianLVMParametrization:
             where `n_latent` is given by:
             3 + n_interacting + dim_x + dim_y + (dim_x - n_interacting) + (dim_y - n_interacting)
         """
-        mixing = np.zeros((self.dim_x + self.dim_y, self.n_latent), dtype=float)
+        return np.vstack(
+            [self._mixing_x(i) for i in range(self.dim_x)]
+            + [self._mixing_y(i) for i in range(self.dim_y)]
+        )
 
     @property
     def n_latent(self) -> int:
@@ -198,16 +276,25 @@ class GaussianLVMParametrization:
         for i in range(self.n_interacting, dim_x):
             covariance[i, i] += self.eta_x**2
 
-            j = dim_x + i
+        for j in range(self.n_interacting + self.dim_x, n_all):
             covariance[j, j] += self.eta_y**2
 
         return covariance
 
     def correlation(self) -> np.ndarray:
-        pass
+        covariance = self.covariance()
+        variance = np.diag(covariance)
+        return covariance / np.sqrt(np.outer(variance, variance))
 
     def latent_variable_labels(self) -> list[str]:
-        pass
+        return (
+            ["$U_\\mathrm{all}$", "$U_X$", "$U_Y$"]
+            + [f"$Z_{i+1}$" for i in range(self.n_interacting)]
+            + [f"$E_{i+1}$" for i in range(self.dim_x)]
+            + [f"$F_{i+1}$" for i in range(self.dim_y)]
+            + [f"$V_{i+1}$" for i in range(self.n_interacting, self.dim_x)]
+            + [f"$W_{i + 1}$" for i in range(self.n_interacting, self.dim_y)]
+        )
 
     def xy_labels(self) -> list[str]:
         return [f"$X_{i+1}$" for i in range(self.dim_x)] + [
@@ -275,20 +362,16 @@ class SparseLVMParametrization(GaussianLVMParametrization):
             eta_y=eta,
         )
 
-    def xx_correlation(self) -> float:
+    def correlation_block(self) -> float:
         """Correlation between X_i and X_j for i *different from* j
         (for i=j the correlation is obviously 1).
-        """
-        pass
 
-    def yy_correlation(self) -> float:
-        """Correlation between X_i and X_j for i *different from* j
-        (for i=j the correlation is obviously 1).
+        The same holds for Y_i and Y_j
         """
-        pass
+        return self.beta_x**2 / (self.beta_x**2 + self.epsilon_x**2 + self.lambd**2)
 
-    def xy_interacting_correlation(self) -> float:
+    def correlation_interacting(self) -> float:
         """Correlation between X_i and Y_i for i < `n_interacting`.
         (All the other correlations X_i and Y_j are 0).
         """
-        pass
+        return self.lambd**2 / (self.beta_x**2 + self.epsilon_x**2 + self.lambd**2)
