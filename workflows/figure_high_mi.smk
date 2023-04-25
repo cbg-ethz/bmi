@@ -19,7 +19,7 @@ ESTIMATORS = {
     "KSG": bmi.estimators.KSGEnsembleFirstEstimator(),
 }
 ESTIMATOR_NAMES = {key: key for key in ESTIMATORS}
-ESTIMATOR_COLORS = {key: f"C{i}" for i, key in enumerate(ESTIMATORS)}
+ESTIMATOR_COLORS = {key: f"C{i+4}" for i, key in enumerate(ESTIMATORS)}
 
 # Description of the distribution families plotted at each plot axis
 # This is the dictionary of the format
@@ -74,7 +74,8 @@ rule plot:
             sharex=True,
             sharey=True,
             height=3,
-            legend_out=True
+            legend_out=True,
+            palette=ESTIMATOR_COLORS,
         )
         g.map(sns.lineplot, "Mutual Information", "Mean estimate", alpha=0.5)
         g.map(sns.scatterplot,"Mutual Information", "Mean estimate", alpha=0.5)
