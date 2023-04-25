@@ -362,16 +362,8 @@ class SparseLVMParametrization(GaussianLVMParametrization):
             eta_y=eta,
         )
 
-    def correlation_block(self) -> float:
-        """Correlation between X_i and X_j for i *different from* j
-        (for i=j the correlation is obviously 1).
-
-        The same holds for Y_i and Y_j
-        """
-        return self.beta_x**2 / (self.beta_x**2 + self.epsilon_x**2 + self.lambd**2)
-
     def correlation_interacting(self) -> float:
         """Correlation between X_i and Y_i for i < `n_interacting`.
-        (All the other correlations X_i and Y_j are 0).
+        (Other correlations Cor(X_i, Y_j)=0).
         """
         return self.lambd**2 / (self.beta_x**2 + self.epsilon_x**2 + self.lambd**2)
