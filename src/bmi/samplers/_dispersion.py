@@ -74,43 +74,134 @@ def parametrised_correlation_matrix(
 
 @dataclasses.dataclass
 class GaussianLVMParametrization:
-    """Parameters of a Gaussian latent variable models.
+    """Parameters of a particular Gaussian latent variable model
+    resulting in interesting covariance structures.
+
+    For `n_interacting=K` pairs of "strongly interacting" coordinates
+    (X_1, Y_1), ..., (X_K, Y_K) we imagine the following generative model with
+
+    3 + K + dim_x + dim_y + (dim_x - K) + (dim_y - K) = 3 + 2*(dim_x + dim_y) - K
+
+    latent variables. They are independent and identically distributed according to
+    Normal(0,1):
+
+      - U_all: added to all variables X_i and Y_i, inducing "dense" interactions
+      - U_X: added to all X_i variables, inducing dense interactions within X coordinates
+      - U_Y: analogous to U_X
+      - Z_1, ..., Z_K: Z_i is added to X_i and Y_i, inducing "strongly interacting" coordinates
+      - E_1, ..., E_{dim_x}: E_i is added to X_i, increasing the variance
+        and decreasing correlations
+      - F_1, ..., F_{dim_y}: analogous to E_i, but for the Y variable
+      - V_{dim_x-K+1}, ..., V_{dim_x}: V_i is added to X_i,
+        increasing the variance of these entries.
+        The motivation is that variables X_1, ..., X_K have increased variance due to Z_i
+        and we may want to compensate for it
+      - W_{dim_y-K+1}, ..., V_{dim_y}: analogous to V_i but for the Y variable
 
     Attrs:
         dim_x: the dimensionality of the X variable
         dim_y: the dimensionality of the Y variable
         n_interacting: number of strongly interacting components of X vs Y
           (strength controlled by parameter `lambd`)
-        alpha: dense interactions (between every pair of variables)
-        beta_x: dense interactions between X components
-        beta_y: dense interactions between Y components
-        lambd: strength of strongly interacting components of X vs Y
-        epsilon_x: individual noise, increasing variances of X components
-        epsilon_y: individual noise, increasing variances of Y components
+        alpha: dense interactions between every pair of variables (U_all weight)
+        beta_x: dense interactions between X components (U_X weight)
+        beta_y: dense interactions between Y components (U_Y weight).
+            If None, defaults to `beta_x`
+        lambd: strength of strongly interacting components of X vs Y (Z_i weight)
+        epsilon_x: individual noise, increasing variances of X components (E_i weight)
+        epsilon_y: individual noise, increasing variances of Y components (F_i weight)
+            If None, defaults to `epsilon_x`
         eta_x: increases variance of X components which are not strongly interacting
-          via `n_interacting` and `lambd`
+          via `n_interacting` and `lambd` (V_i weight)
         eta_y: increases variance of Y components which are not strongly interacting
-          via `n_interacting` and `lambd`
+          via `n_interacting` and `lambd` (W_i weight)
+            If None, defaults to `eta_x`
     """
 
     dim_x: int
     dim_y: int
-    n_interacting: int = 0
-    alpha: float = 0.0
-    beta_x: float = 0.0
-    beta_y: float = 0.0
-    lambd: float = 0.0
+    n_interacting: int
+    alpha: float
+    lambd: float
     epsilon_x: float = 1.0
     epsilon_y: Optional[float] = None
-    eta_x: float = 0.0
+    beta_x: float = 0.0
+    beta_y: Optional[float] = None
+    eta_x: Optional[float] = 0.0
     eta_y: Optional[float] = None
 
+    def __post_init__(self) -> None:
+        if not 0 <= self.n_interacting <= min(self.dim_x, self.dim_y):
+            raise ValueError(
+                f"n_interacting={self.n_interacting} must be between 0 and the smaller"
+                f"of the variable dimensionalities ({self.dim_x} and {self.dim_y})."
+            )
+        self.epsilon_y = self.epsilon_x if self.epsilon_y is None else self.epsilon_y
+        self.beta_y = self.beta_x if self.beta_y is None else self.beta_y
+        self.eta_y = self.eta_x if self.eta_y is None else self.eta_y
+
     def mixing(self) -> np.ndarray:
-        """"""
-        pass
+        """Matrix desscribing the linear mapping
+        from the described latent variables to (X, Y).
+
+        Returns:
+            matrix of shape (dim_x + dim_y, n_latent)
+            where `n_latent` is given by:
+            3 + n_interacting + dim_x + dim_y + (dim_x - n_interacting) + (dim_y - n_interacting)
+        """
+        mixing = np.zeros((self.dim_x + self.dim_y, self.n_latent), dtype=float)
+
+    @property
+    def n_latent(self) -> int:
+        return (
+            3
+            + self.n_interacting
+            + self.dim_x
+            + self.dim_y
+            + (self.dim_x - self.n_interacting)
+            + (self.dim_y - self.n_interacting)
+        )
 
     def covariance(self) -> np.ndarray:
-        pass
+        for variable in [self.beta_y, self.epsilon_y, self.eta_y]:
+            assert variable is not None
+
+        n_all = self.dim_x + self.dim_y
+        dim_x = self.dim_x
+
+        # Add alpha^2 everywhere
+        covariance = np.full(
+            (n_all, n_all),
+            fill_value=self.alpha**2,
+            dtype=float,
+        )
+
+        # Add beta^2 to the blocks of Xs and Ys
+        covariance[0:dim_x, 0:dim_x] += self.beta_x**2
+        covariance[dim_x:n_all, dim_x:n_all] += self.beta_y**2
+
+        # Add epsilon^2 to the diagonal
+        for i in range(dim_x):
+            covariance[i, i] += self.epsilon_x**2
+        for j in range(dim_x, n_all):
+            covariance[j, j] += self.epsilon_y**2
+
+        # Add lambda^2 to Cov(Xi, Yi) (and Cov(Yi, Xi)) for i < n_interacting
+        for i in range(self.n_interacting):
+            j = dim_x + i
+            covariance[i, j] += self.lambd**2
+            covariance[j, i] += self.lambd**2
+            covariance[i, i] += self.lambd**2
+            covariance[j, j] += self.lambd**2
+
+        # Add eta^2
+        for i in range(self.n_interacting, dim_x):
+            covariance[i, i] += self.eta_x**2
+
+            j = dim_x + i
+            covariance[j, j] += self.eta_y**2
+
+        return covariance
 
     def correlation(self) -> np.ndarray:
         pass
@@ -119,7 +210,9 @@ class GaussianLVMParametrization:
         pass
 
     def xy_labels(self) -> list[str]:
-        pass
+        return [f"$X_{i+1}$" for i in range(self.dim_x)] + [
+            f"$Y_{j+1}$" for j in range(self.dim_y)
+        ]
 
 
 class DenseLVMParametrization(GaussianLVMParametrization):
