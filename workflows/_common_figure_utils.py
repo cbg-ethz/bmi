@@ -98,14 +98,16 @@ def format_axs(axs):
 # BASIC MI PLOT
 
 
-def plot_mi(ax, results, x_col):
+def plot_mi(
+    ax, results, x_col, estimator_colors=ESTIMATOR_COLORS, estimator_names=ESTIMATOR_NAMES
+):
     for estimator_id, data_estimator in results.groupby("estimator_id"):
         data_mean = data_estimator.groupby(x_col)[["mi_estimate"]].mean().reset_index()
         ax.plot(
             data_mean[x_col],
             data_mean["mi_estimate"],
-            color=ESTIMATOR_COLORS[estimator_id],
-            label=ESTIMATOR_NAMES[estimator_id],
+            color=estimator_colors[estimator_id],
+            label=estimator_names[estimator_id],
         )
 
     data_mean = results.groupby(x_col)[["mi_true"]].mean().reset_index()
