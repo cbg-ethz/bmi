@@ -4,7 +4,7 @@ import numpy as np
 import numpy.testing as nptest
 import pytest
 
-import bmi.samplers._dispersion as dis
+import bmi.samplers._matrix_utils as mu
 
 
 @pytest.mark.parametrize("dim_x", (1, 2))
@@ -26,7 +26,7 @@ def test_covariance_agrees_with_mixing(
     epsilon_x: float = 1.0,
     alpha: float = 0.1,
 ) -> None:
-    params = dis.GaussianLVMParametrization(
+    params = mu.GaussianLVMParametrization(
         dim_x=dim_x,
         dim_y=dim_y,
         n_interacting=n_interacting,
@@ -51,7 +51,7 @@ def test_covariance_agrees_with_mixing(
 @pytest.mark.parametrize("n_interacting", [3, 4, 5])
 def test_n_interacting_small(n_interacting: int) -> None:
     with pytest.raises(ValueError):
-        dis.GaussianLVMParametrization(
+        mu.GaussianLVMParametrization(
             dim_x=2,
             dim_y=3,
             n_interacting=n_interacting,
@@ -76,7 +76,7 @@ def test_mixing_manually(
     eta_x: float = 0.32,
     lambd: float = 0.123,
 ) -> None:
-    params = dis.GaussianLVMParametrization(
+    params = mu.GaussianLVMParametrization(
         dim_x=dim_x,
         dim_y=dim_y,
         n_interacting=n_interacting,
@@ -113,7 +113,7 @@ def test_mixing_manually(
 @pytest.mark.parametrize("dim_x", (1, 3))
 @pytest.mark.parametrize("dim_y", (1, 2))
 def test_correlation(dim_x: int, dim_y: int) -> None:
-    params = dis.GaussianLVMParametrization(
+    params = mu.GaussianLVMParametrization(
         dim_x=dim_x,
         dim_y=dim_y,
         alpha=0.1,
@@ -131,7 +131,7 @@ def test_correlation(dim_x: int, dim_y: int) -> None:
 @pytest.mark.parametrize("alpha", (-0.3, 0.2))
 @pytest.mark.parametrize("epsilon", (1.0, 0.2))
 def test_dense(alpha: float, epsilon: float) -> None:
-    params = dis.DenseLVMParametrization(
+    params = mu.DenseLVMParametrization(
         dim_x=2,
         dim_y=1,
         alpha=alpha,
@@ -148,7 +148,7 @@ def test_dense(alpha: float, epsilon: float) -> None:
 @pytest.mark.parametrize("lambd", (1.0, 2.0))
 @pytest.mark.parametrize("eta", (None, 0.1))
 def test_sparse(beta: float, lambd: float, eta: Optional[float], epsilon: float = 0.3) -> None:
-    params = dis.SparseLVMParametrization(
+    params = mu.SparseLVMParametrization(
         dim_x=2,
         dim_y=1,
         n_interacting=1,

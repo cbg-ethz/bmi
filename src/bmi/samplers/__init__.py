@@ -3,7 +3,7 @@ or used directly to sample from distributions with known mutual information."""
 from bmi.samplers._additive_uniform import AdditiveUniformSampler
 
 # isort: off
-from bmi.samplers._dispersion import (
+from bmi.samplers._matrix_utils import (
     parametrised_correlation_matrix,
     DenseLVMParametrization,
     SparseLVMParametrization,
