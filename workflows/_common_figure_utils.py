@@ -49,6 +49,7 @@ ESTIMATOR_NAMES = {
     "InfoNCE": "InfoNCE",
     "Donsker-Varadhan": "D-V",
     "NWJ": "NWJ",
+    "KSG-10": "KSG I (Python)",
     "R-KSG-I-10": "KSG I (R)",
     "R-LNN": "LNN (R)",
     "R-BNSL": "BNSL (R)",
@@ -134,7 +135,7 @@ def preprocess_benchmark_results(results, estimators=ESTIMATORS):
     # detect neural estimators
     neural_ids = {
         estimator_id
-        for estimator_id, estimator in ESTIMATORS.items()
+        for estimator_id, estimator in estimators.items()
         if (
             isinstance(estimator, bmi.estimators.NeuralEstimatorBase)
             or isinstance(estimator, bmi.estimators.MINEEstimator)
