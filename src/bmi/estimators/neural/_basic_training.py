@@ -39,10 +39,14 @@ def basic_training(
     early_stopping: bool = True,
     learning_rate: float = 0.1,
     verbose: bool = True,
-) -> TrainingLog:
+) -> tuple[TrainingLog, eqx.Module]:
     """Simple training loop, which samples mini-batches
     from (xs, ys) and maximizes mutual information according to
     ``mi_formula`` using trainable ``critic``.
+
+    Returns:
+        training_log
+        critic at the end of the training
     """
     mi_formula_test = mi_formula_test or mi_formula
     xs_test = xs_test if xs_test is not None else xs
@@ -89,4 +93,4 @@ def basic_training(
 
     training_log.finish()
 
-    return training_log
+    return training_log, critic
