@@ -14,7 +14,27 @@ matplotlib.use("agg")
 N_SAMPLES = 5_000
 
 TASK_IDS = [
-    task.id for task in bmi.benchmark.task_list.BENCHMARK_TASKS_LIST[:3]
+    # One-dimensional tasks (plus Swissroll)
+    "1v1-normal-0.75",
+    "normal_cdf-1v1-normal-0.75",
+    "1v1-additive-0.1",
+    "1v1-additive-0.75",
+    "1v1-bimodal-0.75",
+    "wiggly-1v1-normal-0.75",
+    "half_cube-1v1-normal-0.75",
+    "student-dense-1-1-5-0.75",
+    "swissroll_x-normal_cdf-1v1-normal-0.75",
+    # Selected multinormal tasks
+    "multinormal-dense-2-2-0.5",
+    "multinormal-sparse-2-2-2-0.8-0.1",
+    # Selected Student tasks
+    "student-dense-2-2-5-0.5",
+    "student-sparse-2-2-5-2-0.8-0.1",
+    # Selected transformed tasks
+    "wiggly-multinormal-sparse-3-3-2-0.8-0.1",
+    "rotate-normal_cdf-multinormal-sparse-3-3-2-0.8-0.1",
+    "spiral-multinormal-sparse-3-3-2-0.8-0.1",
+    "asinh-student-sparse-3-3-5-2-0.8-0.1",
 ]
 BENCHMARK_TASKS = {
     task_id: bmi.benchmark.BENCHMARK_TASKS[task_id]
