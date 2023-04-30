@@ -5,6 +5,7 @@ import seaborn as sns
 import yaml
 
 import bmi
+import bmi.estimators
 import bmi.estimators.external.julia_estimators as julia_estimators
 import bmi.estimators.external.r_estimators as r_estimators
 
@@ -48,6 +49,7 @@ ESTIMATOR_NAMES = {
     "InfoNCE": "InfoNCE",
     "Donsker-Varadhan": "D-V",
     "NWJ": "NWJ",
+    "KSG-10": "KSG I (Python)",
     "R-KSG-I-10": "KSG I (R)",
     "R-LNN": "LNN (R)",
     "R-BNSL": "BNSL (R)",
@@ -133,7 +135,7 @@ def preprocess_benchmark_results(results, estimators=ESTIMATORS):
     # detect neural estimators
     neural_ids = {
         estimator_id
-        for estimator_id, estimator in ESTIMATORS.items()
+        for estimator_id, estimator in estimators.items()
         if (
             isinstance(estimator, bmi.estimators.NeuralEstimatorBase)
             or isinstance(estimator, bmi.estimators.MINEEstimator)
@@ -180,6 +182,7 @@ def plot_benchmark_mi_estimate(ax, results, estimators, tasks, estimator_names={
 
     data = preprocess_benchmark_results(results, estimators)
     data = data[data["n_samples"] == data["n_samples"].max()]
+    data = data[~data["neural_fail"]]
 
     # mean over seeds
     data = (
@@ -243,6 +246,7 @@ def plot_benchmark_n_samples(ax, results, estimators, tasks, estimator_names={})
     max_n_samples = results["n_samples"].max()
 
     data = preprocess_benchmark_results(results, estimators)
+    data = data[~data["neural_fail"]]
     data = (
         data.groupby(["estimator_id", "task_id", "n_samples"])[
             ["mi_estimate", "log_relative_error"]
