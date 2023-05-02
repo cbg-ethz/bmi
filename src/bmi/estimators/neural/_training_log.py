@@ -117,6 +117,9 @@ class TrainingLog:
         train_mi = jnp.array([mi for _step, mi in self._mi_train_history])
         w = self.train_smooth_window
         cs = jnp.cumsum(train_mi)
+        # TODO(Pawel, Frederic): If training smooth window is too
+        #   long we will have an error that subtraction between (n,)
+        #   and (0,) arrays cannot be performed.
         train_mi_smooth = (cs[w:] - cs[:-w]) / w
 
         if len(train_mi_smooth) > 0:
