@@ -145,7 +145,7 @@ def mine_training(
     early_stopping: bool = True,
     learning_rate: float = 0.1,
     verbose: bool = False,
-) -> TrainingLog:
+) -> tuple[TrainingLog, eqx.Module]:
     """Basic training loop for MINE.
 
     Args:
@@ -165,6 +165,10 @@ def mine_training(
         early_stopping: whether training should stop early when test MI stops growing
         learning_rate: learning rate to be used
         verbose: print info during training
+
+    Returns:
+        training log
+        trained critic
     """
     xs_test = xs_test if xs_test is not None else xs
     ys_test = ys_test if ys_test is not None else ys
@@ -243,7 +247,7 @@ def mine_training(
 
     training_log.finish()
 
-    return training_log
+    return training_log, critic
 
 
 class MINEParams(BaseModel):
@@ -289,6 +293,22 @@ class MINEEstimator(IMutualInformationPointEstimator):
         self._verbose = verbose
         self._training_log: Optional[TrainingLog] = None
 
+        # After the training we will store the trained
+        # critic function here
+        self._trained_critic = None
+
+    @property
+    def trained_critic(self) -> Optional[eqx.Module]:
+        """Returns the critic function from the end of the training.
+
+        Note:
+          1. You need to train the model by estimating mutual information,
+            otherwise `None` is returned.
+          2. Note that the critic can have different meaning depending on
+            the function used.
+        """
+        return self._trained_critic
+
     def parameters(self) -> MINEParams:
         return self._params
 
@@ -311,7 +331,7 @@ class MINEEstimator(IMutualInformationPointEstimator):
         # initialize critic
         critic = self._create_critic(dim_x=space.dim_x, dim_y=space.dim_y, key=key_init)
 
-        training_log = mine_training(
+        training_log, trained_critic = mine_training(
             rng=key_fit,
             critic=critic,
             xs=xs_train,
@@ -325,6 +345,7 @@ class MINEEstimator(IMutualInformationPointEstimator):
             learning_rate=self._params.learning_rate,
             verbose=self._verbose,
         )
+        self._trained_critic = trained_critic
 
         return EstimateResult(
             mi_estimate=training_log.final_mi,
