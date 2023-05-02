@@ -1,4 +1,5 @@
 """Tests of the neural estimators on simple distributions."""
+import equinox as eqx
 import numpy as np
 import pytest
 
@@ -33,3 +34,21 @@ def test_estimator_estimates(estimator_class, n_points: int = 5_000) -> None:
 
     # TODO(frdrc): pick good abs/rel
     assert estimated_mi == pytest.approx(true_mi, abs=0.1, rel=0.1)
+
+
+@pytest.mark.parametrize(
+    "estimator_class",
+    [
+        neural.DonskerVaradhanEstimator,
+        neural.NWJEstimator,
+        neural.InfoNCEEstimator,
+    ],
+)
+def test_critic_saved(estimator_class, n_points: int = 100) -> None:
+    """Tests whether the critic is saved after estimation."""
+    estimator = estimator_class(batch_size=16, learning_rate=0.15, max_n_steps=100)
+    sampler = samplers.SplitMultinormal(dim_x=2, dim_y=1, covariance=np.eye(3))
+    xs, ys = sampler.sample(n_points=n_points, rng=0)
+
+    estimator.estimate(xs, ys)
+    assert isinstance(estimator.trained_critic, eqx.Module)

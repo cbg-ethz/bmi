@@ -93,6 +93,10 @@ class NeuralEstimatorBase(IMutualInformationPointEstimator):
 
         self._critic_factory = critic_factory
 
+        # After the training we will store the trained
+        # critic function here
+        self._trained_critic = None
+
         self._params = NeuralEstimatorParams(
             mi_formula=mi_formula_name,
             batch_size=batch_size,
@@ -107,6 +111,18 @@ class NeuralEstimatorBase(IMutualInformationPointEstimator):
 
     def parameters(self) -> NeuralEstimatorParams:
         return self._params
+
+    @property
+    def trained_critic(self) -> Optional[eqx.Module]:
+        """Returns the critic function from the end of the training.
+
+        Note:
+          1. You need to train the model by estimating mutual information,
+            otherwise `None` is returned.
+          2. Note that the critic can have different meaning depending on
+            the function used.
+        """
+        return self._trained_critic
 
     def estimate_with_info(self, x: ArrayLike, y: ArrayLike) -> EstimateResult:
         key = jax.random.PRNGKey(self._params.seed)
@@ -124,7 +140,7 @@ class NeuralEstimatorBase(IMutualInformationPointEstimator):
         # initialize critic
         critic = self._critic_factory(key_init, xs_train.shape[-1], ys_train.shape[-1])
 
-        training_log = basic_training(
+        training_log, new_critic = basic_training(
             rng=key_fit,
             critic=critic,
             mi_formula=self._mi_formula,
@@ -139,6 +155,7 @@ class NeuralEstimatorBase(IMutualInformationPointEstimator):
             learning_rate=self._params.learning_rate,
             verbose=self._verbose,
         )
+        self._trained_critic = new_critic
 
         return EstimateResult(
             mi_estimate=training_log.final_mi,

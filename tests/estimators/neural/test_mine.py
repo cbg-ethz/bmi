@@ -1,3 +1,4 @@
+import equinox as eqx
 import jax.random
 import numpy as np
 import pytest
@@ -67,3 +68,13 @@ def test_mine_estimator_logs(n_points: int = 20, correlation: float = 0.5) -> No
     test_history = estimate_result.additional_information["test_history"]
     assert len(test_history) * test_every_n_steps == pytest.approx(n_steps, abs=1.01)
     assert isinstance(test_history[-1][0], int)
+
+
+def test_critic_saved(n_points: int = 100) -> None:
+    """Tests whether the critic is saved after estimation."""
+    estimator = mine.MINEEstimator(batch_size=16, learning_rate=0.15, max_n_steps=100)
+    sampler = samplers.SplitMultinormal(dim_x=2, dim_y=1, covariance=np.eye(3))
+    xs, ys = sampler.sample(n_points=n_points, rng=0)
+
+    estimator.estimate(xs, ys)
+    assert isinstance(estimator.trained_critic, eqx.Module)
