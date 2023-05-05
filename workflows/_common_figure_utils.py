@@ -130,16 +130,17 @@ def plot_mi(
 # BENCHMARK
 
 
-def scale_tasks(tasks: list[bmi.Task]) -> list[bmi.Task]:
+def scale_tasks(tasks: dict[str, bmi.Task]) -> dict[str, bmi.Task]:
     """Auxiliary method used to rescale (whiten) each task in the list,
     without changing its name."""
-    return [
-        transform_rescale(
+    return {
+        key: transform_rescale(
             base_task=base_task,
             task_name=base_task.name,
+            task_id=base_task.id,
         )
-        for base_task in tasks
-    ]
+        for key, base_task in tasks.items()
+    }
 
 
 def preprocess_benchmark_results(results, estimators=ESTIMATORS):
