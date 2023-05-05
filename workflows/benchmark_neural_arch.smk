@@ -1,6 +1,4 @@
 import bmi.estimators as estimators
-import bmi.estimators.external.r_estimators as r_estimators
-import bmi.estimators.external.julia_estimators as julia_estimators
 from bmi.benchmark import BENCHMARK_TASKS
 
 from bmi.plot_utils.subplots_from_axsize import subplots_from_axsize
