@@ -9,6 +9,7 @@ from _common_figure_utils import (
     plot_benchmark_mi_estimate,
     plot_benchmark_n_samples,
     plot_benchmark_neural_fails,
+    scale_tasks,
 )
 
 
@@ -29,7 +30,7 @@ ESTIMATORS = {
     #'R-KSG-II-5': r_estimators.RKSGEstimator(variant=2, neighbors=5),
     #'R-KSG-II-10': r_estimators.RKSGEstimator(variant=2, neighbors=10),
     #'R-BNSL': r_estimators.RBNSLEstimator(),
-    #'R-LNN': r_estimators.RLNNEstimator(),
+    'R-LNN': r_estimators.RLNNEstimator(),
 
     'Julia-Hist-10': julia_estimators.JuliaHistogramEstimator(bins=10),
     #'Julia-Kernel': julia_estimators.JuliaKernelEstimator(),
@@ -37,11 +38,13 @@ ESTIMATORS = {
     #'Julia-KSG-I-5': julia_estimators.JuliaKSGEstimator(variant=1, neighbors=5),
 }
 
-TASKS = BENCHMARK_TASKS
+# We use scaled versions of all tasks, so that all the estimators
+# have equal chances, even if they don't do scaling on their own
+TASKS = scale_tasks(BENCHMARK_TASKS)
 
-N_SAMPLES = [1000, 3000, 10000]
+N_SAMPLES = [100, 500, 1_000, 3_000, 5_000, 10_000]
 
-SEEDS = [0, 1, 2]
+SEEDS = list(range(10))
 
 
 # === WORKDIR ===
