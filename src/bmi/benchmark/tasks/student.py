@@ -77,3 +77,27 @@ def task_student_sparse(
             "dispersion": dispersion.tolist(),
         },
     )
+
+
+def task_student_identity(
+    dim_x: int,
+    dim_y: int,
+    df: int,
+    task_name: Optional[str] = None,
+) -> Task:
+    sampler = samplers.SplitStudentT(
+        dim_x=dim_x,
+        dim_y=dim_y,
+        df=df,
+        dispersion=np.eye(dim_x + dim_y),
+    )
+
+    task_id = f"student-identity-{dim_x}-{dim_y}-{df}"
+    return Task(
+        sampler=sampler,
+        task_id=task_id,
+        task_name=task_name or f"Student-t {dim_x} × {dim_y} (dof={df}, identity)",
+        task_params={
+            "dof": df,
+        },
+    )
