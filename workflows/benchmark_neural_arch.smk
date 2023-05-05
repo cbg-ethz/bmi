@@ -23,7 +23,7 @@ ESTIMATORS = {
 }
 
 ESTIMATOR_NAMES = {
-    estimator_id: estimator_id.replace('-', ' ')
+    estimator_id: estimator_id.replace('-', ' ') for estimator_id in ESTIMATORS
 }
 
 #TASKS = BENCHMARK_TASKS
