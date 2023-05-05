@@ -8,6 +8,7 @@ import bmi
 import bmi.estimators
 import bmi.estimators.external.julia_estimators as julia_estimators
 import bmi.estimators.external.r_estimators as r_estimators
+from bmi.benchmark.tasks import transform_rescale
 
 matplotlib.use("agg")
 
@@ -127,6 +128,18 @@ def plot_mi(
 
 
 # BENCHMARK
+
+
+def scale_tasks(tasks: list[bmi.Task]) -> list[bmi.Task]:
+    """Auxiliary method used to rescale (whiten) each task in the list,
+    without changing its name."""
+    return [
+        transform_rescale(
+            base_task=base_task,
+            task_name=base_task.name,
+        )
+        for base_task in tasks
+    ]
 
 
 def preprocess_benchmark_results(results, estimators=ESTIMATORS):
