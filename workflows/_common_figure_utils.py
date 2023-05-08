@@ -31,6 +31,7 @@ ESTIMATORS = {
     # 'Julia-Kernel': julia_estimators.JuliaKernelEstimator(),
     # 'Julia-Transfer-30': julia_estimators.JuliaTransferEstimator(bins=30),
     # 'Julia-KSG-I-5': julia_estimators.JuliaKSGEstimator(variant=1, neighbors=5),
+    "CCA": bmi.estimators.CCAMutualInformationEstimator(),
 }
 
 ESTIMATOR_COLORS = {
@@ -41,6 +42,7 @@ ESTIMATOR_COLORS = {
     "R-KSG-I-10": "mediumblue",
     "R-LNN": "goldenrod",
     "Julia-Hist-10": "limegreen",
+    "CCA": "blue",
 }
 assert set(ESTIMATORS.keys()) <= set(ESTIMATOR_COLORS.keys())
 
