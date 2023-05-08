@@ -10,16 +10,9 @@ from _common_figure_utils import ESTIMATORS, ESTIMATOR_NAMES, ESTIMATOR_COLORS
 
 # On the X axis in each plot we will have the following mutual information
 # values
-# DESIRED_MUTUAL_INFORMATION = [0, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0]
-DESIRED_MUTUAL_INFORMATION = [0, 1.0, 3.0]
+DESIRED_MUTUAL_INFORMATION = [0, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0]
 
-# Estimators which performance is plotted
-ESTIMATORS = {
-    "CCA": bmi.estimators.CCAMutualInformationEstimator(),
-    "KSG": bmi.estimators.KSGEnsembleFirstEstimator(),
-}
-ESTIMATOR_NAMES = {key: key for key in ESTIMATORS}
-ESTIMATOR_COLORS = {key: f"C{i}" for i, key in enumerate(ESTIMATORS)}
+ESTIMATORS = ESTIMATORS
 
 # Description of the distribution families plotted at each plot axis
 # This is the dictionary of the format
@@ -46,8 +39,8 @@ TASK_LIST = [item for item in RAW_TASK_LIST if item is not None]
 TASKS = {task.id: task for task in TASK_LIST}
 
 # TODO(Pawel, Frederic): Think about the number of samples to use.
-N_SAMPLES = [1000]
-SEEDS = [0, 1]  # [0, 1, 2, 3, 4]
+N_SAMPLES = [10_000]
+SEEDS = list(range(5))
 
 
 # === WORKDIR ===

@@ -29,7 +29,7 @@ ESTIMATORS = {
     "R-LNN": r_estimators.RLNNEstimator(),
     "Julia-Hist-10": julia_estimators.JuliaHistogramEstimator(bins=10),
     # 'Julia-Kernel': julia_estimators.JuliaKernelEstimator(),
-    # 'Julia-Transfer-30': julia_estimators.JuliaTransferEstimator(bins=30),
+    "Julia-Transfer-30": julia_estimators.JuliaTransferEstimator(bins=30),
     # 'Julia-KSG-I-5': julia_estimators.JuliaKSGEstimator(variant=1, neighbors=5),
     "CCA": bmi.estimators.CCAMutualInformationEstimator(),
 }
@@ -42,6 +42,7 @@ ESTIMATOR_COLORS = {
     "R-KSG-I-10": "mediumblue",
     "R-LNN": "goldenrod",
     "Julia-Hist-10": "limegreen",
+    "Julia-Transfer-30": "green",
     "CCA": "blue",
 }
 assert set(ESTIMATORS.keys()) <= set(ESTIMATOR_COLORS.keys())
@@ -52,13 +53,14 @@ ESTIMATOR_NAMES = {
     "InfoNCE": "InfoNCE",
     "Donsker-Varadhan": "D-V",
     "NWJ": "NWJ",
-    "KSG-10": "KSG I (Python)",
+    # "KSG-10": "KSG I (Python)",
     "R-KSG-I-10": "KSG I (R)",
     "R-LNN": "LNN (R)",
     "R-BNSL": "BNSL (R)",
     "Julia-Hist-10": "Hist. (Julia)",
     "Julia-Transfer-30": "Transfer (Julia)",
     "Julia-Kernel": "Kernel (Julia)",
+    "CCA": "CCA",
 }
 assert set(ESTIMATORS.keys()) <= set(ESTIMATOR_NAMES.keys())
 
