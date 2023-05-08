@@ -144,8 +144,13 @@ def preprocess_benchmark_results(results, estimators=ESTIMATORS):
     data["neural_estimator"] = data["estimator_id"].isin(neural_ids)
 
     # detect neural convergence issues
-    # TODO(frdrc): we can do better than a flat 0.1
-    data["neural_fail"] = (data["mi_estimate"] < 0.1) & data["neural_estimator"]
+    data_idx = data.set_index(["estimator_id", "task_id", "n_samples", "seed"])
+    data_idx["mi_estimate_max"] = data_idx.groupby(level=[0, 1, 2])["mi_estimate"].max()
+    data_idx["fail"] = (data_idx["mi_estimate"] < 0) | (
+        data_idx["mi_estimate"] < 0.1 * data_idx["mi_estimate_max"]
+    )
+    data_idx["neural_fail"] = data_idx["neural_estimator"] & data_idx["fail"]
+    data = data_idx.reset_index().drop(columns=["mi_estimate_max", "fail"])
 
     # relative_error
     with np.errstate(all="ignore"):
