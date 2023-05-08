@@ -6,7 +6,7 @@ import _sparsity_utils as su
 from bmi.plot_utils.subplots_from_axsize import subplots_from_axsize
 from _common_figure_utils import (
     read_results, format_axs, plot_mi,
-    ESTIMATORS, ESTIMATOR_NAMES, ESTIMATOR_COLORS,
+    ESTIMATORS, ESTIMATOR_NAMES, ESTIMATOR_COLORS, scale_tasks
 )
 
 DESIRED_MUTUAL_INFORMATION = 1.0
@@ -21,7 +21,7 @@ TASK_LIST = [
     su.get_n_interacting_task(DESIRED_MUTUAL_INFORMATION, DIM, n_interacting)
     for n_interacting in np.arange(1, DIM, 1)
 ]
-TASKS = {task.id: task for task in TASK_LIST}
+TASKS = scale_tasks({task.id: task for task in TASK_LIST})
 
 N_SAMPLES = [10_000]
 SEEDS = list(range(5))

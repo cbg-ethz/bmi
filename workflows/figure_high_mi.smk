@@ -6,7 +6,7 @@ import yaml
 
 import _high_mi_utils as hmu
 import bmi.estimators
-from _common_figure_utils import ESTIMATORS, ESTIMATOR_NAMES, ESTIMATOR_COLORS
+from _common_figure_utils import ESTIMATORS, ESTIMATOR_NAMES, ESTIMATOR_COLORS, scale_tasks
 
 # On the X axis in each plot we will have the following mutual information
 # values
@@ -36,7 +36,7 @@ RAW_TASK_LIST = [
 TASK_LIST = [item for item in RAW_TASK_LIST if item is not None]
 
 
-TASKS = {task.id: task for task in TASK_LIST}
+TASKS = scale_tasks({task.id: task for task in TASK_LIST})
 
 # TODO(Pawel, Frederic): Think about the number of samples to use.
 N_SAMPLES = [10_000]

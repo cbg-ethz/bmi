@@ -9,7 +9,7 @@ from bmi.benchmark.tasks.power import transform_power_task as powerise
 from bmi.plot_utils.subplots_from_axsize import subplots_from_axsize
 from _common_figure_utils import (
     ESTIMATORS,
-    read_results, format_axs, plot_mi
+    read_results, format_axs, plot_mi, scale_tasks
 )
 
 
@@ -17,18 +17,18 @@ from _common_figure_utils import (
 
 # ESTIMATORS from _common_figure_utils
 
-TASKS = {
+TASKS = scale_tasks({
     task.id: task for task in [
         powerise(multinormal.task_multinormal_sparse(3, 3), alpha=alpha)
-        for alpha in jnp.linspace(1, 3, 31)
+        for alpha in jnp.linspace(1, 5, 10)
     ] + [
         student.task_student_sparse(dim_x=3, dim_y=3, df=df)
-        for df in range(1, 21)
+        for df in range(1, 21, 2)
     ]
-}
+})
 
-N_SAMPLES = [10000]
-SEEDS = [0]
+N_SAMPLES = [10_000]
+SEEDS = list(range(5))
 
 
 # === WORKDIR ===

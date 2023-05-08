@@ -136,7 +136,7 @@ def plot_mi(
 
 def scale_tasks(tasks: dict[str, bmi.Task]) -> dict[str, bmi.Task]:
     """Auxiliary method used to rescale (whiten) each task in the list,
-    without changing its name."""
+    without changing its name nor id."""
     return {
         key: transform_rescale(
             base_task=base_task,
