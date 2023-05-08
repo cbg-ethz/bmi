@@ -28,8 +28,8 @@ TASK_IDS = [
     "multinormal-dense-2-2-0.5",
     "multinormal-sparse-2-2-2-0.8-0.1",
     # Selected Student tasks
-    "student-dense-2-2-5-0.5",
-    "student-sparse-2-2-5-2-0.8-0.1",
+    "student-identity-2-2-3",
+    "student-identity-2-2-5",
     # Selected transformed tasks
     "wiggly-multinormal-sparse-3-3-2-0.8-0.1",
     "rotate-normal_cdf-multinormal-sparse-3-3-2-0.8-0.1",

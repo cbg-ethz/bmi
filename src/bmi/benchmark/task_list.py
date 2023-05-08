@@ -55,6 +55,10 @@ TRANS_MULTINORMAL_BASE_3x3 = multinormal.task_multinormal_sparse(3, 3)
 TRANS_MULTINORMAL_BASE_5x5 = multinormal.task_multinormal_sparse(5, 5)
 TRANS_MULTINORMAL_BASE_25x25 = multinormal.task_multinormal_sparse(25, 25)
 
+# TODO(Pawel, Frederic): Think about replacing these with identity.
+#   In particular:
+#     - Run again these tasks in `benchmark.smk` workflow
+#     - Update `figure_visualise_tasks.smk` workflow
 TRANS_STUDENT_BASE_3x3 = student.task_student_sparse(3, 3, 5)
 TRANS_STUDENT_BASE_5x5 = student.task_student_sparse(5, 5, 5)
 TRANS_STUDENT_BASE_25x25 = student.task_student_sparse(25, 25, 5)
