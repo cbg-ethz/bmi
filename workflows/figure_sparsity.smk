@@ -10,29 +10,21 @@ from _common_figure_utils import (
 )
 
 DESIRED_MUTUAL_INFORMATION = 1.0
-DIM = 5
+DIM = 10
 INITIAL_ALPHA = su.get_initial_alpha(DESIRED_MUTUAL_INFORMATION, DIM)
 
-# Estimators which performance is plotted
-ESTIMATORS = {
-    "KSG": bmi.estimators.KSGEnsembleFirstEstimator(),
-    "InfoNCE": bmi.estimators.InfoNCEEstimator(verbose=False),
-}
-ESTIMATOR_NAMES = {key: key for key in ESTIMATORS}
-ESTIMATOR_COLORS = {key: f"C{i}" for i, key in enumerate(ESTIMATORS)}
 
 TASK_LIST = [
     su.get_lambda_task(DESIRED_MUTUAL_INFORMATION, DIM, alpha)
-    for alpha in np.linspace(0.0, INITIAL_ALPHA, 5)
+    for alpha in np.linspace(0.0, INITIAL_ALPHA, 10)
 ] + [
     su.get_n_interacting_task(DESIRED_MUTUAL_INFORMATION, DIM, n_interacting)
-    for n_interacting in np.arange(1, DIM, 2)
+    for n_interacting in np.arange(1, DIM, 1)
 ]
 TASKS = {task.id: task for task in TASK_LIST}
 
-# TODO(Pawel, Frederic): Think about the number of samples to use.
 N_SAMPLES = [10_000]
-SEEDS = [0]  # [0, 1, 2, 3, 4]
+SEEDS = list(range(5))
 
 
 # === WORKDIR ===
