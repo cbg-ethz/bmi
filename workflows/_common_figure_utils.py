@@ -43,7 +43,7 @@ ESTIMATOR_COLORS = {
     "R-LNN": "goldenrod",
     "Julia-Hist-10": "limegreen",
     "Julia-Transfer-30": "green",
-    "CCA": "blue",
+    "CCA": "grey",
 }
 assert set(ESTIMATORS.keys()) <= set(ESTIMATOR_COLORS.keys())
 

@@ -38,7 +38,6 @@ TASK_LIST = [item for item in RAW_TASK_LIST if item is not None]
 
 TASKS = scale_tasks({task.id: task for task in TASK_LIST})
 
-# TODO(Pawel, Frederic): Think about the number of samples to use.
 N_SAMPLES = [10_000]
 SEEDS = list(range(5))
 
