@@ -7,7 +7,6 @@ import bmi.benchmark.tasks.student as student
 from bmi.benchmark.tasks.asinh import transform_asinh_task as asinh
 from bmi.benchmark.tasks.half_cube import transform_half_cube_task as half_cube
 from bmi.benchmark.tasks.normal_cdf import transform_normal_cdf_task as normal_cdfise
-from bmi.benchmark.tasks.rotate import transform_rotate_task as rotate
 from bmi.benchmark.tasks.spiral import transform_spiral_task as spiralise
 from bmi.benchmark.tasks.wiggly import transform_wiggly_task as wigglify
 
@@ -64,13 +63,9 @@ TRANS_STUDENT_BASE_5x5 = student.task_student_sparse(5, 5, 5)
 TRANS_STUDENT_BASE_25x25 = student.task_student_sparse(25, 25, 5)
 
 TRANSFORMED_TASKS = [
-    wigglify(TRANS_MULTINORMAL_BASE_3x3),
     normal_cdfise(TRANS_MULTINORMAL_BASE_3x3),
     normal_cdfise(TRANS_MULTINORMAL_BASE_5x5),
     normal_cdfise(TRANS_MULTINORMAL_BASE_25x25),
-    rotate(normal_cdfise(TRANS_MULTINORMAL_BASE_3x3)),
-    rotate(normal_cdfise(TRANS_MULTINORMAL_BASE_5x5)),
-    rotate(normal_cdfise(TRANS_MULTINORMAL_BASE_25x25)),
     half_cube(TRANS_MULTINORMAL_BASE_3x3),
     half_cube(TRANS_MULTINORMAL_BASE_5x5),
     half_cube(TRANS_MULTINORMAL_BASE_25x25),
