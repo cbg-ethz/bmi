@@ -61,15 +61,23 @@ rule plot:
 
         sns.set_palette("bright")
 
+        # The estimators are parametrised now by their names
+        # rather than IDs, due to preprocessing in summarize_results
+        color_dict = {
+            ESTIMATOR_NAMES[estimator_id]: ESTIMATOR_COLORS[estimator_id]
+            for estimator_id in ESTIMATORS
+        }
+
         g = sns.FacetGrid(
-            data,
+            # Drop NaN, as some method may not have worked
+            data.dropna(),
             col="Distribution",
             hue="Estimator",
             sharex=True,
             sharey=True,
             height=3,
             legend_out=True,
-            palette=ESTIMATOR_COLORS,
+            palette=color_dict,
         )
         g.map(sns.lineplot, "Mutual Information", "Mean estimate", alpha=0.5)
         g.map(sns.scatterplot,"Mutual Information", "Mean estimate", alpha=0.5)
