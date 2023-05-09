@@ -19,10 +19,10 @@ from _common_figure_utils import (
 
 TASKS = scale_tasks({
     task.id: task for task in [
-        powerise(multinormal.task_multinormal_sparse(3, 3), alpha=alpha)
+        powerise(multinormal.task_multinormal_2pair(3, 3), alpha=alpha)
         for alpha in jnp.linspace(1, 5, 10)
     ] + [
-        student.task_student_sparse(dim_x=3, dim_y=3, df=df)
+        student.task_student_2pair(dim_x=3, dim_y=3, df=df)
         for df in range(1, 21, 2)
     ]
 })

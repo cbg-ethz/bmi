@@ -8,6 +8,7 @@ from bmi.benchmark.tasks.half_cube import transform_half_cube_task
 from bmi.benchmark.tasks.multinormal import (
     task_multinormal_dense,
     task_multinormal_sparse,
+    task_multinormal_2pair,
     task_multinormal_lvm,
 )
 
@@ -24,7 +25,15 @@ from bmi.benchmark.tasks.scaling import (
 
 # isort: on
 from bmi.benchmark.tasks.spiral import transform_spiral_task
-from bmi.benchmark.tasks.student import task_student_dense, task_student_sparse
+
+# isort: off
+from bmi.benchmark.tasks.student import (
+    task_student_dense,
+    task_student_sparse,
+    task_student_2pair,
+)
+
+# isort: on
 from bmi.benchmark.tasks.wiggly import transform_wiggly_task
 
 __all__ = [
@@ -34,8 +43,10 @@ __all__ = [
     "task_multinormal_lvm",
     "task_multinormal_dense",
     "task_multinormal_sparse",
+    "task_multinormal_2pair",
     "task_student_dense",
     "task_student_sparse",
+    "task_student_2pair",
     "transform_wiggly_task",
     "transform_spiral_task",
     "transform_rotate_task",

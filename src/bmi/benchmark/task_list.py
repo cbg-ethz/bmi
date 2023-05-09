@@ -36,10 +36,10 @@ MULTINORMAL_TASKS = [
     multinormal.task_multinormal_dense(5, 5),
     multinormal.task_multinormal_dense(25, 25),
     multinormal.task_multinormal_dense(50, 50),
-    multinormal.task_multinormal_sparse(2, 2),
-    multinormal.task_multinormal_sparse(3, 3),
-    multinormal.task_multinormal_sparse(5, 5),
-    multinormal.task_multinormal_sparse(25, 25),
+    multinormal.task_multinormal_2pair(2, 2),
+    multinormal.task_multinormal_2pair(3, 3),
+    multinormal.task_multinormal_2pair(5, 5),
+    multinormal.task_multinormal_2pair(25, 25),
 ]
 
 STUDENT_TASKS = [
@@ -51,9 +51,9 @@ STUDENT_TASKS = [
     student.task_student_identity(dim_x=5, dim_y=5, df=3),
 ]
 
-TRANS_MULTINORMAL_BASE_3x3 = multinormal.task_multinormal_sparse(3, 3)
-TRANS_MULTINORMAL_BASE_5x5 = multinormal.task_multinormal_sparse(5, 5)
-TRANS_MULTINORMAL_BASE_25x25 = multinormal.task_multinormal_sparse(25, 25)
+TRANS_MULTINORMAL_BASE_3x3 = multinormal.task_multinormal_2pair(3, 3)
+TRANS_MULTINORMAL_BASE_5x5 = multinormal.task_multinormal_2pair(5, 5)
+TRANS_MULTINORMAL_BASE_25x25 = multinormal.task_multinormal_2pair(25, 25)
 
 TRANSFORMED_TASKS = [
     normal_cdfise(TRANS_MULTINORMAL_BASE_3x3),
