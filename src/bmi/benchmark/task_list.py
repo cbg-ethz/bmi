@@ -12,7 +12,7 @@ from bmi.benchmark.tasks.wiggly import transform_wiggly_task as wigglify
 
 BINORMAL_BASE = binormal.task_bivariate_normal(gaussian_correlation=0.75)
 UNIFORM_BASE = normal_cdfise(BINORMAL_BASE)
-BISTUDENT_BASE = student.task_student_dense(dim_x=1, dim_y=1, df=5, off_diag=0.75)
+BISTUDENT_BASE = student.task_student_identity(dim_x=1, dim_y=1, df=1)
 
 ONE_DIM_TASKS = [
     BINORMAL_BASE,
@@ -23,6 +23,7 @@ ONE_DIM_TASKS = [
     wigglify(BINORMAL_BASE),
     half_cube(BINORMAL_BASE),
     BISTUDENT_BASE,
+    asinh(BISTUDENT_BASE),
 ]
 
 EMBEDDINGS_TASKS = [
@@ -42,25 +43,17 @@ MULTINORMAL_TASKS = [
 ]
 
 STUDENT_TASKS = [
-    student.task_student_identity(dim_x=2, dim_y=2, df=3),
-    student.task_student_identity(dim_x=2, dim_y=2, df=5),
+    student.task_student_identity(dim_x=2, dim_y=2, df=1),
+    student.task_student_identity(dim_x=2, dim_y=2, df=2),
+    student.task_student_identity(dim_x=3, dim_y=3, df=2),
+    student.task_student_identity(dim_x=3, dim_y=3, df=3),
+    student.task_student_identity(dim_x=5, dim_y=5, df=2),
     student.task_student_identity(dim_x=5, dim_y=5, df=3),
-    student.task_student_identity(dim_x=5, dim_y=5, df=5),
-    student.task_student_identity(dim_x=10, dim_y=10, df=3),
-    student.task_student_identity(dim_x=10, dim_y=10, df=5),
 ]
 
 TRANS_MULTINORMAL_BASE_3x3 = multinormal.task_multinormal_sparse(3, 3)
 TRANS_MULTINORMAL_BASE_5x5 = multinormal.task_multinormal_sparse(5, 5)
 TRANS_MULTINORMAL_BASE_25x25 = multinormal.task_multinormal_sparse(25, 25)
-
-# TODO(Pawel, Frederic): Think about replacing these with identity.
-#   In particular:
-#     - Run again these tasks in `benchmark.smk` workflow
-#     - Update `figure_visualise_tasks.smk` workflow
-TRANS_STUDENT_BASE_3x3 = student.task_student_sparse(3, 3, 5)
-TRANS_STUDENT_BASE_5x5 = student.task_student_sparse(5, 5, 5)
-TRANS_STUDENT_BASE_25x25 = student.task_student_sparse(25, 25, 5)
 
 TRANSFORMED_TASKS = [
     normal_cdfise(TRANS_MULTINORMAL_BASE_3x3),
@@ -75,9 +68,9 @@ TRANSFORMED_TASKS = [
     spiralise(normal_cdfise(TRANS_MULTINORMAL_BASE_3x3)),
     spiralise(normal_cdfise(TRANS_MULTINORMAL_BASE_5x5)),
     spiralise(normal_cdfise(TRANS_MULTINORMAL_BASE_25x25)),
-    asinh(TRANS_STUDENT_BASE_3x3),
-    asinh(TRANS_STUDENT_BASE_5x5),
-    asinh(TRANS_STUDENT_BASE_25x25),
+    asinh(student.task_student_identity(dim_x=2, dim_y=2, df=1)),
+    asinh(student.task_student_identity(dim_x=3, dim_y=3, df=2)),
+    asinh(student.task_student_identity(dim_x=5, dim_y=5, df=2)),
 ]
 
 

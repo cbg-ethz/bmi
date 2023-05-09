@@ -96,7 +96,7 @@ def task_student_identity(
     return Task(
         sampler=sampler,
         task_id=task_id,
-        task_name=task_name or f"Student-t {dim_x} × {dim_y} (dof={df}, identity)",
+        task_name=task_name or f"Student-t {dim_x} × {dim_y} (dof={df})",
         task_params={
             "dof": df,
         },
