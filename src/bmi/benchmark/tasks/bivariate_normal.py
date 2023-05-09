@@ -10,7 +10,7 @@ def task_bivariate_normal(
     return Task(
         sampler=sampler,
         task_id=f"1v1-normal-{gaussian_correlation}",
-        task_name="Binormal 1 × 1",
+        task_name="Bivariate normal 1 × 1",
         task_params={
             "gaussian_correlation": gaussian_correlation,
         },
