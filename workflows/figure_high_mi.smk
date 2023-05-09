@@ -12,7 +12,7 @@ from _common_figure_utils import ESTIMATORS, ESTIMATOR_NAMES, ESTIMATOR_COLORS, 
 # values
 DESIRED_MUTUAL_INFORMATION = [0, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0]
 
-ESTIMATORS = ESTIMATORS
+# ESTIMATORS from _common_figure_utils
 
 # Description of the distribution families plotted at each plot axis
 # This is the dictionary of the format

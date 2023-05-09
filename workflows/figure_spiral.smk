@@ -34,6 +34,9 @@ def spiral_task(speed: float, correlation: float) -> bmi.benchmark.Task:
 
 
 # === CONFIG ===
+
+# ESTIMATORS from _common_figure_utils
+
 TASK_LIST = [
     spiral_task(speed, correlation)
     for speed in [0.0, 0.1, 0.3, 0.5, 0.7, 1.0, 1.5]

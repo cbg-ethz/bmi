@@ -13,6 +13,7 @@ DESIRED_MUTUAL_INFORMATION = 1.0
 DIM = 10
 INITIAL_ALPHA = su.get_initial_alpha(DESIRED_MUTUAL_INFORMATION, DIM)
 
+# ESTIMATORS from _common_figure_utils
 
 TASK_LIST = [
     su.get_lambda_task(DESIRED_MUTUAL_INFORMATION, DIM, alpha)
