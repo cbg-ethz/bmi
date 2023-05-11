@@ -11,7 +11,7 @@ workdir: "generated/figure_visualise_tasks/"
 
 matplotlib.use("agg")
 
-N_SAMPLES = 5_000
+N_SAMPLES = 10_000
 
 TASK_IDS = [
     # One-dimensional tasks (plus Swissroll)
@@ -22,19 +22,19 @@ TASK_IDS = [
     "1v1-bimodal-0.75",
     "wiggly-1v1-normal-0.75",
     "half_cube-1v1-normal-0.75",
-    "student-dense-1-1-5-0.75",
+    "student-identity-1-1-1",
+    "asinh-student-identity-1-1-1",
     "swissroll_x-normal_cdf-1v1-normal-0.75",
     # Selected multinormal tasks
     "multinormal-dense-2-2-0.5",
-    "multinormal-sparse-2-2-2-0.8-0.1",
+    "multinormal-sparse-2-2-2-2.0",
     # Selected Student tasks
-    "student-dense-2-2-5-0.5",
-    "student-sparse-2-2-5-2-0.8-0.1",
+    "student-identity-2-2-1",
+    "student-identity-2-2-2",
     # Selected transformed tasks
-    "wiggly-multinormal-sparse-3-3-2-0.8-0.1",
-    "rotate-normal_cdf-multinormal-sparse-3-3-2-0.8-0.1",
-    "spiral-multinormal-sparse-3-3-2-0.8-0.1",
-    "asinh-student-sparse-3-3-5-2-0.8-0.1",
+    "normal_cdf-multinormal-sparse-3-3-2-2.0",
+    "spiral-multinormal-sparse-3-3-2-2.0",
+    "asinh-student-identity-3-3-2",
 ]
 BENCHMARK_TASKS = {
     task_id: bmi.benchmark.BENCHMARK_TASKS[task_id]

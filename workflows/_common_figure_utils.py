@@ -8,6 +8,7 @@ import bmi
 import bmi.estimators
 import bmi.estimators.external.julia_estimators as julia_estimators
 import bmi.estimators.external.r_estimators as r_estimators
+from bmi.benchmark.tasks import transform_rescale
 
 matplotlib.use("agg")
 
@@ -28,8 +29,9 @@ ESTIMATORS = {
     "R-LNN": r_estimators.RLNNEstimator(),
     "Julia-Hist-10": julia_estimators.JuliaHistogramEstimator(bins=10),
     # 'Julia-Kernel': julia_estimators.JuliaKernelEstimator(),
-    # 'Julia-Transfer-30': julia_estimators.JuliaTransferEstimator(bins=30),
+    "Julia-Transfer-30": julia_estimators.JuliaTransferEstimator(bins=30),
     # 'Julia-KSG-I-5': julia_estimators.JuliaKSGEstimator(variant=1, neighbors=5),
+    "CCA": bmi.estimators.CCAMutualInformationEstimator(),
 }
 
 ESTIMATOR_COLORS = {
@@ -40,6 +42,8 @@ ESTIMATOR_COLORS = {
     "R-KSG-I-10": "mediumblue",
     "R-LNN": "goldenrod",
     "Julia-Hist-10": "limegreen",
+    "Julia-Transfer-30": "green",
+    "CCA": "grey",
 }
 assert set(ESTIMATORS.keys()) <= set(ESTIMATOR_COLORS.keys())
 
@@ -49,13 +53,14 @@ ESTIMATOR_NAMES = {
     "InfoNCE": "InfoNCE",
     "Donsker-Varadhan": "D-V",
     "NWJ": "NWJ",
-    "KSG-10": "KSG I (Python)",
+    # "KSG-10": "KSG I (Python)",
     "R-KSG-I-10": "KSG I (R)",
     "R-LNN": "LNN (R)",
     "R-BNSL": "BNSL (R)",
     "Julia-Hist-10": "Hist. (Julia)",
     "Julia-Transfer-30": "Transfer (Julia)",
     "Julia-Kernel": "Kernel (Julia)",
+    "CCA": "CCA",
 }
 assert set(ESTIMATORS.keys()) <= set(ESTIMATOR_NAMES.keys())
 
@@ -127,6 +132,19 @@ def plot_mi(
 
 
 # BENCHMARK
+
+
+def scale_tasks(tasks: dict[str, bmi.Task]) -> dict[str, bmi.Task]:
+    """Auxiliary method used to rescale (whiten) each task in the list,
+    without changing its name nor id."""
+    return {
+        key: transform_rescale(
+            base_task=base_task,
+            task_name=base_task.name,
+            task_id=base_task.id,
+        )
+        for key, base_task in tasks.items()
+    }
 
 
 def preprocess_benchmark_results(results, estimators=ESTIMATORS):

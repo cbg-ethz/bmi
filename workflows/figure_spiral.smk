@@ -6,10 +6,8 @@ import matplotlib.pyplot as plt
 import yaml
 
 import bmi
-from _common_figure_utils import ESTIMATORS, ESTIMATOR_NAMES, ESTIMATOR_COLORS
+from _common_figure_utils import ESTIMATORS, ESTIMATOR_NAMES, ESTIMATOR_COLORS, scale_tasks
 
-
-ESTIMATORS = dict(list(ESTIMATORS.items())[:2])
 
 def spiral_task(speed: float, correlation: float) -> bmi.benchmark.Task:
     # Correlation cor(X1, Y) is non-zero.
@@ -36,15 +34,18 @@ def spiral_task(speed: float, correlation: float) -> bmi.benchmark.Task:
 
 
 # === CONFIG ===
+
+# ESTIMATORS from _common_figure_utils
+
 TASK_LIST = [
     spiral_task(speed, correlation)
-    for speed in [0.0, 0.1] #, 0.3, 0.5, 1.0]
+    for speed in [0.0, 0.1, 0.3, 0.5, 0.7, 1.0, 1.5]
     for correlation in [0.8]
 ]
-TASKS = {task.id: task for task in TASK_LIST}
+TASKS = scale_tasks({task.id: task for task in TASK_LIST})
 
-N_SAMPLES = [1000]
-SEEDS = [0]
+N_SAMPLES = [10_000]
+SEEDS = list(range(5))
 
 
 # === WORKDIR ===

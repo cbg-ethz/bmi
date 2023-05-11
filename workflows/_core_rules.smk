@@ -42,8 +42,8 @@ rule sample_task:
         task_id = wildcards.task_id
         n_samples = int(wildcards.n_samples)
         seed = int(wildcards.seed)
-
-        TASKS[task_id].save_sample(str(output), n_samples, seed)
+        task = TASKS[task_id]
+        task.save_sample(str(output), n_samples, seed)
 
 
 # Apply estimator to sample

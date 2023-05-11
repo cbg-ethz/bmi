@@ -19,6 +19,7 @@ def _rescale(x) -> np.ndarray:
 def transform_rescale(
     base_task: Task,
     task_name: Optional[str] = None,
+    task_id: Optional[str] = None,
 ) -> Task:
     base_sampler = base_task.sampler
 
@@ -31,7 +32,7 @@ def transform_rescale(
 
     return Task(
         sampler=sampler,
-        task_id=f"rescale-{base_task.id}",
+        task_id=task_id or f"rescale-{base_task.id}",
         task_name=task_name or f"Rescale @ {base_task.name}",
         task_params=base_task.params,
     )

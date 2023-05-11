@@ -24,7 +24,7 @@ def task_bimodal_gaussians(
     return Task(
         sampler=bimodal_sampler,
         task_id=f"1v1-bimodal-{gaussian_correlation}",
-        task_name="Bimodal gaussians 1 × 1",
+        task_name="Bimodal 1 × 1",
         task_params={
             "gaussian_correlation": gaussian_correlation,
         },

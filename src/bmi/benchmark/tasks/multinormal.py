@@ -77,39 +77,43 @@ def task_multinormal_sparse(
     dim_x: int,
     dim_y: int,
     n_interacting: int = 2,
-    correlation_signal: float = 0.8,
-    correlation_noise: float = 0.1,
+    strength: float = 2.0,
     task_name: Optional[str] = None,
 ) -> Task:
-    covariance = samplers.parametrised_correlation_matrix(
+    task_base = task_multinormal_lvm(
         dim_x=dim_x,
         dim_y=dim_y,
-        k=n_interacting,
-        correlation=correlation_signal,
-        correlation_x=correlation_noise,
-        correlation_y=correlation_noise,
+        n_interacting=n_interacting,
+        alpha=0.0,
+        lambd=strength,
+        beta=0.0,
+        eta=strength,
     )
 
-    sampler = samplers.SplitMultinormal(
-        dim_x=dim_x,
-        dim_y=dim_y,
-        covariance=covariance,
-    )
-
-    task_id = (
-        f"multinormal-sparse-{dim_x}-{dim_y}"
-        f"-{n_interacting}"
-        f"-{correlation_signal}-{correlation_noise}"
-    )
+    task_id = f"multinormal-sparse-{dim_x}-{dim_y}" f"-{n_interacting}-{strength}"
 
     return Task(
-        sampler=sampler,
+        sampler=task_base.sampler,
         task_id=task_id,
         task_name=task_name or f"Multinormal {dim_x} × {dim_y} (sparse)",
         task_params={
             "n_interacting": n_interacting,
-            "correlation_signal": correlation_signal,
-            "correlation_noise": correlation_noise,
-            "covariance": covariance.tolist(),
+            "strength": strength,
         },
+    )
+
+
+def task_multinormal_2pair(
+    dim_x: int,
+    dim_y: int,
+    strength: float = 2.0,
+    task_name: Optional[str] = None,
+) -> Task:
+    task_name = task_name or f"Multinormal {dim_x} × {dim_y} (2-pair)"
+    return task_multinormal_sparse(
+        dim_x=dim_x,
+        dim_y=dim_y,
+        n_interacting=2,
+        strength=strength,
+        task_name=task_name,
     )

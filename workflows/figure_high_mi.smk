@@ -6,20 +6,13 @@ import yaml
 
 import _high_mi_utils as hmu
 import bmi.estimators
-from _common_figure_utils import ESTIMATORS, ESTIMATOR_NAMES, ESTIMATOR_COLORS
+from _common_figure_utils import ESTIMATORS, ESTIMATOR_NAMES, ESTIMATOR_COLORS, scale_tasks
 
 # On the X axis in each plot we will have the following mutual information
 # values
-# DESIRED_MUTUAL_INFORMATION = [0, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0]
-DESIRED_MUTUAL_INFORMATION = [0, 1.0, 3.0]
+DESIRED_MUTUAL_INFORMATION = [0, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0]
 
-# Estimators which performance is plotted
-ESTIMATORS = {
-    "CCA": bmi.estimators.CCAMutualInformationEstimator(),
-    "KSG": bmi.estimators.KSGEnsembleFirstEstimator(),
-}
-ESTIMATOR_NAMES = {key: key for key in ESTIMATORS}
-ESTIMATOR_COLORS = {key: f"C{i}" for i, key in enumerate(ESTIMATORS)}
+# ESTIMATORS from _common_figure_utils
 
 # Description of the distribution families plotted at each plot axis
 # This is the dictionary of the format
@@ -43,11 +36,10 @@ RAW_TASK_LIST = [
 TASK_LIST = [item for item in RAW_TASK_LIST if item is not None]
 
 
-TASKS = {task.id: task for task in TASK_LIST}
+TASKS = scale_tasks({task.id: task for task in TASK_LIST})
 
-# TODO(Pawel, Frederic): Think about the number of samples to use.
-N_SAMPLES = [1000]
-SEEDS = [0, 1]  # [0, 1, 2, 3, 4]
+N_SAMPLES = [10_000]
+SEEDS = list(range(5))
 
 
 # === WORKDIR ===
@@ -68,15 +60,23 @@ rule plot:
 
         sns.set_palette("bright")
 
+        # The estimators are parametrised now by their names
+        # rather than IDs, due to preprocessing in summarize_results
+        color_dict = {
+            ESTIMATOR_NAMES[estimator_id]: ESTIMATOR_COLORS[estimator_id]
+            for estimator_id in ESTIMATORS
+        }
+
         g = sns.FacetGrid(
-            data,
+            # Drop NaN, as some method may not have worked
+            data.dropna(),
             col="Distribution",
             hue="Estimator",
             sharex=True,
             sharey=True,
             height=3,
             legend_out=True,
-            palette=ESTIMATOR_COLORS,
+            palette=color_dict,
         )
         g.map(sns.lineplot, "Mutual Information", "Mean estimate", alpha=0.5)
         g.map(sns.scatterplot,"Mutual Information", "Mean estimate", alpha=0.5)
