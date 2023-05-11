@@ -1,6 +1,7 @@
 import bmi.estimators as estimators
 import bmi.estimators.external.r_estimators as r_estimators
 import bmi.estimators.external.julia_estimators as julia_estimators
+from bmi.benchmark.tasks import transform_gaussianise
 from bmi.benchmark import BENCHMARK_TASKS
 
 from bmi.plot_utils.subplots_from_axsize import subplots_from_axsize
@@ -21,7 +22,7 @@ from _common_figure_utils import (
 TASKS = {
     task.id: task
     for task in [
-        bmi.benchmark.tasks.transform_gaussianise(task)
+        transform_gaussianise(task)
         for task in BENCHMARK_TASKS.values()
     ]
 }
