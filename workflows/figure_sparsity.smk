@@ -40,7 +40,7 @@ rule figure_tails:
     input: 'results.csv'
     output: 'figures/sparsity.pdf'
     run:
-        results = read_results(str(input))
+        results = read_results(str(input), max_mi_estimate=3.0)
         fig, axs = subplots_from_axsize(
             axsize=(2.0, 1.5), ncols=2,
             left=0.8, right=1.75, wspace=0.85,
@@ -50,14 +50,14 @@ rule figure_tails:
         # decreasing alpha
         ax = axs[0]
         data = results[results['n_interacting'] == DIM]
-        plot_mi(ax, data, 'alpha', ESTIMATOR_COLORS, ESTIMATOR_NAMES)
+        plot_mi(ax, data, 'alpha', ESTIMATOR_COLORS, ESTIMATOR_NAMES, x_label=r"$\alpha$")
         #ax.xaxis.set_major_locator(ticker.MultipleLocator(0.25))
         ax.set_xlim(ax.get_xlim()[::-1])
 
         # decreasing n_interacting
         ax = axs[1]
         data = results[results['alpha'] == 0.0]
-        plot_mi(ax, data, 'n_interacting', ESTIMATOR_COLORS, ESTIMATOR_NAMES)
+        plot_mi(ax, data, 'n_interacting', ESTIMATOR_COLORS, ESTIMATOR_NAMES, x_label="Num. of interactions")
         ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
         ax.set_xlim(ax.get_xlim()[::-1])
 

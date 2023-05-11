@@ -43,14 +43,15 @@ rule figure_tails:
     input: 'results.csv'
     output: 'figures/tails.pdf'
     run:
-        results = read_results(str(input))
+        results = read_results(str(input), max_mi_estimate=3.0)
+
         fig, axs = subplots_from_axsize(
             axsize=(2.0, 1.5), ncols=2,
             left=0.6, right=1.75,
         )
         format_axs(axs)
-        plot_mi(axs[0], results, 'alpha')
-        plot_mi(axs[1], results, 'dof')
+        plot_mi(axs[0], results, 'alpha', x_label="Exponent")
+        plot_mi(axs[1], results, 'dof', x_label="Deg. of freedom")
         axs[1].legend(bbox_to_anchor=(1.1, 1.05))
         fig.savefig(str(output))
 
