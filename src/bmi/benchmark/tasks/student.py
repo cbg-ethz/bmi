@@ -90,6 +90,7 @@ def task_student_sparse(
         task_id=task_id,
         task_name=task_name or f"Student-t {dim_x} × {dim_y} (dof={df}, sparse)",
         task_params={
+            "dof": df,
             "n_interacting": n_interacting,
             "strength": strength,
         },
