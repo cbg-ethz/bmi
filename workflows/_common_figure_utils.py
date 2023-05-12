@@ -240,14 +240,24 @@ def plot_benchmark_mi_estimate(ax, results, estimators, tasks, estimator_names={
 
 
 def n_samples_needed(data_estimator_task):
-    data_solved = data_estimator_task[
-        np.abs(data_estimator_task["log_relative_error"]) < np.log(1.5)
-    ]
+    is_solved = (data_estimator_task.set_index("n_samples").abs() < np.log(1.5))[
+        "log_relative_error"
+    ].sort_index()
 
-    if len(data_solved):
-        return data_solved["n_samples"].min()
-    else:
+    failed = is_solved[~is_solved]
+
+    # all worked
+    if len(failed) == 0:
+        return is_solved.index.min()
+
+    # take successes with n_samples higher than all failed
+    succeeded = is_solved[is_solved.index[is_solved.index > failed.index.max()]]
+
+    # max n_samples failed
+    if len(succeeded) == 0:
         return np.inf
+
+    return succeeded.index.min()
 
 
 def n_samples_annotator(max_n_samples):
