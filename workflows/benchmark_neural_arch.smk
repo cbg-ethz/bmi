@@ -78,7 +78,7 @@ rule figure_neural:
             axsize=(len(TASKS) * 0.3, 4 * 0.3),
             left=1.2, bottom=4.
         )
-        plot_benchmark_neural_fails(ax, results, ESTIMATORS, TASKS)
+        plot_benchmark_neural_fails(ax, results, ESTIMATORS, TASKS, estimator_names=ESTIMATOR_NAMES)
         fig.savefig(str(output))
 
 include: "_core_rules.smk"
