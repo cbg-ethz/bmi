@@ -6,7 +6,8 @@ import yaml
 
 import _high_mi_utils as hmu
 import bmi.estimators
-from _common_figure_utils import ESTIMATORS, ESTIMATOR_NAMES, ESTIMATOR_COLORS, scale_tasks
+from bmi.plot_utils.subplots_from_axsize import subplots_from_axsize
+from _common_figure_utils import ESTIMATORS, ESTIMATOR_NAMES, ESTIMATOR_COLORS, scale_tasks, format_axs, plot_mi
 
 # On the X axis in each plot we will have the following mutual information
 # values
@@ -51,63 +52,26 @@ rule all:
     input: 'figure_high_mi.pdf'
 
 rule plot:
-    input: 'summary.csv'
+    input: 'results.csv'
     output: 'figure_high_mi.pdf'
     run:
         data = pd.read_csv(str(input))
 
-        xticks = data["Mutual Information"].unique()
-
-        sns.set_palette("bright")
-
-        # The estimators are parametrised now by their names
-        # rather than IDs, due to preprocessing in summarize_results
-        color_dict = {
-            ESTIMATOR_NAMES[estimator_id]: ESTIMATOR_COLORS[estimator_id]
-            for estimator_id in ESTIMATORS
-        }
-
-        g = sns.FacetGrid(
-            # Drop NaN, as some method may not have worked
-            data.dropna(),
-            col="Distribution",
-            hue="Estimator",
-            sharex=True,
-            sharey=True,
-            height=3,
-            legend_out=True,
-            palette=color_dict,
-        )
-        g.map(sns.lineplot, "Mutual Information", "Mean estimate", alpha=0.5)
-        g.map(sns.scatterplot,"Mutual Information", "Mean estimate", alpha=0.5)
-        g.add_legend()
-        g.set(xticks=xticks,xlim=(xticks.min() - 0.2, xticks.max() + 0.2))
-        g.set_xticklabels([round(x) if abs(round(x) - x) < 1e-2 else x for x in xticks])
-
-        # Add the diagonal (ground truth MI)
-        for ax in g.axes_dict.values():
-            ax.axline((0, 0),(1, 1),linestyle=":",c="k")
-
-        g.tight_layout()
-        g.savefig(str(output))
-
-rule summarize_results:
-    input: 'results.csv'
-    output: 'summary.csv'
-    run:
         data = pd.read_csv(str(input))
         data['desired_mi'] = data['task_params'].apply(lambda x: yaml.safe_load(x)['desired_mi'])
         data['family'] = data['task_params'].apply(lambda x: yaml.safe_load(x)['family_name'])
 
-        # Calculate data summary
-        summary = data.groupby(['family', 'desired_mi', 'estimator_id']).mean(numeric_only=True).reset_index()
-        summary = summary.rename(columns={
-            "estimator_id": "Estimator",
-            "desired_mi": "Mutual Information",
-            "family": "Distribution",
-            "mi_estimate": "Mean estimate",
-        })
-        summary["Estimator"].replace(ESTIMATOR_NAMES, inplace=True)
-        summary.to_csv(str(output), index=False)
+        fig, axs = subplots_from_axsize(
+            axsize=(2, 1.5), ncols=3,
+            left=0.8, right=1.75, wspace=0.85, top=0.3, bottom=0.6,
+        )
+        format_axs(axs)
+
+        for ax, (family, mini_df) in zip(axs, data.groupby("family")):
+            ax.set_title(family)
+            plot_mi(ax, mini_df, "desired_mi", ESTIMATOR_COLORS, ESTIMATOR_NAMES, x_label="True MI [nats]", plot_std=True)
+
+        axs[-1].legend(bbox_to_anchor=(1.07, 1.05), frameon=False)
+        fig.savefig(str(output))
 
 include: "_core_rules.smk"
