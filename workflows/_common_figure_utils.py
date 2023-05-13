@@ -118,6 +118,8 @@ def plot_mi(
     estimator_colors=ESTIMATOR_COLORS,
     estimator_names=ESTIMATOR_NAMES,
     x_label=None,
+    plot_std: bool = True,
+    alpha: float = 0.2,
 ):
     x_label = x_label or x_col
 
@@ -129,6 +131,16 @@ def plot_mi(
             color=estimator_colors[estimator_id],
             label=estimator_names[estimator_id],
         )
+        if plot_std:
+            data_std = data_estimator.groupby(x_col)[["mi_estimate"]].std().reset_index()
+            ax.fill_between(
+                data_std[x_col],
+                data_mean["mi_estimate"] - data_std["mi_estimate"],
+                data_mean["mi_estimate"] + data_std["mi_estimate"],
+                color=estimator_colors[estimator_id],
+                alpha=alpha,
+                label=None,
+            )
 
     data_mean = results.groupby(x_col)[["mi_true"]].mean().reset_index()
     ax.plot(

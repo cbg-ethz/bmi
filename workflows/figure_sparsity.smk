@@ -50,18 +50,18 @@ rule figure_tails:
         # decreasing alpha
         ax = axs[0]
         data = results[results['n_interacting'] == DIM]
-        plot_mi(ax, data, 'alpha', ESTIMATOR_COLORS, ESTIMATOR_NAMES, x_label=r"$\alpha$")
+        plot_mi(ax, data, 'alpha', ESTIMATOR_COLORS, ESTIMATOR_NAMES, x_label=r"$\alpha$", plot_std=True)
         #ax.xaxis.set_major_locator(ticker.MultipleLocator(0.25))
         ax.set_xlim(ax.get_xlim()[::-1])
 
         # decreasing n_interacting
         ax = axs[1]
         data = results[results['alpha'] == 0.0]
-        plot_mi(ax, data, 'n_interacting', ESTIMATOR_COLORS, ESTIMATOR_NAMES, x_label="Num. of interactions")
+        plot_mi(ax, data, 'n_interacting', ESTIMATOR_COLORS, ESTIMATOR_NAMES, x_label="Num. of interactions", plot_std=True)
         ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
         ax.set_xlim(ax.get_xlim()[::-1])
 
-        axs[1].legend(bbox_to_anchor=(1.07, 1.05))
+        axs[1].legend(bbox_to_anchor=(1.07, 1.05), frameon=False)
         fig.savefig(str(output))
 
 

@@ -50,9 +50,9 @@ rule figure_tails:
             left=0.6, right=1.75,
         )
         format_axs(axs)
-        plot_mi(axs[0], results, 'alpha', x_label="Exponent")
-        plot_mi(axs[1], results, 'dof', x_label="Deg. of freedom")
-        axs[1].legend(bbox_to_anchor=(1.1, 1.05))
+        plot_mi(axs[0], results, 'alpha', x_label="Exponent", plot_std=True)
+        plot_mi(axs[1], results, 'dof', x_label="Deg. of freedom", plot_std=True)
+        axs[1].legend(bbox_to_anchor=(1.1, 1.05), frameon=False)
         fig.savefig(str(output))
 
 include: "_core_rules.smk"
