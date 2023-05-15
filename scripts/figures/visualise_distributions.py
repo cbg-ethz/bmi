@@ -1,66 +1,76 @@
 """Visualisation of several samplers used."""
 import matplotlib.pyplot as plt
 
-import bmi.api as bmi
-import bmi.benchmark.tasks.one_dimensional as od
+import bmi.benchmark.task_list as tl
 
 
 def main() -> None:
-    gaussian_correlation: float = od.DEFAULT_CORRELATION
     n_points: int = 5_000
     seed: int = 0
     alpha: float = 0.5
     size: int = 3
 
-    sampler_gaussian = bmi.samplers.BivariateNormalSampler(correlation=gaussian_correlation)
-    sampler_uniform = bmi.samplers.BivariateUniformMarginsSampler(
-        gaussian_correlation=gaussian_correlation
-    )
-    sampler_swissroll = bmi.samplers.SwissRollSampler(sampler=sampler_uniform)
-    sampler_halfnormal = od.get_half_cube_sampler(gaussian_correlation=gaussian_correlation)
-    sampler_bimodal = od.get_bimodal_sampler(gaussian_correlation=gaussian_correlation)
+    task_gaussian = tl.BINORMAL_BASE
+    task_uniform = tl.UNIFORM_BASE
 
-    plt.set_cmap("jet")
+    assert len(tl.EMBEDDINGS_TASKS) == 1, "We expect only one embedding task (Swiss roll)."
+    task_swissroll = tl.EMBEDDINGS_TASKS[0]
+
+    task_halfcube = tl.half_cube(task_gaussian)
+    task_bimodal = tl.bimodal_gaussians.task_bimodal_gaussians(
+        gaussian_correlation=tl.GAUSSIAN_CORRELATION
+    )
+
+    plt.set_cmap("copper")
 
     fig = plt.figure(figsize=plt.figaspect(0.19))
 
     ax = fig.add_subplot(1, 5, 1)
-    x, y = sampler_gaussian.sample(n_points=n_points, rng=seed)
+    x, y = task_gaussian.sample(n_points, seed)
     y_original = y.ravel()
-    artist = ax.scatter(x.ravel(), y.ravel(), c=y_original, alpha=alpha, s=size)
-    artist.set_rasterized(True)
+    ax.scatter(x.ravel(), y.ravel(), c=y_original, alpha=alpha, s=size, rasterized=True)
     ax.set_title("Bivariate Gaussian")
     ax.set_xlabel("$X$")
     ax.set_ylabel("$Y$")
+    ax.spines[["right", "top"]].set_visible(False)
 
     ax = fig.add_subplot(1, 5, 2)
-    x, y = sampler_uniform.sample(n_points=n_points, rng=seed)
-    artist = ax.scatter(x.ravel(), y.ravel(), c=y_original, alpha=alpha, s=size)
-    artist.set_rasterized(True)
+    x, y = task_uniform.sample(n_points, seed)
+    ax.scatter(x.ravel(), y.ravel(), c=y_original, alpha=alpha, s=size, rasterized=True)
     ax.set_title("Correlated uniform")
     ax.set_xlabel("CDF$(X)$")
     ax.set_ylabel("CDF$(Y)$")
+    ax.spines[["right", "top"]].set_visible(False)
 
     ax = fig.add_subplot(1, 5, 3)
-    x, y = sampler_halfnormal.sample(n_points=n_points, rng=seed)
-    artist = ax.scatter(x.ravel(), y.ravel(), c=y_original, alpha=alpha, s=size)
-    artist.set_rasterized(True)
+    x, y = task_halfcube.sample(n_points, seed)
+    ax.scatter(x.ravel(), y.ravel(), c=y_original, alpha=alpha, s=size, rasterized=True)
     ax.set_title("Half-cube mapping")
     ax.set_xlabel("$h(X)$")
     ax.set_ylabel("$h(Y)$")
+    ax.spines[["right", "top"]].set_visible(False)
 
     ax = fig.add_subplot(1, 5, 4)
-    x, y = sampler_bimodal.sample(n_points=n_points, rng=seed)
-    artist = ax.scatter(x.ravel(), y.ravel(), c=y_original, alpha=alpha, s=size)
-    artist.set_rasterized(True)
+    x, y = task_bimodal.sample(n_points, seed)
+    ax.scatter(x.ravel(), y.ravel(), c=y_original, alpha=alpha, s=size, rasterized=True)
     ax.set_title("Making margins bimodal")
     ax.set_xlabel("bimodal$(X)$")
     ax.set_ylabel("bimodal$(Y)$")
+    ax.spines[["right", "top"]].set_visible(False)
 
-    x, y = sampler_swissroll.sample(n_points=n_points, rng=seed)
+    x, y = task_swissroll.sample(n_points, seed)
     ax = fig.add_subplot(1, 5, 5, projection="3d")
     artist = ax.scatter(x[:, 0], x[:, 1], y.ravel(), c=y_original, alpha=alpha, s=size)
     artist.set_rasterized(True)
+    ax.grid(False)
+    # Turn off the panes (the gray background)
+    ax.xaxis.pane.set_edgecolor("k")
+    ax.yaxis.pane.set_edgecolor("k")
+    ax.zaxis.pane.set_edgecolor("k")
+    ax.xaxis._axinfo["juggled"] = (1, 2, 0)
+    ax.xaxis.pane.fill = False
+    ax.yaxis.pane.fill = False
+    ax.zaxis.pane.fill = False
     ax.set_title("Swiss roll mapping")
 
     fig.tight_layout()
