@@ -54,13 +54,25 @@ def plot(
     colors: list[str],
     alpha: float = 0.2,
 ) -> plt.Figure:
-    fig, ax = plt.subplots(figsize=(4, 3), dpi=350)
+    fig, ax = plt.subplots(figsize=(4, 3), dpi=300)
     ax.set_xlim([-2.1, 2.1])
     ax.set_ylim([-2.1, 2.1])
     ax.set_box_aspect(1)
     ax.spines[["right", "top"]].set_visible(False)
 
-    ax.scatter(points[:, 0], points[:, 1], label="Original", alpha=alpha, s=1, c=colors[0])
+    marker = "."
+    # plt.rcParams.update({'font.size': 22})
+
+    ax.scatter(
+        points[:, 0],
+        points[:, 1],
+        label="Original",
+        alpha=alpha,
+        s=1,
+        c=colors[0],
+        marker=marker,
+        rasterized=True,
+    )
 
     colors_transformed = list(colors)[
         1 : 1 + len(transformed_points)  # noqa: E203 whitespace around :
@@ -72,6 +84,7 @@ def plot(
             tr_points[:, 1],
             label=f"Speed {speed}",
             alpha=alpha,
+            marker=marker,
             s=1,
             c=color,
             rasterized=True,
@@ -97,7 +110,7 @@ def main(figure_location) -> None:
     y_scale: float = 5e-2
     sample_uniform: bool = True
     speed_list = [0.5, 1.5]
-    colors = ["springgreen", "gold", "salmon"]
+    colors = ["green", "goldenrod", "orangered"]
 
     points = get_points(
         random_seed=random_seed,

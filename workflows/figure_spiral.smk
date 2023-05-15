@@ -75,6 +75,7 @@ rule plot_performance:
         results['speed'] = results['task_id'].apply(find_speed)
 
         fig, ax = plt.subplots(figsize=(5, 3))
+        ax.spines[["right", "top"]].set_visible(False)
         plot_mi(ax, results, 'speed', x_label="Speed", plot_std=True)
         ax.legend(bbox_to_anchor=(1.1, 1.05), frameon=False)
         fig.tight_layout()
