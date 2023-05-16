@@ -10,7 +10,9 @@ from bmi.benchmark.tasks.normal_cdf import transform_normal_cdf_task as normal_c
 from bmi.benchmark.tasks.spiral import transform_spiral_task as spiralise
 from bmi.benchmark.tasks.wiggly import transform_wiggly_task as wigglify
 
-BINORMAL_BASE = binormal.task_bivariate_normal(gaussian_correlation=0.75)
+GAUSSIAN_CORRELATION = 0.75
+
+BINORMAL_BASE = binormal.task_bivariate_normal(gaussian_correlation=GAUSSIAN_CORRELATION)
 UNIFORM_BASE = normal_cdfise(BINORMAL_BASE)
 BISTUDENT_BASE = student.task_student_identity(dim_x=1, dim_y=1, df=1)
 
@@ -19,7 +21,7 @@ ONE_DIM_TASKS = [
     UNIFORM_BASE,
     additive_noise.task_additive_noise(epsilon=0.10),
     additive_noise.task_additive_noise(epsilon=0.75),
-    bimodal_gaussians.task_bimodal_gaussians(),
+    bimodal_gaussians.task_bimodal_gaussians(gaussian_correlation=GAUSSIAN_CORRELATION),
     wigglify(BINORMAL_BASE),
     half_cube(BINORMAL_BASE),
     BISTUDENT_BASE,

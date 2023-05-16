@@ -52,13 +52,27 @@ def plot(
     points: np.ndarray,
     transformed_points: dict[float, np.ndarray],
     colors: list[str],
-    alpha: float = 0.5,
+    alpha: float = 0.2,
 ) -> plt.Figure:
-    fig, ax = plt.subplots(figsize=(4, 4))
+    fig, ax = plt.subplots(figsize=(4, 3), dpi=300)
     ax.set_xlim([-2.1, 2.1])
     ax.set_ylim([-2.1, 2.1])
+    ax.set_box_aspect(1)
+    ax.spines[["right", "top"]].set_visible(False)
 
-    ax.scatter(points[:, 0], points[:, 1], label="Original", alpha=alpha, s=1, c=colors[0])
+    marker = "."
+    # plt.rcParams.update({'font.size': 22})
+
+    ax.scatter(
+        points[:, 0],
+        points[:, 1],
+        label="Original",
+        alpha=alpha,
+        s=1,
+        c=colors[0],
+        marker=marker,
+        rasterized=True,
+    )
 
     colors_transformed = list(colors)[
         1 : 1 + len(transformed_points)  # noqa: E203 whitespace around :
@@ -66,18 +80,25 @@ def plot(
 
     for color, (speed, tr_points) in zip(colors_transformed, transformed_points.items()):
         ax.scatter(
-            tr_points[:, 0], tr_points[:, 1], label=f"Speed {speed}", alpha=alpha, s=1, c=color
+            tr_points[:, 0],
+            tr_points[:, 1],
+            label=f"Speed {speed}",
+            alpha=alpha,
+            marker=marker,
+            s=1,
+            c=color,
+            rasterized=True,
         )
 
     ax.set_xlabel("Coordinate $x_1$")
     ax.set_ylabel("Coordinate $x_2$")
 
     # Hack to change the marker size in the legend
-    lgnd = ax.legend()
-
+    lgnd = ax.legend(bbox_to_anchor=(0.95, 1.02), frameon=False)
     for handle in lgnd.legendHandles:
         handle._sizes = [20]
 
+    fig.tight_layout()
     return fig
 
 
@@ -88,8 +109,8 @@ def main(figure_location) -> None:
     x_scale: float = 2
     y_scale: float = 5e-2
     sample_uniform: bool = True
-    speed_list = [1, 3]
-    colors = ["tab:red", "tab:purple", "tab:blue"]
+    speed_list = [0.5, 1.5]
+    colors = ["green", "goldenrod", "orangered"]
 
     points = get_points(
         random_seed=random_seed,

@@ -1,3 +1,5 @@
+from typing import Optional
+
 import matplotlib
 import numpy as np
 import pandas as pd
@@ -69,6 +71,7 @@ def read_results(
     path: str,
     unpack_task_params: bool = True,
     unpack_additional_information: bool = False,
+    max_mi_estimate: Optional[float] = None,
 ):
     results = pd.read_csv(path)
 
@@ -93,6 +96,9 @@ def read_results(
 
     results = pd.DataFrame(rows)
 
+    if max_mi_estimate is not None:
+        results = results[results["mi_estimate"] < max_mi_estimate]
+
     return results
 
 
@@ -106,8 +112,17 @@ def format_axs(axs):
 
 
 def plot_mi(
-    ax, results, x_col, estimator_colors=ESTIMATOR_COLORS, estimator_names=ESTIMATOR_NAMES
+    ax,
+    results,
+    x_col,
+    estimator_colors=ESTIMATOR_COLORS,
+    estimator_names=ESTIMATOR_NAMES,
+    x_label=None,
+    plot_std: bool = True,
+    alpha: float = 0.2,
 ):
+    x_label = x_label or x_col
+
     for estimator_id, data_estimator in results.groupby("estimator_id"):
         data_mean = data_estimator.groupby(x_col)[["mi_estimate"]].mean().reset_index()
         ax.plot(
@@ -116,6 +131,16 @@ def plot_mi(
             color=estimator_colors[estimator_id],
             label=estimator_names[estimator_id],
         )
+        if plot_std:
+            data_std = data_estimator.groupby(x_col)[["mi_estimate"]].std().reset_index()
+            ax.fill_between(
+                data_std[x_col],
+                data_mean["mi_estimate"] - data_std["mi_estimate"],
+                data_mean["mi_estimate"] + data_std["mi_estimate"],
+                color=estimator_colors[estimator_id],
+                alpha=alpha,
+                label=None,
+            )
 
     data_mean = results.groupby(x_col)[["mi_true"]].mean().reset_index()
     ax.plot(
@@ -127,7 +152,7 @@ def plot_mi(
     )
 
     ax.set_ylim(bottom=0.0)
-    ax.set_xlabel(x_col)
+    ax.set_xlabel(x_label)
     ax.set_ylabel("MI estimate [nats]")
 
 
@@ -268,6 +293,9 @@ def n_samples_annotator(max_n_samples):
         if np.isinf(val):
             return f">{int(max_n_samples / 1000)}k"
 
+        if val < 1000:
+            return f"{int(val)}"
+
         return f"{int(val / 1000)}k"
 
     return annot
@@ -300,7 +328,7 @@ def plot_benchmark_n_samples(ax, results, estimators, tasks, estimator_names={})
     sns.heatmap(
         np.clip(table_samples.transpose(), a_min=0.0, a_max=100 * max_n_samples),
         annot=table_annot.transpose(),
-        cmap="Spectral_r",
+        cmap="YlOrBr",
         vmin=0,
         vmax=max_n_samples * 1.2,
         ax=ax,

@@ -6,7 +6,11 @@ import matplotlib.pyplot as plt
 import yaml
 
 import bmi
-from _common_figure_utils import ESTIMATORS, ESTIMATOR_NAMES, ESTIMATOR_COLORS, scale_tasks
+from bmi.plot_utils.subplots_from_axsize import subplots_from_axsize
+from _common_figure_utils import (
+    ESTIMATORS,
+    read_results, format_axs, plot_mi, scale_tasks
+)
 
 
 def spiral_task(speed: float, correlation: float) -> bmi.benchmark.Task:
@@ -57,56 +61,26 @@ rule all:
     input:
         'figures/performance.pdf', 'figures/visualisation.pdf'
 
+def find_speed(task_id: str) -> float:
+    for task in TASK_LIST:
+        if task.id == task_id:
+            return task.params["speed"]
+    raise KeyError(f"Task ID {task_id} not found.")
+
 rule plot_performance:
     input: 'results.csv'
     output: 'figures/performance.pdf'
     run:
-        data = pd.read_csv(str(input))
-        fig, ax = plt.subplots()
+        results = read_results(str(input), max_mi_estimate=3.0)
+        results['speed'] = results['task_id'].apply(find_speed)
 
-        #ax.hlines([data['mi_true'].mean()], min(SPEEDS), max(SPEEDS), colors="k",linestyles="--")
-        data['speed'] = data['task_params'].apply(lambda x: yaml.safe_load(x)['speed'])
-
-        print(data['task_params'].head())
-
-        mi_true = data['mi_true'].mean()
-
-        ax.hlines(
-            mi_true,
-            xmin=data['speed'].min(),
-            xmax=data['speed'].max(),
-            linestyles="dashed",
-            label="True",
-            colors="black",
-        )
-
-        means = data.groupby(["task_id", "estimator_id"]).mean().reset_index()
-
-        for estimator_id, group in means.groupby("estimator_id"):
-            ax.scatter(
-                group['speed'],
-                group['mi_estimate'],
-                label=ESTIMATOR_NAMES[estimator_id],
-                color=ESTIMATOR_COLORS[estimator_id],
-                alpha=0.3,
-            )
-            #sns.regplot(
-            #    data=group,
-            #    x="speed",
-            #    y="mi_estimate",
-            #    ax=ax,
-            #    x_estimator=np.mean,
-            #    lowess=True,
-            #    label=ESTIMATOR_NAMES[estimator_id],
-            #)
-
-        ax.set_xlabel("Speed")
-        ax.set_ylabel("Mutual Information estimate")
-
-        ax.legend()
-
+        fig, ax = plt.subplots(figsize=(5, 3))
+        ax.spines[["right", "top"]].set_visible(False)
+        plot_mi(ax, results, 'speed', x_label="Speed", plot_std=True)
+        ax.legend(bbox_to_anchor=(1.1, 1.05), frameon=False)
         fig.tight_layout()
-        fig.savefig(str(output), dpi=350)
+        fig.savefig(str(output))
+
 
 include: "_core_rules.smk"
 
