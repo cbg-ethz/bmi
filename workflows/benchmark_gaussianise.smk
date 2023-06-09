@@ -47,7 +47,7 @@ rule figure_mi_estimate:
         results = read_results(str(input))
         fig, ax = subplots_from_axsize(
             axsize=(len(TASKS) * 0.3, len(ESTIMATORS) * 0.3),
-            left=1.2, bottom=4.
+            left=1.2, bottom=5.
         )
         plot_benchmark_mi_estimate(ax, results, ESTIMATORS, TASKS)
         fig.savefig(str(output))
