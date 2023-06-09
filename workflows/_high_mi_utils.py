@@ -61,15 +61,15 @@ def binsearch(
 # ******************************************************
 
 
-def get_sparse_gaussian_sampler(correlation: float, dim: int, noise: float = 0.1) -> bmi.ISampler:
+def get_sparse_gaussian_sampler(correlation: float, dim: int) -> bmi.ISampler:
     """Generates the sparse Gaussian sampler we will use."""
     covariance = bmi.samplers.parametrised_correlation_matrix(
         dim_x=dim,
         dim_y=dim,
         k=2,
         correlation=correlation,
-        correlation_x=noise,
-        correlation_y=noise,
+        correlation_x=0.0,
+        correlation_y=0.0,
     )
     return bmi.samplers.SplitMultinormal(
         dim_x=dim,
@@ -78,9 +78,9 @@ def get_sparse_gaussian_sampler(correlation: float, dim: int, noise: float = 0.1
     )
 
 
-def mi_sparse_gaussian(correlation: float, dim: int, noise: float = 0.1) -> float:
+def mi_sparse_gaussian(correlation: float, dim: int) -> float:
     """The mutual information of the sparse Gaussian sampler."""
-    sampler = get_sparse_gaussian_sampler(correlation=correlation, dim=dim, noise=noise)
+    sampler = get_sparse_gaussian_sampler(correlation=correlation, dim=dim)
     return sampler.mutual_information()
 
 
@@ -91,7 +91,7 @@ def generate_sparse_gaussian_task(
     noise: float = 0.1,
 ) -> Optional[bmi.Task]:
     corr = binsearch(
-        lambda c: mi_sparse_gaussian(c, dim=dim, noise=noise),
+        lambda c: mi_sparse_gaussian(c, dim=dim),
         target=mi,
         min_value=0,
         max_value=1,
@@ -100,7 +100,7 @@ def generate_sparse_gaussian_task(
     if corr is None:
         return None
 
-    sampler = get_sparse_gaussian_sampler(correlation=corr, dim=dim, noise=noise)
+    sampler = get_sparse_gaussian_sampler(correlation=corr, dim=dim)
 
     return bmi.benchmark.Task(
         sampler=sampler,
