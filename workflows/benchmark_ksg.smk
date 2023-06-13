@@ -24,6 +24,10 @@ ESTIMATORS = {
 
     'Julia-KSG-I-5': julia_estimators.JuliaKSGEstimator(variant=1, neighbors=5),
     'Julia-KSG-II-5': julia_estimators.JuliaKSGEstimator(variant=2, neighbors=5),
+
+    'R-LNN-5-30': r_estimators.RLNNEstimator(k=5, truncation=30),
+    'R-LNN-10-30': r_estimators.RLNNEstimator(k=10, truncation=30),
+    'R-LNN-5-10': r_estimators.RLNNEstimator(k=5, truncation=10),
 }
 
 ESTIMATOR_NAMES = {
@@ -37,6 +41,10 @@ ESTIMATOR_NAMES = {
 
     'Julia-KSG-I-5': 'KSG I (n=5, Julia)',
     'Julia-KSG-II-5': 'KSG II (n=5, Julia)',
+
+    'R-LNN-5-30': 'LNN (n=5, t=30, R)',
+    'R-LNN-10-30': 'LNN (n=10, t=30, R)',
+    'R-LNN-5-10': 'LNN (n=5, t=10, R)',
 }
 
 TASKS = scale_tasks({
