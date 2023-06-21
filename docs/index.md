@@ -1,4 +1,7 @@
-[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+[![arXiv](https://img.shields.io/badge/arXiv-2306.11078-b31b1b.svg)](https://arxiv.org/abs/2306.11078)
+
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 # Benchmarking Mutual Information
@@ -45,5 +48,16 @@ print(f"Estimate by KSG: {ksg.estimate(X, Y):.2f}")
 
 ## Citing
 
-**TODO:** Add link to arXiv preprint and generate a BibTeX entry.
+If you find this code useful in your research, consider citing [our manuscript](https://arxiv.org/abs/2306.11078):
+
+```
+@misc{beyond_normal2023,
+      title={Beyond Normal: On the Evaluation of Mutual Information Estimators}, 
+      author={Paweł Czyż and Frederic Grabowski and Julia E. Vogt and Niko Beerenwinkel and Alexander Marx},
+      year={2023},
+      eprint={2306.11078},
+      archivePrefix={arXiv},
+      primaryClass={stat.ML}
+}
+```
 
