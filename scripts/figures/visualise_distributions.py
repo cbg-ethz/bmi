@@ -21,7 +21,7 @@ def main() -> None:
         gaussian_correlation=tl.GAUSSIAN_CORRELATION
     )
 
-    plt.set_cmap("copper")
+    plt.set_cmap("turbo")
 
     fig = plt.figure(figsize=plt.figaspect(0.19))
 

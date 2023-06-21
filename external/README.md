@@ -33,23 +33,3 @@ $ pytest tests/benchmark/test_wrapper --run-r
 ```
 Note that without `--run-r` flag the tests will be skipped.
 
-### MINE
-As a dependency we use a [custom fork](https://github.com/pawel-czyz/mine-mist) of the [Latte project](https://github.com/boevalab/latte),
-which contains MINE and MIST implementations (developed by Anej Svete).
-The MINE implementation has been based on the original [Python + PyTorch implementation of MINE](https://github.com/gtegner/mine-pytorch).
-
-The fork can be installed together with the package as an optional dependency:
-```
-$ pip install ".[mine]"
-```
-
-Alternatively, one can install it manually:
-```
-$ pip install git+https://github.com/pawel-czyz/mine-mist.git
-```
-
-You can run unit tests associated to it via:
-```
-$ pytest tests/estimators/external/test_mine.py --run-mine-pytorch
-```
-Note that without `--run-mine-pytorch` the tests will be skipped.
