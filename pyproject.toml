@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "benchmark-mi"
-version = "0.1.0"
+version = "0.1.1"
 description = "Estimators of mutual information and distributions used to benchmark them."
 authors = ["Paweł Czyż <pawelpiotr.czyz@ai.ethz.ch>", "Frederic Grabowski <grabowski.frederic@gmail.com>"]
 license = "MIT"
@@ -24,6 +24,9 @@ pyyaml = "^6.0"
 scipy = "^1.10.1"
 tqdm = "^4.64.1"
 
+
+[tool.poetry.group.dev]
+optional = true
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
