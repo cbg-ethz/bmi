@@ -44,7 +44,7 @@ src_paths = ["src", "tests", "scripts"]
 name = "bmi"
 version = "0.1.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["Paweł Czyż <pawelpiotr.czyz@ai.ethz.ch>", "Frederic Grabowski <grabowski.frederic@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 packages = [{include = "bmi", from = "src"}]
