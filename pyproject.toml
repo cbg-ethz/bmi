@@ -1,49 +1,7 @@
-[tool.black]
-include = '''
-/(
-     src
-   | scripts
-   | tests
-)/
-'''
-line-length = 99
-exclude = '''
-/(
-    \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-  | docs
-  | venv
-)/
-  | README.md
-  | __pycache__
-  | estimators.yaml
-'''
-
-[tool.pytype]
-inputs = ["src", "tests"]
-
-[tool.pytest.ini_options]
-addopts = "--cov=src/bmi -n 3"
-testpaths = [
-    "tests",
-]
-
-[tool.isort]
-line_length = 99
-src_paths = ["src", "tests", "scripts"]
-
-
 [tool.poetry]
-name = "bmi"
+name = "benchmark-mi"
 version = "0.1.0"
-description = ""
+description = "Estimators of mutual information and distributions used to benchmark them."
 authors = ["Paweł Czyż <pawelpiotr.czyz@ai.ethz.ch>", "Frederic Grabowski <grabowski.frederic@gmail.com>"]
 license = "MIT"
 readme = "README.md"
@@ -85,3 +43,47 @@ mkdocs-literate-nav = "^0.6.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+
+[tool.black]
+include = '''
+/(
+     src
+   | scripts
+   | tests
+)/
+'''
+line-length = 99
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | docs
+  | venv
+)/
+  | README.md
+  | __pycache__
+  | estimators.yaml
+'''
+
+[tool.pytype]
+inputs = ["src", "tests"]
+
+[tool.pytest.ini_options]
+addopts = "--cov=src/bmi -n 3"
+testpaths = [
+    "tests",
+]
+
+[tool.isort]
+line_length = 99
+src_paths = ["src", "tests", "scripts"]
+

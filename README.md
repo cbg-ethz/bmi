@@ -1,5 +1,6 @@
 [![arXiv](https://img.shields.io/badge/arXiv-2306.11078-b31b1b.svg)](https://arxiv.org/abs/2306.11078)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![PyPI Latest Release](https://img.shields.io/pypi/v/benchmark-mi.svg)](https://pypi.org/project/benchmark-mi/)
 [![build](https://github.com/cbg-ethz/bmi/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/cbg-ethz/bmi/actions/workflows/build.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
@@ -10,7 +11,7 @@ BMI is the package for estimation of mutual information between continuous rando
 - **Documentation**: [https://cbg-ethz.github.io/bmi/](https://cbg-ethz.github.io/bmi/)
 - **Source code**: [https://github.com/cbg-ethz/bmi](https://github.com/cbg-ethz/bmi)
 - **Bug reports**: [https://github.com/cbg-ethz/bmi/issues](https://github.com/cbg-ethz/bmi/issues)
-
+- **PyPI package**: [https://pypi.org/project/benchmark-mi](https://pypi.org/project/benchmark-mi)
 
 ## Getting started
 While we recommend taking a look at the [documentation](https://cbg-ethz.github.io/bmi/) to learn about full package capabilities, below we present the main capabilities of the Python package.
@@ -18,7 +19,12 @@ While we recommend taking a look at the [documentation](https://cbg-ethz.github.
 
 You can install the package using:
 
-**TODO:** Add installation instructions after we push to PyPI.
+```bash
+$ pip install benchmark-mi
+```
+
+Alternatively, you can use the development version from source using:
+
 ```bash
 $ pip install "bmi @ https://github.com/cbg-ethz/bmi"
 ```
