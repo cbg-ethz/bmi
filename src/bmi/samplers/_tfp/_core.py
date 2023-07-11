@@ -11,11 +11,23 @@ tfb = tfp.bijectors
 
 @dataclasses.dataclass
 class JointDistribution:
+    """Represents a joint distribution of X and Y with known marginals.
+    
+    Attributes:
+        dist: tfd.Distribution, joint distribution of X and Y
+        dist_x: tfd.Distribution, marginal distribution of X
+        dist_y: tfd.Distribution, marginal distribution of Y
+        dim_x: dimension of the support of X
+        dim_y: dimension of the support of Y
+        analytic_mutual_information: analytical mutual information.
+          Use `None` if unknown (in most cases)
+    """
     dist_joint: tfd.Distribution
     dist_x: tfd.Distribution
     dist_y: tfd.Distribution
     dim_x: int
     dim_y: int
+    analytic_mutual_information: Optional[float] = None
 
     def sample(key: jax.random.PRNGKeyArray, n: int) -> tuple[jnp.ndarray, jnp.ndarray]:
         raise NotImplementedError
@@ -55,6 +67,7 @@ def mixture(
         dist_y=dist_y,
         dim_x=dim_x,
         dim_y=dim_y,
+        analytic_mutual_information=None,
     )
 
 
@@ -75,6 +88,7 @@ def transform(
         dist_joint=tfd.TransformedDistribution(distribution=dist.dist_joint, bijector=product_bijector),
         dist_x=tfd.TransformedDistribution(distribution=dist.dist_x, bijector=x_transform),
         dist_y=tfd.TransformedDistribution(distribution=dist.dist_y, bijector=y_transform),
+        analytic_mutual_information=dist.analytical_mutual_information
     )
 
 
