@@ -19,7 +19,7 @@ class JointDistribution:
         dist_y: tfd.Distribution, marginal distribution of Y
         dim_x: dimension of the support of X
         dim_y: dimension of the support of Y
-        analytic_mutual_information: analytical mutual information.
+        analytic_mi: analytical mutual information.
           Use `None` if unknown (in most cases)
     """
     dist_joint: tfd.Distribution
@@ -27,13 +27,18 @@ class JointDistribution:
     dist_y: tfd.Distribution
     dim_x: int
     dim_y: int
-    analytic_mutual_information: Optional[float] = None
+    analytic_mi: Optional[float] = None
 
-    def sample(key: jax.random.PRNGKeyArray, n: int) -> tuple[jnp.ndarray, jnp.ndarray]:
-        raise NotImplementedError
+    def sample(self, key: jax.random.PRNGKeyArray, n: int) -> tuple[jnp.ndarray, jnp.ndarray]:
+        xy = self.dist_joint.sample(seed=key, sample_shape=(n,))
+        return xy[..., :self.dim_x], xy[..., self.dim_x:]
     
     def pmi(self, x: jnp.ndarray, y: jnp.ndarray) -> jnp.ndarray:
-        raise NotImplementedError
+        log_pxy = self.dist_joint.log_prob(jnp.hstack([x, y]))
+        log_px = self.dist_x.log_prob(x)
+        log_py = self.dist_y.log_prob(y)
+
+        return log_pxy - (log_px + log_py)
 
 
 def mixture(
@@ -58,7 +63,7 @@ def mixture(
         cat=tfd.Categorical(probs=proportions),
         components=[d.dist_x for d in components])
     dist_y = tfd.Mixture(
-        cat=tfd.Categorical(proportions),
+        cat=tfd.Categorical(probs=proportions),
         components=[d.dist_y for d in components])
 
     return JointDistribution(
@@ -67,7 +72,7 @@ def mixture(
         dist_y=dist_y,
         dim_x=dim_x,
         dim_y=dim_y,
-        analytic_mutual_information=None,
+        analytic_mi=None,
     )
 
 
@@ -88,13 +93,13 @@ def transform(
         dist_joint=tfd.TransformedDistribution(distribution=dist.dist_joint, bijector=product_bijector),
         dist_x=tfd.TransformedDistribution(distribution=dist.dist_x, bijector=x_transform),
         dist_y=tfd.TransformedDistribution(distribution=dist.dist_y, bijector=y_transform),
-        analytic_mutual_information=dist.analytical_mutual_information
+        analytic_mi=dist.analytical_mutual_information
     )
 
 
 def pmi_profile(key: jax.random.PRNGKeyArray, dist: JointDistribution, n: int) -> jnp.ndarray:
     x, y = dist.sample(key, n)
-    return dist.pmi(x, y)  # TODO(Pawel): Check if vectorizes properly
+    return dist.pmi(x, y)
 
 
 def monte_carlo_mi_estimate(key: jax.random.PRNGKeyArray, dist: JointDistribution, n: int) -> tuple[float, float]:
