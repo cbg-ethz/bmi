@@ -46,8 +46,9 @@ rule generate_profile:
         key = jax.random.PRNGKey(0)
 
         pmis = bmi_tfp.pmi_profile(key=key, dist=dist, n=10_000)
+
         fig, ax = plt.subplots()
         ax.hist(pmis, bins=100, density=True)
-        fig.suptitle(f"PMI profile of {dist_name}. Mean (MI): {pmis.mean():.2f}")
+        fig.suptitle(f"PMI profile of {dist_name}. Mean (MI): {pmis.mean():.2f}. Ignoring NaNs: {jnp.nanmean(pmis):.2f}.")
         fig.tight_layout()
         fig.savefig(str(output))
