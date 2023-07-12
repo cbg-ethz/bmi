@@ -4,8 +4,8 @@ import jax.numpy as jnp
 from numpy.typing import ArrayLike
 from tensorflow_probability.substrates import jax as tfp
 
-from bmi.samplers._tfp._core import JointDistribution
 from bmi.samplers._splitmultinormal import SplitMultinormal
+from bmi.samplers._tfp._core import JointDistribution
 
 jtf = tfp.tf2jax
 tfd = tfp.distributions
@@ -41,7 +41,7 @@ class MultivariateNormalDistribution(JointDistribution):
         mean = jnp.array(mean)
         covariance = jnp.array(covariance)
 
-        # Calculate MI and implicitly validate the shapes 
+        # Calculate MI and implicitly validate the shapes
         analytic_mi = SplitMultinormal(
             dim_x=dim_x, dim_y=dim_y, mean=mean, covariance=covariance
         ).mutual_information()
@@ -50,8 +50,12 @@ class MultivariateNormalDistribution(JointDistribution):
         # using the information provided
 
         dist_joint = _construct_multivariate_distribution(mean=mean, covariance=covariance)
-        dist_x = _construct_multivariate_distribution(mean=mean[:dim_x], covariance=covariance[:dim_x, :dim_x])
-        dist_y = _construct_multivariate_distribution(mean=mean[dim_x:], covariance=covariance[dim_x:, dim_x:])
+        dist_x = _construct_multivariate_distribution(
+            mean=mean[:dim_x], covariance=covariance[:dim_x, :dim_x]
+        )
+        dist_y = _construct_multivariate_distribution(
+            mean=mean[dim_x:], covariance=covariance[dim_x:, dim_x:]
+        )
 
         super().__init__(
             dim_x=dim_x,

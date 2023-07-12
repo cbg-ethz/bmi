@@ -4,15 +4,17 @@ import jax.numpy as jnp
 from numpy.typing import ArrayLike
 from tensorflow_probability.substrates import jax as tfp
 
-from bmi.samplers._tfp._core import JointDistribution
 from bmi.samplers._split_student_t import SplitStudentT
+from bmi.samplers._tfp._core import JointDistribution
 
 jtf = tfp.tf2jax
 tfd = tfp.distributions
 
 
 def _construct_multivariate_distribution(
-    mean: jnp.ndarray, dispersion: jnp.ndarray, df: Union[int, float],
+    mean: jnp.ndarray,
+    dispersion: jnp.ndarray,
+    df: Union[int, float],
 ) -> tfd.MultivariateStudentTLinearOperator:
     # Lower triangular matrix such that `dispersion = scale @ scale^T`
     scale = jnp.linalg.cholesky(dispersion)
@@ -25,7 +27,13 @@ def _construct_multivariate_distribution(
 
 class MultivariateStudentDistribution(JointDistribution):
     def __init__(
-        self, *, dim_x: int, dim_y: int, df: int, dispersion: ArrayLike, mean: Optional[ArrayLike] = None
+        self,
+        *,
+        dim_x: int,
+        dim_y: int,
+        df: int,
+        dispersion: ArrayLike,
+        mean: Optional[ArrayLike] = None
     ) -> None:
         """
 
@@ -43,17 +51,25 @@ class MultivariateStudentDistribution(JointDistribution):
         mean = jnp.array(mean)
         dispersion = jnp.array(dispersion)
 
-        # Calculate MI and implicitly validate the shapes 
+        # Calculate MI and implicitly validate the shapes
         analytic_mi = SplitStudentT(
-            dim_x=dim_x, dim_y=dim_y, df=df, dispersion=dispersion, mean=mean,
-        )
-        
+            dim_x=dim_x,
+            dim_y=dim_y,
+            df=df,
+            dispersion=dispersion,
+            mean=mean,
+        ).mutual_information()
+
         # Now we need to define the TensorFlow Probability distributions
         # using the information provided
 
         dist_joint = _construct_multivariate_distribution(mean=mean, dispersion=dispersion, df=df)
-        dist_x = _construct_multivariate_distribution(mean=mean[:dim_x], dispersion=dispersion[:dim_x, :dim_x])
-        dist_y = _construct_multivariate_distribution(mean=mean[dim_x:], dispersion=dispersion[dim_x:, dim_x:])
+        dist_x = _construct_multivariate_distribution(
+            mean=mean[:dim_x], dispersion=dispersion[:dim_x, :dim_x], df=df
+        )
+        dist_y = _construct_multivariate_distribution(
+            mean=mean[dim_x:], dispersion=dispersion[dim_x:, dim_x:], df=df
+        )
 
         super().__init__(
             dim_x=dim_x,

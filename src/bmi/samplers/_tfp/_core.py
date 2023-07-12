@@ -12,7 +12,7 @@ tfb = tfp.bijectors
 @dataclasses.dataclass
 class JointDistribution:
     """Represents a joint distribution of X and Y with known marginals.
-    
+
     Attributes:
         dist: tfd.Distribution, joint distribution of X and Y
         dist_x: tfd.Distribution, marginal distribution of X
@@ -22,6 +22,7 @@ class JointDistribution:
         analytic_mi: analytical mutual information.
           Use `None` if unknown (in most cases)
     """
+
     dist_joint: tfd.Distribution
     dist_x: tfd.Distribution
     dist_y: tfd.Distribution
@@ -31,8 +32,8 @@ class JointDistribution:
 
     def sample(self, key: jax.random.PRNGKeyArray, n: int) -> tuple[jnp.ndarray, jnp.ndarray]:
         xy = self.dist_joint.sample(seed=key, sample_shape=(n,))
-        return xy[..., :self.dim_x], xy[..., self.dim_x:]
-    
+        return xy[..., : self.dim_x], xy[..., self.dim_x :]  # noqa: E203 (formatting discrepancy)
+
     def pmi(self, x: jnp.ndarray, y: jnp.ndarray) -> jnp.ndarray:
         log_pxy = self.dist_joint.log_prob(jnp.hstack([x, y]))
         log_px = self.dist_x.log_prob(x)
@@ -50,21 +51,20 @@ def mixture(
     dim_ys = set(d.dim_y for d in components)
 
     if len(dim_xs) != 1 or len(dim_ys) != 1:
-        raise ValueError(
-            "All components must have the same dimensionality for x and y.")
+        raise ValueError("All components must have the same dimensionality for x and y.")
 
     dim_x = dim_xs.pop()
     dim_y = dim_ys.pop()
 
     dist_joint = tfd.Mixture(
-        cat=tfd.Categorical(probs=proportions),
-        components=[d.dist_joint for d in components])
+        cat=tfd.Categorical(probs=proportions), components=[d.dist_joint for d in components]
+    )
     dist_x = tfd.Mixture(
-        cat=tfd.Categorical(probs=proportions),
-        components=[d.dist_x for d in components])
+        cat=tfd.Categorical(probs=proportions), components=[d.dist_x for d in components]
+    )
     dist_y = tfd.Mixture(
-        cat=tfd.Categorical(probs=proportions),
-        components=[d.dist_y for d in components])
+        cat=tfd.Categorical(probs=proportions), components=[d.dist_y for d in components]
+    )
 
     return JointDistribution(
         dist_joint=dist_joint,
@@ -85,15 +85,19 @@ def transform(
         x_transform = tfb.Identity()
     if y_transform is None:
         y_transform = tfb.Identity()
-    
-    product_bijector = tfb.Blockwise(bijectors=[x_transform, y_transform], block_sizes=[dist.dim_x, dist.dim_y])
+
+    product_bijector = tfb.Blockwise(
+        bijectors=[x_transform, y_transform], block_sizes=[dist.dim_x, dist.dim_y]
+    )
     return JointDistribution(
         dim_x=dist.dim_x,
         dim_y=dist.dim_y,
-        dist_joint=tfd.TransformedDistribution(distribution=dist.dist_joint, bijector=product_bijector),
+        dist_joint=tfd.TransformedDistribution(
+            distribution=dist.dist_joint, bijector=product_bijector
+        ),
         dist_x=tfd.TransformedDistribution(distribution=dist.dist_x, bijector=x_transform),
         dist_y=tfd.TransformedDistribution(distribution=dist.dist_y, bijector=y_transform),
-        analytic_mi=dist.analytical_mutual_information
+        analytic_mi=dist.analytic_mi,
     )
 
 
@@ -102,13 +106,15 @@ def pmi_profile(key: jax.random.PRNGKeyArray, dist: JointDistribution, n: int) -
     return dist.pmi(x, y)
 
 
-def monte_carlo_mi_estimate(key: jax.random.PRNGKeyArray, dist: JointDistribution, n: int) -> tuple[float, float]:
+def monte_carlo_mi_estimate(
+    key: jax.random.PRNGKeyArray, dist: JointDistribution, n: int
+) -> tuple[float, float]:
     """Estimates the mutual information between X and Y using Monte Carlo sampling.
-    
+
     Returns:
         float, mutual information estimate
         float, standard error estimate
-    
+
     Note:
         It is worth to run this procedure multiple times and see whether
         the standard error estimate is stable.
@@ -118,4 +124,3 @@ def monte_carlo_mi_estimate(key: jax.random.PRNGKeyArray, dist: JointDistributio
     standard_error = jnp.std(profile) / jnp.sqrt(n)
 
     return mi_estimate, standard_error
-
