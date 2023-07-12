@@ -79,6 +79,7 @@ def mixture(
     Returns:
         mixture distribution
     """
+    proportions = jnp.asarray(proportions)
     components = list(components)
     dim_xs = set(d.dim_x for d in components)
     dim_ys = set(d.dim_y for d in components)
