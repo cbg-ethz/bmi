@@ -17,7 +17,7 @@ dispersion_09 = jnp.asarray([[1.0, 0.9], [0.9, 1.0]])
 
 normal_05 = bmi_tfp.MultivariateNormalDistribution(dim_x=1, dim_y=1, covariance=dispersion_05)
 
-cov_scale = 2.0
+cov_scale = 0.5
 
 DISTRIBUTIONS = {
     "Normal-0.5": normal_05,
@@ -52,8 +52,8 @@ rule plot_pmi:
         dist_name = wildcards.distribution
         dist = DISTRIBUTIONS[dist_name]
 
-        x = np.linspace(-10, 10, 100)  # change resolution if necessary
-        y = np.linspace(-10, 10, 100)  # change resolution if necessary
+        x = np.linspace(-10, 10, 3000)  # change resolution if necessary
+        y = np.linspace(-10, 10, 3000)  # change resolution if necessary
         X, Y = np.meshgrid(x, y)
 
         Z = dist.pmi(X.reshape(-1, 1), Y.reshape(-1, 1)).reshape(X.shape)
