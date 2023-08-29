@@ -72,6 +72,39 @@ def parametrised_correlation_matrix(
     return corr_matrix
 
 
+def canonical_correlation(rho: np.ndarray, additional_y: int = 0) -> np.ndarray:
+    """Constructs a covariance matrix given by canonical correlations.
+
+    Namely,
+
+        var(Xi) = var(Yj) = 1
+        cov(Xi, Yi) = rho[i]
+
+    and for i != j
+        cov(Xi, Xj) = cov(Yi, Yj) = cov(Xi, Yj) = 0
+
+    Args:
+        rho: canonical correlations, shape (dim_x,)
+        additional_y: controls the dimension of y,
+          namely `dim_y = dim_x + additional_y`
+
+    Returns:
+        covariance matrix, shape (dim_x + dim_y, dim_x + dim_y)
+    """
+    dim_x = len(rho)
+    dim_y = dim_x + additional_y
+
+    covariance = np.zeros((dim_x + dim_y, dim_x + dim_y), dtype=float)
+    covariance[:dim_x, :dim_x] = np.eye(dim_x, dtype=float)
+    covariance[dim_x:, dim_x:] = np.eye(dim_y, dtype=float)
+
+    for i in range(dim_x):
+        covariance[i, dim_x + i] = rho[i]
+        covariance[dim_x + i, i] = rho[i]
+
+    return covariance
+
+
 @dataclasses.dataclass
 class GaussianLVMParametrization:
     """Parameters of a particular Gaussian latent variable model
