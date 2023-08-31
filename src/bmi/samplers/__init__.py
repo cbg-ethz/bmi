@@ -5,6 +5,7 @@ from bmi.samplers._additive_uniform import AdditiveUniformSampler
 # isort: off
 from bmi.samplers._matrix_utils import (
     parametrised_correlation_matrix,
+    canonical_correlation,
     DenseLVMParametrization,
     SparseLVMParametrization,
     GaussianLVMParametrization,
@@ -19,6 +20,7 @@ from bmi.samplers.base import BaseSampler
 __all__ = [
     "AdditiveUniformSampler",
     "BaseSampler",
+    "canonical_correlation",
     "parametrised_correlation_matrix",
     "BivariateNormalSampler",
     "SplitMultinormal",
