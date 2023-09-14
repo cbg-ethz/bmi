@@ -12,6 +12,7 @@ from bmi.samplers._matrix_utils import (
 )
 
 # isort: on
+import bmi.samplers._tfp as fine
 from bmi.samplers._split_student_t import SplitStudentT
 from bmi.samplers._splitmultinormal import BivariateNormalSampler, SplitMultinormal
 from bmi.samplers._transformed import TransformedSampler
@@ -21,6 +22,7 @@ __all__ = [
     "AdditiveUniformSampler",
     "BaseSampler",
     "canonical_correlation",
+    "fine",
     "parametrised_correlation_matrix",
     "BivariateNormalSampler",
     "SplitMultinormal",

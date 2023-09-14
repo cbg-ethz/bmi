@@ -31,7 +31,7 @@ def distributions(dim_x: int = 2, dim_y: int = 3) -> list[bmi_tfp.JointDistribut
 @pytest.mark.parametrize("dist", distributions())
 def test_sample_and_pmi(dist: bmi_tfp.JointDistribution, n_samples: int = 10) -> None:
     """Checks whether we can sample from the distribution and calculate PMI."""
-    x, y = dist.sample(jax.random.PRNGKey(0), n=n_samples)
+    x, y = dist.sample(n_samples, jax.random.PRNGKey(0))
 
     assert x.shape == (n_samples, dist.dim_x)
     assert y.shape == (n_samples, dist.dim_y)
@@ -52,8 +52,8 @@ def test_transformed(dist: bmi_tfp.JointDistribution, n_points: int = 1_000) -> 
 
     key = jax.random.PRNGKey(0)
 
-    x_base, y_base = base_dist.sample(key, n=n_points)
-    x_tran, y_tran = transformed.sample(key, n=n_points)
+    x_base, y_base = base_dist.sample(n_points, key)
+    x_tran, y_tran = transformed.sample(n_points, key)
 
     # Check shapes
     assert x_base.shape == x_tran.shape

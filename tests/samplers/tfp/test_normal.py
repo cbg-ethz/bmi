@@ -12,7 +12,7 @@ def test_1v1(correlation: float = 0.5, n: int = 10):
 
     key = jax.random.PRNGKey(0)
 
-    x, y = dist.sample(key, n=n)
+    x, y = dist.sample(n, key)
 
     assert x.shape == (n, 1)
     assert y.shape == (n, 1)
@@ -23,7 +23,7 @@ def test_1v1(correlation: float = 0.5, n: int = 10):
         == BivariateNormalSampler(correlation=correlation).mutual_information()
     )
     # Check whether the Monte Carlo estimate is correct
-    estimate, _ = monte_carlo_mi_estimate(key, dist, n=5_000)
+    estimate, _ = monte_carlo_mi_estimate(key, dist=dist, n=5_000)
     assert pytest.approx(estimate, abs=0.01) == dist.analytic_mi
 
 

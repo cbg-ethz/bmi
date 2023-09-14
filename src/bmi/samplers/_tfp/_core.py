@@ -31,17 +31,19 @@ class JointDistribution:
     dim_y: int
     analytic_mi: Optional[float] = None
 
-    def sample(self, key: jax.random.PRNGKeyArray, n: int) -> tuple[jnp.ndarray, jnp.ndarray]:
+    def sample(
+        self, n_points: int, key: jax.random.PRNGKeyArray
+    ) -> tuple[jnp.ndarray, jnp.ndarray]:
         """Sample from the joint distribution.
 
         Args:
+            n_points: number of samples to draw
             key: JAX random key
-            n: number of samples to draw
         """
-        if n < 1:
+        if n_points < 1:
             raise ValueError("n must be positive")
 
-        xy = self.dist_joint.sample(seed=key, sample_shape=(n,))
+        xy = self.dist_joint.sample(seed=key, sample_shape=(n_points,))
         return xy[..., : self.dim_x], xy[..., self.dim_x :]  # noqa: E203 (formatting discrepancy)
 
     def pmi(self, x: jnp.ndarray, y: jnp.ndarray) -> jnp.ndarray:
@@ -160,7 +162,7 @@ def pmi_profile(key: jax.random.PRNGKeyArray, dist: JointDistribution, n: int) -
     Returns:
         PMI profile, shape `(n,)`
     """
-    x, y = dist.sample(key, n)
+    x, y = dist.sample(key=key, n_points=n)
     return dist.pmi(x, y)
 
 
