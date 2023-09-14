@@ -138,6 +138,15 @@ ESTIMATORS = {
     'Hist-10': bmi.estimators.HistogramEstimator(n_bins_x=10),
     "CCA": bmi.estimators.CCAMutualInformationEstimator(),
 }
+ESTIMATOR_NAMES = {
+    "MINE": "MINE",
+    "InfoNCE": "InfoNCE",
+    "KSG-10": "KSG",
+    "Hist-10": "Histogram",
+    "CCA": "CCA",
+}
+assert set(ESTIMATOR_NAMES.keys()) == set(ESTIMATORS.keys())
+
 TASKS_UNSCALED = {
     "X": bmi.benchmark.Task(
         sampler=x_sampler,
@@ -182,7 +191,8 @@ workdir: "generated/mixtures/cool_tasks/"
 rule all:
     input:
         'cool_tasks.pdf',
-        'results.csv'
+        'results.csv',
+        'results.pdf'
 
 rule plot_distributions:
     output: "cool_tasks.pdf"
@@ -240,7 +250,7 @@ rule plot_results:
             ax.scatter(
                 data_est['task_id'].apply(lambda e: tasks.index(e)) + 0.05 * np.random.normal(size=len(data_est)),
                 data_est['mi_estimate'],
-                label=estimator_id,
+                label=ESTIMATOR_NAMES[estimator_id],
                 alpha=0.4, s=5**2,
             )
             
