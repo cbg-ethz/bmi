@@ -12,6 +12,7 @@ import numpy as np
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import matplotlib
+from subplots_from_axsize import subplots_from_axsize
 matplotlib.use("agg")
 
 import bmi
@@ -186,7 +187,7 @@ rule all:
 rule plot_distributions:
     output: "cool_tasks.pdf"
     run:
-        fig, axs = plt.subplots(1, 4, figsize=(12, 3))
+        fig, axs = subplots_from_axsize(1, 4, axsize=(3, 3))
 
         # Plot the X distribution
         ax = axs[0]
@@ -222,8 +223,38 @@ rule plot_distributions:
             ax.set_xlim(-2., 2.)
             ax.set_ylim(-2., 2.)
 
+        fig.savefig(str(output))
 
-        fig.tight_layout()
+rule plot_results:
+    output: 'results.pdf'
+    input: 'results.csv'
+    run:
+        data = pd.read_csv(str(input))
+        fig, ax = subplots_from_axsize(1, 1, (4, 3))
+
+        data_5k = data[data['n_samples'] == 5000]
+        tasks = ['X', 'AI', 'Fence', 'Balls']
+        tasks_official = ['X', 'AI', 'Waves', 'Galaxy']
+
+        for estimator_id, data_est in data_5k.groupby('estimator_id'):
+            ax.scatter(
+                data_est['task_id'].apply(lambda e: tasks.index(e)) + 0.05 * np.random.normal(size=len(data_est)),
+                data_est['mi_estimate'],
+                label=estimator_id,
+                alpha=0.4, s=5**2,
+            )
+            
+        for task_id, data_task in data_5k.groupby('task_id'):
+            true_mi = data_task['mi_true'].mean()
+            x = tasks.index(task_id)
+            ax.plot([x - 0.2, x + 0.2], [true_mi, true_mi], ':k')
+
+        ax.set_xticks(range(len(tasks)), tasks_official)
+            
+        ax.legend(frameon=False, loc='upper left')
+        ax.spines[['top', 'right']].set_visible(False)
+        ax.set_ylim(-0.1, 1.4)
+        ax.set_ylabel('Mutual information [nats]')
         fig.savefig(str(output))
 
 rule results:
