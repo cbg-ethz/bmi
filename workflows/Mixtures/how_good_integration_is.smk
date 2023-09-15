@@ -8,6 +8,9 @@ import json
 
 import numpy as np
 import pandas as pd
+import matplotlib
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 import jax
 import jax.numpy as jnp
@@ -66,7 +69,8 @@ SEEDS = list(range(10))
 rule all:
     input:
         ground_truth = expand("{setup}/ground_truth.json", setup=DISTRIBUTION_AND_PMIS),
-        estimates=expand("{setup}/estimates.csv", setup=DISTRIBUTION_AND_PMIS)
+        estimates=expand("{setup}/estimates.csv", setup=DISTRIBUTION_AND_PMIS),
+        performance_plots=expand("{setup}/performance.pdf", setup=DISTRIBUTION_AND_PMIS)
 
 
 rule sample_distribution:
@@ -156,3 +160,46 @@ rule estimate_ground_truth_single_seed:
             fh,
             indent=4,
         )
+
+rule plot_performance:
+    input:
+        ground_truth="{setup}/ground_truth.json",
+        estimates="{setup}/estimates.csv"
+    output: "{setup}/performance.pdf"
+    run:
+        df = pd.read_csv(input.estimates)
+        with open(input.ground_truth) as fh:
+            ground_truth = json.load(fh)
+        
+        fig, ax = plt.subplots(figsize=(4, 3), dpi=150)
+
+        # Add ground-truth information
+        x_axis =[df["n_points"].min(), df["n_points"].max()] 
+        ax.plot(x_axis, [ground_truth["mi_mean"]] * 2, c="k", linestyle=":")
+        ax.fill_between(
+            x_axis,
+            [ground_truth["mi_mean"] - ground_truth["mi_std"]] * 2,
+            [ground_truth["mi_mean"] + ground_truth["mi_std"]] * 2,
+            alpha=0.3,
+            color="k",
+        )
+
+
+        # Plot means for estimators
+        grouped = df.groupby(['n_points', 'estimator']).estimate.agg(['mean', 'std']).reset_index()
+        sns.lineplot(x='n_points', y='mean', hue='estimator', data=grouped, palette='tab10', ax=ax)
+
+        # Plot standard deviations
+        for estimator in grouped['estimator'].unique():
+            subset = grouped[grouped['estimator'] == estimator]
+            ax.fill_between(subset['n_points'], subset['mean'] - subset['std'], subset['mean'] + subset['std'], alpha=0.1)
+
+        ax.set_xlabel("Number of points")
+        ax.set_ylabel('Estimate')
+
+        ax.set_xscale("log", base=2)
+        ax.set_xticks(df["n_points"].unique(), df["n_points"].unique())
+        ax.legend(title='Estimator', frameon=False)
+
+        fig.tight_layout()
+        fig.savefig(str(output))
