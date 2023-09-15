@@ -22,6 +22,12 @@ from bmi.estimators.neural._backend_linear_memory import infonce, donsker_varadh
 def monte_carlo(pmi: Callable, xs: np.ndarray, ys: np.ndarray):
     return jnp.mean(pmi(xs, ys))
 
+def nwj_shifted(pmi: Callable, xs, ys):
+    """For NWJ the optimal critic is PMI + 1."""
+    def critic(x, y):
+        return pmi(x, y) + 1
+
+    return nwj(critic, xs, ys)
 
 @dataclasses.dataclass
 class DistributionAndPMI:
@@ -36,6 +42,7 @@ workdir: "generated/mixtures/how_good_integration_is"
 
 ESTIMATORS: dict[str, Callable] = {
     "NWJ": nwj,
+    "NWJ-Shifted": nwj_shifted,
     "InfoNCE": infonce,
     "DV": donsker_varadhan,
     "MC": monte_carlo
