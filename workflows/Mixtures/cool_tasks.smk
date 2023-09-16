@@ -1,19 +1,11 @@
 """Demonstration of the capabilities of the fine distribution family."""
-import bmi.estimators as estimators
-from bmi.benchmark.tasks import transform_rescale
-import resource
-import yaml
-
-import pandas as pd
-
-from bmi.benchmark import run_estimator
-
 import numpy as np
-import jax.numpy as jnp
-import matplotlib.pyplot as plt
+import pandas as pd
 import matplotlib
 from subplots_from_axsize import subplots_from_axsize
 matplotlib.use("agg")
+
+import jax.numpy as jnp
 
 import bmi
 from bmi.samplers import fine
@@ -147,7 +139,7 @@ ESTIMATOR_NAMES = {
 }
 assert set(ESTIMATOR_NAMES.keys()) == set(ESTIMATORS.keys())
 
-TASKS_UNSCALED = {
+UNSCALED_TASKS = {
     "X": bmi.benchmark.Task(
         sampler=x_sampler,
         task_id="X",
@@ -169,20 +161,6 @@ TASKS_UNSCALED = {
         task_name="Balls",
     ),
 }
-
-def scale_tasks(tasks: dict[str, bmi.Task]) -> dict[str, bmi.Task]:
-    """Auxiliary method used to rescale (whiten) each task in the list,
-    without changing its name nor id."""
-    return {
-        key: transform_rescale(
-            base_task=base_task,
-            task_name=base_task.name,
-            task_id=base_task.id,
-        )
-        for key, base_task in tasks.items()
-    }
-
-TASKS = scale_tasks(TASKS_UNSCALED)
 
 
 # === WORKDIR ===

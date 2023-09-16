@@ -1,17 +1,33 @@
 # SnakeMake workflow used to generate results
+# ASSUMES THAT THE FOLLOWING ARE DECLARED:
+#   - ESTIMATORS: dict estimator_id -> estimator
+#   - UNSCALED_TASKS: dict task_id -> task
+#   - N_SAMPLES: list of ints
+#   - SEEDS: list of ints
+
 import resource
 import yaml
 
 import pandas as pd
 
+import bmi
 from bmi.benchmark import run_estimator
+from bmi.benchmark.tasks import transform_rescale
 
 
-# ASSUMES THAT THE FOLLOWING ARE DECLARED:
-#   - ESTIMATORS: dict estimator_id -> estimator
-#   - TASKS: dict task_id -> task
-#   - N_SAMPLES: list of ints
-#   - SEEDS: list of ints
+def scale_tasks(tasks: dict[str, bmi.Task]) -> dict[str, bmi.Task]:
+    """Auxiliary method used to rescale (whiten) each task in the list,
+    without changing its name nor id."""
+    return {
+        key: transform_rescale(
+            base_task=base_task,
+            task_name=base_task.name,
+            task_id=base_task.id,
+        )
+        for key, base_task in tasks.items()
+    }
+
+TASKS = scale_tasks(UNSCALED_TASKS)
 
 rule results:
     output: 'results.csv'
