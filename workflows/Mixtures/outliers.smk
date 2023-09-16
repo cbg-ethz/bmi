@@ -67,10 +67,10 @@ CHANGE_MIXING_SETUPS = {
 }
 
 
-VARIANCES = [0.001, 0.05, 0.1, 0.3, 0.5, 0.8, 1.0, 1.2, 2.0, 4.0, 10.0]
-ALPHAS = [0.001, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5]
+VARIANCES = 2**np.concatenate([np.arange(-7, -2, 1.0), np.arange(-2, 4, 0.5), np.arange(4, 8, 1.0)])
+ALPHAS = [0.001, 0.01, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5]
 
-UNSCALED_TASKS = {}
+MIXING_TASKS = {}
 # Add mixing tasks
 for setup_name, setup in CHANGE_MIXING_SETUPS.items():
     for alpha in ALPHAS:
@@ -81,9 +81,10 @@ for setup_name, setup in CHANGE_MIXING_SETUPS.items():
             task_name=f"mixing-{setup_name}-{alpha}",
             task_params={"mixing": alpha},
         )
-        UNSCALED_TASKS[task.id] = task
+        MIXING_TASKS[task.id] = task
 
 # Add the task with changing the variance
+VARIANCE_TASKS = {}
 for variance in VARIANCES:
     dist_noise_variance =  fine.ProductDistribution(
         dist_x=dist_signal_gauss.dist_x,
@@ -105,8 +106,9 @@ for variance in VARIANCES:
         task_name=f"variance-{variance}",
         task_params={"variance": variance},
     )
-    UNSCALED_TASKS[task.id] = task
+    VARIANCE_TASKS[task.id] = task
 
+UNSCALED_TASKS = {**MIXING_TASKS, **VARIANCE_TASKS}
 
 ESTIMATORS = {
     "KSG": bmi.estimators.KSGEnsembleFirstEstimator(neighborhoods=(10,)),
@@ -122,6 +124,7 @@ rule all:
     input:
         mixing_ground_truths = expand("{setup}/mixing_ground_truths.done", setup=CHANGE_MIXING_SETUPS.keys()),
         estimates = "results.csv"
+
 
 
 rule make_one_setup:
