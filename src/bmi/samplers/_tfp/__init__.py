@@ -7,9 +7,18 @@ from bmi.samplers._tfp._core import (
     transform,
 )
 
+from bmi.samplers._tfp._normal import (
+    construct_multivariate_normal_distribution,
+    MultivariateNormalDistribution,
+)
+
+from bmi.samplers._tfp._student import (
+    construct_multivariate_student_distribution,
+    MultivariateStudentDistribution,
+)
+
 # isort: on
-from bmi.samplers._tfp._normal import MultivariateNormalDistribution
-from bmi.samplers._tfp._student import MultivariateStudentDistribution
+from bmi.samplers._tfp._product import ProductDistribution
 from bmi.samplers._tfp._wrapper import FineSampler
 
 __all__ = [
@@ -20,5 +29,8 @@ __all__ = [
     "monte_carlo_mi_estimate",
     "MultivariateNormalDistribution",
     "MultivariateStudentDistribution",
+    "ProductDistribution",
     "FineSampler",
+    "construct_multivariate_normal_distribution",
+    "construct_multivariate_student_distribution",
 ]
