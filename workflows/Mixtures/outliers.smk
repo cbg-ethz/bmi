@@ -4,10 +4,12 @@ when mixing with "outlier" distribution is performed.
 from typing import Callable, Optional
 import dataclasses
 import json
+import yaml
 
 import numpy as np
 import pandas as pd
 import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -123,8 +125,82 @@ N_SAMPLES = [5000]
 rule all:
     input:
         mixing_ground_truths = expand("{setup}/mixing_ground_truths.done", setup=CHANGE_MIXING_SETUPS.keys()),
-        estimates = "results.csv"
+        estimates = "results.csv",
+        outliers_plot = "outliers_plot.pdf"
 
+
+def plot_data(ax: plt.Axes, data: pd.DataFrame, key: str = "mixing"):
+    data[key] = data["task_params"].map(lambda x: yaml.load(x, Loader=yaml.SafeLoader)[key])
+    grouped = data.groupby([key, "estimator_id"])["mi_estimate"].agg(["mean", "std"]).reset_index()
+    sns.lineplot(data=grouped, x=key, y='mean', hue='estimator_id', ax=ax)
+    # Adding the shaded error bands
+    for estimator in grouped['estimator_id'].unique():
+        subset = grouped[grouped['estimator_id'] == estimator]
+        ax.fill_between(subset[key], subset['mean'] - subset['std'], subset['mean'] + subset['std'], alpha=0.3)
+
+    ax.legend(frameon=False)
+
+def plot_ground_truth_mixing(inputs, ax):
+    mixings = []
+    means = []
+    errs = []
+    for pth in inputs:
+        with open(pth) as fh:
+            dct = json.load(fh)
+            mixings.append(dct["mixing"])
+            means.append(dct["mi_mean"])
+            errs.append(dct["mi_std"])
+    
+    mixings = np.array(mixings)
+    means = np.array(means)
+    errs = np.array(errs)
+    idx = np.argsort(mixings)
+    mixings = mixings[idx]
+    means = means[idx]
+    errs = errs[idx]
+    ax.plot(mixings, means, c="black", linestyle=":")
+    ax.fill_between(mixings, means - errs, means + errs, alpha=0.1, color="black")
+
+rule plot:
+    input:
+        estimates = "results.csv",
+        ground_truth_gauss = expand("Gauss-Gauss/_mixed_ground_truth/summaries/{mixing}.json", mixing=ALPHAS),
+        ground_truth_student = expand("Gauss-Student/_mixed_ground_truth/summaries/{mixing}.json", mixing=ALPHAS)
+    output: "outliers_plot.pdf"
+    run:
+        fig, axs = plt.subplots(1, 3, figsize=(12, 4), sharey=True)
+        df = pd.read_csv(str(input.estimates))
+
+        # Plot Gaussian outliers
+        ax = axs[0]
+        plot_data(ax, data=df[df["task_id"].str.contains("mixing-Gauss-Gauss")].copy())
+        plot_ground_truth_mixing(input.ground_truth_gauss, ax)
+        ax.set_xlabel("Contamination level")
+        ax.set_ylabel("MI estimate")
+        ax.set_xlim(np.min(ALPHAS), np.max(ALPHAS))
+
+        # Plot Student outliers
+        ax = axs[1]
+        plot_data(ax, data=df[df["task_id"].str.contains("mixing-Gauss-Student")].copy())
+        plot_ground_truth_mixing(input.ground_truth_student, ax)
+        ax.set_xlabel("Contamination level")
+        ax.set_ylabel("MI estimate")
+        ax.set_xlim(np.min(ALPHAS), np.max(ALPHAS))
+
+        # Plot variance
+        ax = axs[2]
+        plot_data(ax, data=df[df["task_id"].str.contains("variance")].copy(), key="variance")
+        mi_var = [VARIANCE_TASKS[f"variance-{var}"].mutual_information for var in VARIANCES]
+        ax.plot(VARIANCES, mi_var, c="black", linestyle=":")
+
+        ax.set_xlabel("Noise variance")
+        ax.set_ylabel("MI estimate")
+        ax.set_xscale("log")
+        ax.set_xlim(np.min(VARIANCES), np.max(VARIANCES))
+
+
+        fig.tight_layout()
+        fig.savefig(str(output))
 
 
 rule make_one_setup:
