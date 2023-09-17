@@ -47,25 +47,22 @@ dist_signal_gauss = fine.MultivariateNormalDistribution(
     covariance=bmi.samplers.SparseLVMParametrization(dim_x=2, dim_y=2, n_interacting=2, beta=0.1, lambd=2.0).correlation
 )
 
-covariance_noise = 0.3 * jnp.eye(dist_signal_gauss.dim_y)
-dist_gaussian_noise = fine.ProductDistribution(
+covariance_inlier = jnp.eye(dist_signal_gauss.dim_y)
+dist_gaussian_inlier = fine.ProductDistribution(
     dist_x=dist_signal_gauss.dist_x,
-    dist_y=fine.construct_multivariate_normal_distribution(mean=jnp.zeros(dist_signal_gauss.dim_y), covariance=covariance_noise),
+    dist_y=fine.construct_multivariate_normal_distribution(mean=jnp.zeros(dist_signal_gauss.dim_y), covariance=covariance_inlier),
 )
 
-# We will now define a Student distribution with the same covariance matrix
-student_dof = 3.0
-assert student_dof > 2.0
-student_dispersion = covariance_noise * (student_dof - 2.0) / student_dof
-
-dist_student_noise = fine.ProductDistribution(
+# Outliers: 5 sigma
+covariance_outlier = 25 * jnp.eye(dist_signal_gauss.dim_y)
+dist_gaussian_outlier = fine.ProductDistribution(
     dist_x=dist_signal_gauss.dist_x,
-    dist_y=fine.construct_multivariate_student_distribution(mean=jnp.zeros(dist_signal_gauss.dim_y), dispersion=student_dispersion, df=student_dof),
+    dist_y=fine.construct_multivariate_normal_distribution(mean=jnp.zeros(dist_signal_gauss.dim_y), covariance=covariance_outlier),
 )
 
 CHANGE_MIXING_SETUPS = {
-    "Gauss-Gauss": ChangeMixingSetup(dist_true=dist_signal_gauss, dist_noise=dist_gaussian_noise),
-    "Gauss-Student": ChangeMixingSetup(dist_true=dist_signal_gauss, dist_noise=dist_student_noise),
+    "Gauss-Inlier": ChangeMixingSetup(dist_true=dist_signal_gauss, dist_noise=dist_gaussian_inlier),
+    "Gauss-Outlier": ChangeMixingSetup(dist_true=dist_signal_gauss, dist_noise=dist_gaussian_outlier),
 }
 
 
@@ -87,6 +84,7 @@ for setup_name, setup in CHANGE_MIXING_SETUPS.items():
 
 # Add the task with changing the variance
 VARIANCE_TASKS = {}
+VARIANCE_MIXING: float = 0.2
 for variance in VARIANCES:
     dist_noise_variance =  fine.ProductDistribution(
         dist_x=dist_signal_gauss.dist_x,
@@ -97,7 +95,7 @@ for variance in VARIANCES:
     )
     sampler = fine.FineSampler(
         dist=fine.mixture(
-            proportions=jnp.array([0.9, 0.1]),
+            proportions=jnp.array([1.0-VARIANCE_MIXING, VARIANCE_MIXING]),
             components=[dist_signal_gauss, dist_noise_variance],
         ),
         mi_estimate_sample=100_000,
@@ -164,25 +162,25 @@ def plot_ground_truth_mixing(inputs, ax):
 rule plot:
     input:
         estimates = "results.csv",
-        ground_truth_gauss = expand("Gauss-Gauss/_mixed_ground_truth/summaries/{mixing}.json", mixing=ALPHAS),
-        ground_truth_student = expand("Gauss-Student/_mixed_ground_truth/summaries/{mixing}.json", mixing=ALPHAS)
+        ground_truth_inlier = expand("Gauss-Inlier/_mixed_ground_truth/summaries/{mixing}.json", mixing=ALPHAS),
+        ground_truth_outlier = expand("Gauss-Outlier/_mixed_ground_truth/summaries/{mixing}.json", mixing=ALPHAS)
     output: "outliers_plot.pdf"
     run:
-        fig, axs = plt.subplots(1, 3, figsize=(12, 4), sharey=True)
+        fig, axs = plt.subplots(1, 3, figsize=(10, 3), sharey=True)
         df = pd.read_csv(str(input.estimates))
 
-        # Plot Gaussian outliers
+        # Plot inliers
         ax = axs[0]
-        plot_data(ax, data=df[df["task_id"].str.contains("mixing-Gauss-Gauss")].copy())
-        plot_ground_truth_mixing(input.ground_truth_gauss, ax)
+        plot_data(ax, data=df[df["task_id"].str.contains("mixing-Gauss-Inlier")].copy())
+        plot_ground_truth_mixing(input.ground_truth_inlier, ax)
         ax.set_xlabel("Contamination level")
         ax.set_ylabel("MI estimate")
         ax.set_xlim(np.min(ALPHAS), np.max(ALPHAS))
 
-        # Plot Student outliers
+        # Plot outliers
         ax = axs[1]
-        plot_data(ax, data=df[df["task_id"].str.contains("mixing-Gauss-Student")].copy())
-        plot_ground_truth_mixing(input.ground_truth_student, ax)
+        plot_data(ax, data=df[df["task_id"].str.contains("mixing-Gauss-Outlier")].copy())
+        plot_ground_truth_mixing(input.ground_truth_outlier, ax)
         ax.set_xlabel("Contamination level")
         ax.set_ylabel("MI estimate")
         ax.set_xlim(np.min(ALPHAS), np.max(ALPHAS))
