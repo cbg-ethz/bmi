@@ -11,7 +11,7 @@ jtf = tfp.tf2jax
 tfd = tfp.distributions
 
 
-def _construct_multivariate_distribution(
+def construct_multivariate_normal_distribution(
     mean: jnp.ndarray, covariance: jnp.ndarray
 ) -> tfd.MultivariateNormalLinearOperator:
     # Lower triangular matrix such that `covariance = scale @ scale^T`
@@ -49,11 +49,11 @@ class MultivariateNormalDistribution(JointDistribution):
         # Now we need to define the TensorFlow Probability distributions
         # using the information provided
 
-        dist_joint = _construct_multivariate_distribution(mean=mean, covariance=covariance)
-        dist_x = _construct_multivariate_distribution(
+        dist_joint = construct_multivariate_normal_distribution(mean=mean, covariance=covariance)
+        dist_x = construct_multivariate_normal_distribution(
             mean=mean[:dim_x], covariance=covariance[:dim_x, :dim_x]
         )
-        dist_y = _construct_multivariate_distribution(
+        dist_y = construct_multivariate_normal_distribution(
             mean=mean[dim_x:], covariance=covariance[dim_x:, dim_x:]
         )
 

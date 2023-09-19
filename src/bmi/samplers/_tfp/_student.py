@@ -11,7 +11,7 @@ jtf = tfp.tf2jax
 tfd = tfp.distributions
 
 
-def _construct_multivariate_distribution(
+def construct_multivariate_student_distribution(
     mean: jnp.ndarray,
     dispersion: jnp.ndarray,
     df: Union[int, float],
@@ -63,11 +63,13 @@ class MultivariateStudentDistribution(JointDistribution):
         # Now we need to define the TensorFlow Probability distributions
         # using the information provided
 
-        dist_joint = _construct_multivariate_distribution(mean=mean, dispersion=dispersion, df=df)
-        dist_x = _construct_multivariate_distribution(
+        dist_joint = construct_multivariate_student_distribution(
+            mean=mean, dispersion=dispersion, df=df
+        )
+        dist_x = construct_multivariate_student_distribution(
             mean=mean[:dim_x], dispersion=dispersion[:dim_x, :dim_x], df=df
         )
-        dist_y = _construct_multivariate_distribution(
+        dist_y = construct_multivariate_student_distribution(
             mean=mean[dim_x:], dispersion=dispersion[dim_x:, dim_x:], df=df
         )
 
