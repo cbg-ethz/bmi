@@ -9,6 +9,7 @@ import json
 import numpy as np
 import pandas as pd
 import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -53,6 +54,12 @@ _DISTRIBUTIONS: dict[str, DistributionAndPMI] = {
     "Normal": DistributionAndPMI(
         dist=_normal_dist,
     ),
+    "Normal-10Dim": DistributionAndPMI(
+        dist=fine.MultivariateNormalDistribution(dim_x=10, dim_y=10, covariance=bmi.samplers.canonical_correlation(rho=[0.8] * 10))
+    ),
+    "Normal-100Dim": DistributionAndPMI(
+        dist=fine.MultivariateNormalDistribution(dim_x=100, dim_y=100, covariance=bmi.samplers.canonical_correlation(rho=[0.8] * 100))
+    ),
     "NormalBiased": DistributionAndPMI(
         dist=_normal_dist,
         pmi=lambda x, y: _normal_dist.pmi(x, y) + 0.5,
@@ -72,6 +79,7 @@ DISTRIBUTION_AND_PMIS = {
 
 N_POINTS = [8, 16, 32, 64, 128, 256, 512, 1024, 2048]
 SEEDS = list(range(10))
+
 
 rule all:
     input:
