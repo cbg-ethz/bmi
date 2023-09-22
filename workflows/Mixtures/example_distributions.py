@@ -23,7 +23,7 @@ class ExampleDistribution:
     sampler: bmi.ISampler
 
 
-def create_x_distribution() -> ExampleDistribution:
+def create_x_distribution(_sample: int = 100) -> ExampleDistribution:
     """The X distribution"""
     x_dist = fine.mixture(
         proportions=jnp.array([0.5, 0.5]),
@@ -37,11 +37,11 @@ def create_x_distribution() -> ExampleDistribution:
             for x in [-1, 1]
         ],
     )
-    x_sampler = fine.FineSampler(x_dist)
+    x_sampler = fine.FineSampler(x_dist, mi_estimate_sample=_sample)
     return ExampleDistribution(dist=x_dist, sampler=x_sampler)
 
 
-def create_galaxy_distribution() -> ExampleDistribution:
+def create_galaxy_distribution(_sample: int = 100) -> ExampleDistribution:
     """The Galaxy distribution."""
     balls_mixt = fine.mixture(
         proportions=jnp.array([0.5, 0.5]),
@@ -56,7 +56,7 @@ def create_galaxy_distribution() -> ExampleDistribution:
         ],
     )
 
-    base_balls_sampler = fine.FineSampler(balls_mixt)
+    base_balls_sampler = fine.FineSampler(balls_mixt, mi_estimate_sample=_sample)
     a = jnp.array([[0, -1], [1, 0]])
     spiral = bmi.transforms.Spiral(a, speed=0.5)
 
@@ -68,7 +68,7 @@ def create_galaxy_distribution() -> ExampleDistribution:
     return ExampleDistribution(dist=balls_mixt, sampler=sampler_balls_transformed)
 
 
-def create_ai_distribution() -> ExampleDistribution:
+def create_ai_distribution(_sample: int = 100) -> ExampleDistribution:
     """The AI distribution."""
     corr = 0.95
     var_x = 0.04
@@ -120,11 +120,11 @@ def create_ai_distribution() -> ExampleDistribution:
             ),
         ],
     )
-    ai_sampler = fine.FineSampler(ai_dist)
+    ai_sampler = fine.FineSampler(ai_dist, mi_estimate_sample=_sample)
     return ExampleDistribution(dist=ai_dist, sampler=ai_sampler)
 
 
-def create_waves_distribution(n_components: int = 12) -> ExampleDistribution:
+def create_waves_distribution(n_components: int = 12, _sample: int = 100) -> ExampleDistribution:
     """The Waves distribution."""
     assert n_components > 0
 
@@ -140,7 +140,7 @@ def create_waves_distribution(n_components: int = 12) -> ExampleDistribution:
             for x in range(n_components)
         ],
     )
-    base_sampler = fine.FineSampler(fence_base_dist)
+    base_sampler = fine.FineSampler(fence_base_dist, mi_estimate_sample=_sample)
     fence_aux_sampler = bmi.samplers.TransformedSampler(
         base_sampler,
         transform_x=lambda x: x + jnp.array([5.0, 0.0]) * jnp.sin(3 * x[1]),

@@ -34,24 +34,26 @@ ESTIMATOR_NAMES = {
 }
 assert set(ESTIMATOR_NAMES.keys()) == set(ESTIMATORS.keys())
 
+_SAMPLE_ESTIMATE: int = 200_000
+
 UNSCALED_TASKS = {
     "X": bmi.benchmark.Task(
-        sampler=ed.create_x_distribution().sampler,
+        sampler=ed.create_x_distribution(_sample=_SAMPLE_ESTIMATE).sampler,
         task_id="X",
         task_name="X",
     ),
     "AI": bmi.benchmark.Task(
-        sampler=ed.create_ai_distribution().sampler,
+        sampler=ed.create_ai_distribution(_sample=_SAMPLE_ESTIMATE).sampler,
         task_id="AI",
         task_name="AI",
     ),
     "Fence": bmi.benchmark.Task(
-        sampler=ed.create_waves_distribution().sampler,
+        sampler=ed.create_waves_distribution(_sample=_SAMPLE_ESTIMATE).sampler,
         task_id="Fence",
         task_name="Fence",
     ),
     "Balls": bmi.benchmark.Task(
-        sampler=ed.create_galaxy_distribution().sampler,
+        sampler=ed.create_galaxy_distribution(_sample=_SAMPLE_ESTIMATE).sampler,
         task_id="Balls",
         task_name="Balls",
     ),
