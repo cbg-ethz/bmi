@@ -116,7 +116,7 @@ DISTRIBUTIONS = {
 
 rule all:
     input:
-        expand("plots/{dist_name}-{n_points}-10.pdf", dist_name=DISTRIBUTIONS.keys(), n_points=[250, 500]),
+        expand("plots/{dist_name}-{n_points}-10.pdf", dist_name=DISTRIBUTIONS.keys(), n_points=[125, 250, 500, 1000]),
 
 
 rule sample_dist:
