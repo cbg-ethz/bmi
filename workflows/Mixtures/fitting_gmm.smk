@@ -110,12 +110,13 @@ def sample_into_fine_distribution(
 DISTRIBUTIONS = {
     "Galaxy": ed.create_galaxy_distribution(_sample=3),
     "AI": ed.create_ai_distribution(_sample=3),
+    "Waves": ed.create_waves_distribution(_sample=3),
+    "X": ed.create_x_distribution(_sample=3),
 }
 
 rule all:
     input:
-        galaxy = "plots/Galaxy-250-10.pdf",
-        ai = "plots/AI-250-10.pdf"
+        expand("plots/{dist_name}-{n_points}-10.pdf", dist_name=DISTRIBUTIONS.keys(), n_points=[250, 500]),
 
 
 rule sample_dist:
