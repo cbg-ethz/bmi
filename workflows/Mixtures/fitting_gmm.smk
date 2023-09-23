@@ -115,8 +115,14 @@ DISTRIBUTIONS = {
 }
 
 rule all:
+    # For the main part of the manuscript
     input:
-        expand("plots/{dist_name}-{n_points}-10.pdf", dist_name=DISTRIBUTIONS.keys(), n_points=[125, 250, 500, 1000]),
+        expand("plots/{dist_name}-{n_points}-10.pdf", dist_name=["AI", "Galaxy"], n_points=[250])
+
+
+rule plots_all:
+    input:
+        expand("plots/{dist_name}-{n_points}-10.pdf", dist_name=DISTRIBUTIONS.keys(), n_points=[125, 250, 500, 1000])
 
 
 rule sample_dist:
@@ -186,7 +192,7 @@ rule plot_pdf:
         approx_sample = "approx_samples/{dist_name}-{n_points}-{n_components}-0.npz",
     output: "plots/{dist_name}-{n_points}-{n_components}.pdf"
     run:
-        fig, axs = subplots_from_axsize(1, 4, axsize=(2, 1.5), top=0.3, wspace=0.5)
+        fig, axs = subplots_from_axsize(1, 4, axsize=(1.5, 1.5), top=0.3, wspace=0.3)
 
         for ax in axs:
             ax.spines[['right', 'top']].set_visible(False)
@@ -238,7 +244,7 @@ rule plot_pdf:
             ax.set_yticks([])
             ax.spines[['right', 'top', 'left']].set_visible(False)
 
-        fig.savefig(str(output))
+        fig.savefig(str(output), dpi=300)
 
 rule get_pmi_true:
     output: "pmi_true/{dist_name}-{n_points}.npz"
