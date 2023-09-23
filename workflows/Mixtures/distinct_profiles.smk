@@ -15,6 +15,8 @@ import jax.numpy as jnp
 import bmi.samplers._tfp as bmi_tfp
 from bmi.transforms import invert_cdf, normal_cdf
 
+from subplots_from_axsize import subplots_from_axsize
+
 mpl.use("Agg")
 
 
@@ -114,6 +116,8 @@ def hide_ticks(ax):
     ax.set_yticks([])
     ax.set_xlabel("$X$")
     ax.set_ylabel("$Y$")
+    ax.spines[['right', 'top']].set_visible(False)
+
 
 rule plot_samples:
     input:
@@ -123,7 +127,7 @@ rule plot_samples:
     output:
         "figure_distinct_profiles.pdf"
     run:
-        fig, axs = plt.subplots(1, 4, figsize=(8, 2))
+        fig, axs = plt.subplots(1, 4, figsize=(7, 2))
 
         color1 = "navy"
         color2 = "salmon"
@@ -159,7 +163,9 @@ rule plot_samples:
         ax.hist(pmi_u, bins=bins, density=True, color=color2, alpha=0.5, label="Mixture")
         ax.set_title("PMI profiles")
         ax.set_xlabel("PMI")
-        ax.set_ylabel("Density")
+        ax.set_ylabel("")
+        ax.set_yticks([])
+        ax.spines[['right', 'top', 'left']].set_visible(False)
 
         mi_1 = jnp.mean(pmi_normal)
         mi_2 = jnp.mean(pmi_u)
@@ -167,7 +173,7 @@ rule plot_samples:
         if abs(mi_1 - mi_2) > 0.01:
             raise ValueError(f"MI different: {mi_1:.2f} != {mi_2:.2f}")
         
-        ax.axvline(mi_1, c="k",  linewidth=0.5, linestyle="--")
+        ax.axvline(mi_1, c="k",  linewidth=1, linestyle="--")
 
         fig.tight_layout()
         fig.savefig(str(output))

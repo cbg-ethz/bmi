@@ -36,24 +36,29 @@ assert set(ESTIMATOR_NAMES.keys()) == set(ESTIMATORS.keys())
 
 _SAMPLE_ESTIMATE: int = 200_000
 
+x_sampler = ed.create_x_distribution(_sample=_SAMPLE_ESTIMATE).sampler 
+ai_sampler = ed.create_ai_distribution(_sample=_SAMPLE_ESTIMATE).sampler
+waves_sampler = ed.create_waves_distribution(_sample=_SAMPLE_ESTIMATE).sampler 
+galaxy_sampler = ed.create_galaxy_distribution(_sample=_SAMPLE_ESTIMATE).sampler
+
 UNSCALED_TASKS = {
     "X": bmi.benchmark.Task(
-        sampler=ed.create_x_distribution(_sample=_SAMPLE_ESTIMATE).sampler,
+        sampler=x_sampler,
         task_id="X",
         task_name="X",
     ),
     "AI": bmi.benchmark.Task(
-        sampler=ed.create_ai_distribution(_sample=_SAMPLE_ESTIMATE).sampler,
+        sampler=ai_sampler,
         task_id="AI",
         task_name="AI",
     ),
     "Fence": bmi.benchmark.Task(
-        sampler=ed.create_waves_distribution(_sample=_SAMPLE_ESTIMATE).sampler,
+        sampler=waves_sampler,
         task_id="Fence",
         task_name="Fence",
     ),
     "Balls": bmi.benchmark.Task(
-        sampler=ed.create_galaxy_distribution(_sample=_SAMPLE_ESTIMATE).sampler,
+        sampler=galaxy_sampler,
         task_id="Balls",
         task_name="Balls",
     ),
@@ -73,41 +78,47 @@ rule all:
 rule plot_distributions:
     output: "cool_tasks.pdf"
     run:
-        fig, axs = subplots_from_axsize(1, 4, axsize=(3, 3))
+        fig, axs = subplots_from_axsize(1, 4, axsize=(1.5, 1.5))
 
         # Plot the X distribution
         ax = axs[0]
         xs, ys = x_sampler.sample(1000, 0)
 
-        ax.scatter(xs[:, 0], ys[:, 0], s=4**2, alpha=0.3, color="k", rasterized=True)
+        size = 2**2
+
+        ax.scatter(xs[:, 0], ys[:, 0], s=size, alpha=0.3, color="k", rasterized=True)
         ax.set_xlabel("$X$")
         ax.set_ylabel("$Y$")
 
         # Plot the AI distribution
         ax = axs[1]
         xs, ys = ai_sampler.sample(2000, 0)
-        ax.scatter(xs[:, 0], ys[:, 0], s=4**2, alpha=0.3, color="k", rasterized=True)
+        ax.scatter(xs[:, 0], ys[:, 0], s=size, alpha=0.3, color="k", rasterized=True)
         ax.set_xlabel("$X$")
         ax.set_ylabel("$Y$")
 
         # Plot the fence distribution
         ax = axs[2]
-        xs, ys = fence_sampler.sample(2000, 0)
+        xs, ys = waves_sampler.sample(2000, 0)
 
-        ax.scatter(xs[:, 0], xs[:, 1], c=ys[:, 0], s=4**2, alpha=0.3, rasterized=True)
+        ax.scatter(xs[:, 0], xs[:, 1], c=ys[:, 0], s=size, alpha=0.3, rasterized=True)
         ax.set_xlabel("$X_1$")
         ax.set_ylabel("$X_2$")
 
         # Plot transformed balls distribution
         ax = axs[3]
-        xs, ys = sampler_balls_transformed.sample(2000, 0)
-        ax.scatter(xs[:, 0], xs[:, 1], c=ys[:, 0], s=4**2, alpha=0.3, rasterized=True)
+        xs, ys = galaxy_sampler.sample(2000, 0)
+        ax.scatter(xs[:, 0], xs[:, 1], c=ys[:, 0], s=size, alpha=0.3, rasterized=True)
         ax.set_xlabel("$X_1$")
         ax.set_ylabel("$X_2$")
 
         for ax in axs:
+            ticks = [-1, 0, 1]
+            ax.set_xticks(ticks, ticks)
+            ax.set_yticks(ticks, ticks)
             ax.set_xlim(-2., 2.)
             ax.set_ylim(-2., 2.)
+            ax.spines[['right', 'top']].set_visible(False)
 
         fig.savefig(str(output))
 
