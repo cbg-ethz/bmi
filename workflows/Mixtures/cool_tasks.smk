@@ -72,13 +72,13 @@ rule all:
     input:
         'cool_tasks.pdf',
         'results.csv',
-        'results.pdf',
+        'cool_tasks-results.pdf',
         'profiles.pdf'
 
 rule plot_distributions:
     output: "cool_tasks.pdf"
     run:
-        fig, axs = subplots_from_axsize(1, 4, axsize=(1.5, 1.5))
+        fig, axs = subplots_from_axsize(1, 4, axsize=(1.5, 1.5), wspace=0.4)
 
         # Plot the X distribution
         ax = axs[0]
@@ -120,7 +120,7 @@ rule plot_distributions:
             ax.set_ylim(-2., 2.)
             ax.spines[['right', 'top']].set_visible(False)
 
-        fig.savefig(str(output))
+        fig.savefig(str(output), dpi=300)
 
 rule plot_pmi_profiles:
     output: "profiles.pdf"
@@ -140,11 +140,11 @@ rule plot_pmi_profiles:
 
 
 rule plot_results:
-    output: 'results.pdf'
+    output: 'cool_tasks-results.pdf'
     input: 'results.csv'
     run:
         data = pd.read_csv(str(input))
-        fig, ax = subplots_from_axsize(1, 1, (4, 3))
+        fig, ax = subplots_from_axsize(1, 1, (2, 1.5), right=1.3)
 
         data_5k = data[data['n_samples'] == 5000]
         tasks = ['X', 'AI', 'Fence', 'Balls']
@@ -155,7 +155,7 @@ rule plot_results:
                 data_est['task_id'].apply(lambda e: tasks.index(e)) + 0.05 * np.random.normal(size=len(data_est)),
                 data_est['mi_estimate'],
                 label=ESTIMATOR_NAMES[estimator_id],
-                alpha=0.4, s=5**2,
+                alpha=0.4, s=3**2,
             )
             
         for task_id, data_task in data_5k.groupby('task_id'):
@@ -165,10 +165,10 @@ rule plot_results:
 
         ax.set_xticks(range(len(tasks)), tasks_official)
             
-        ax.legend(frameon=False, loc='upper left')
+        ax.legend(frameon=False, loc='upper left', bbox_to_anchor=(1, 1))
         ax.spines[['top', 'right']].set_visible(False)
         ax.set_ylim(-0.1, 1.4)
-        ax.set_ylabel('Mutual information [nats]')
+        ax.set_ylabel('MI')
         fig.savefig(str(output))
 
 
