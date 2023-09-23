@@ -272,7 +272,9 @@ rule plot_performance_all:
             ax.set_xlabel("Number of points")
             ax.set_ylabel('Estimate')
             ax.set_xscale("log", base=2)
-            # ax.set_xticks(df["n_points"].unique(), df["n_points"].unique())
+            ticks = [16, 64, 256, 1024, 4096]
+            ax.set_xticks(ticks, ticks)
+            ax.spines[['right', 'top']].set_visible(False)
         
         axs[3].legend(title='Estimator', frameon=False, bbox_to_anchor=(1.01, 1), loc='upper left')
 
