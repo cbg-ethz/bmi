@@ -110,6 +110,14 @@ for variance in VARIANCES:
 
 UNSCALED_TASKS = {**MIXING_TASKS, **VARIANCE_TASKS}
 
+
+ESTIMATOR_COLORS = {
+    "InfoNCE": "magenta",
+    "MINE": "red",
+    "KSG": "green",
+    "CCA": "purple",
+}
+
 ESTIMATORS = {
     "KSG": bmi.estimators.KSGEnsembleFirstEstimator(neighborhoods=(10,)),
     "CCA": bmi.estimators.CCAMutualInformationEstimator(),
@@ -127,16 +135,19 @@ rule all:
         outliers_plot = "outliers_plot.pdf"
 
 
-def plot_data(ax: plt.Axes, data: pd.DataFrame, key: str = "mixing"):
+def plot_data(ax: plt.Axes, data: pd.DataFrame, key: str = "mixing", use_legend: bool = False):
     data[key] = data["task_params"].map(lambda x: yaml.load(x, Loader=yaml.SafeLoader)[key])
     grouped = data.groupby([key, "estimator_id"])["mi_estimate"].agg(["mean", "std"]).reset_index()
-    sns.lineplot(data=grouped, x=key, y='mean', hue='estimator_id', ax=ax)
-    # Adding the shaded error bands
+
     for estimator in grouped['estimator_id'].unique():
         subset = grouped[grouped['estimator_id'] == estimator]
-        ax.fill_between(subset[key], subset['mean'] - subset['std'], subset['mean'] + subset['std'], alpha=0.3)
 
-    ax.legend(frameon=False)
+        color = ESTIMATOR_COLORS[estimator]
+        ax.plot(subset[key], subset['mean'], color=color, label=estimator)
+        ax.fill_between(subset[key], subset['mean'] - subset['std'], subset['mean'] + subset['std'], alpha=0.3, color=color)
+
+    if use_legend:
+        ax.legend(frameon=False, loc="upper left", bbox_to_anchor=(1.0, 1.0))
 
 def plot_ground_truth_mixing(inputs, ax):
     mixings = []
@@ -166,8 +177,11 @@ rule plot:
         ground_truth_outlier = expand("Gauss-Outlier/_mixed_ground_truth/summaries/{mixing}.json", mixing=ALPHAS)
     output: "outliers_plot.pdf"
     run:
-        fig, axs = plt.subplots(1, 3, figsize=(10, 3), sharey=True)
+        fig, axs = plt.subplots(1, 3, figsize=(8, 2), sharey=True)
         df = pd.read_csv(str(input.estimates))
+
+        for ax in axs:
+            ax.spines[['right', 'top']].set_visible(False)
 
         # Plot inliers
         ax = axs[0]
@@ -187,7 +201,7 @@ rule plot:
 
         # Plot variance
         ax = axs[2]
-        plot_data(ax, data=df[df["task_id"].str.contains("variance")].copy(), key="variance")
+        plot_data(ax, data=df[df["task_id"].str.contains("variance")].copy(), key="variance", use_legend=True)
         mi_var = [VARIANCE_TASKS[f"variance-{var}"].mutual_information for var in VARIANCES]
         ax.plot(VARIANCES, mi_var, c="black", linestyle=":")
 
