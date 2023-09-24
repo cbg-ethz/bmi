@@ -40,11 +40,13 @@ class ChangeMixingSetup:
             proportions=jnp.asarray([1.0 - alpha, alpha]),
         )
 
+signal_cov_parametrization = bmi.samplers.SparseLVMParametrization(dim_x=2, dim_y=2, n_interacting=2, beta=0.1, lambd=2.0)
+signal_cov_matrix = signal_cov_parametrization.correlation
 
 dist_signal_gauss = fine.MultivariateNormalDistribution(
     dim_x=2,
     dim_y=2,
-    covariance=bmi.samplers.SparseLVMParametrization(dim_x=2, dim_y=2, n_interacting=2, beta=0.1, lambd=2.0).correlation
+    covariance=signal_cov_matrix,
 )
 
 covariance_inlier = jnp.eye(dist_signal_gauss.dim_y)
@@ -132,7 +134,24 @@ rule all:
     input:
         mixing_ground_truths = expand("{setup}/mixing_ground_truths.done", setup=CHANGE_MIXING_SETUPS.keys()),
         estimates = "results.csv",
-        outliers_plot = "outliers_plot.pdf"
+        outliers_plot = "outliers_plot.pdf",
+        parameters = "parameters.json",
+        covariance_heatmap = "covariance_heatmap.pdf"
+
+rule plot_parameters:
+    output:
+        params_json = "parameters.json",
+        covariance_heatmap = "covariance_heatmap.pdf"
+    run:
+        with open(str(output.params_json), "w") as fh:
+            json.dump({
+                "signal_covariance": signal_cov_matrix.tolist(),
+                "signal_mutual_information": dist_signal_gauss.analytic_mi,
+            }, fp=fh, indent=4)
+        fig, ax = plt.subplots()
+        sns.heatmap(signal_cov_matrix, ax=ax, annot=True, fmt=".2f", cmap="coolwarm")
+        fig.tight_layout()
+        fig.savefig(str(output.covariance_heatmap))
 
 
 def plot_data(ax: plt.Axes, data: pd.DataFrame, key: str = "mixing", use_legend: bool = False):

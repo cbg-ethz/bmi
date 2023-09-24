@@ -205,7 +205,7 @@ rule estimate_ground_truth_single_seed:
             indent=4,
         )
 
-def plot_estimates(ax: plt.Axes, estimates_path, ground_truth_path) -> None:
+def plot_estimates(ax: plt.Axes, estimates_path, ground_truth_path, alpha: float = 0.1) -> None:
     df = pd.read_csv(estimates_path)
     with open(ground_truth_path) as fh:
         ground_truth = json.load(fh)
@@ -233,7 +233,7 @@ def plot_estimates(ax: plt.Axes, estimates_path, ground_truth_path) -> None:
         color = ESTIMATOR_COLORS[estimator]
     
         ax.plot(points, mean, color=color, label=estimator)
-        ax.fill_between(points, mean - std, mean + std, alpha=0.1, color=color)
+        ax.fill_between(points, mean - std, mean + std, alpha=alpha, color=color)
 
 
 rule plot_performance_all:
@@ -251,21 +251,28 @@ rule plot_performance_all:
     run:
         fig, axs = subplots_from_axsize(1, 4, axsize=(2.5, 1.5), right=1.2, top=0.3)
 
+        y_min = 0.0
+        y_max = 1.0
+        alpha = 0.2
+
         ax = axs[0]
         ax.set_title("Mixture")
-        plot_estimates(ax, input.simple_estimates, input.simple_ground_truth)
+        ax.set_ylim(y_min, y_max)
+        plot_estimates(ax, input.simple_estimates, input.simple_ground_truth, alpha=alpha)
 
         ax = axs[1]
         ax.set_title("Constant bias")
-        plot_estimates(ax, input.biased_estimates, input.biased_ground_truth)
+        ax.set_ylim(y_min, y_max)
+        plot_estimates(ax, input.biased_estimates, input.biased_ground_truth, alpha=alpha)
 
         ax = axs[2]
         ax.set_title("Functional bias")
-        plot_estimates(ax, input.func_estimates, input.func_ground_truth)
+        ax.set_ylim(y_min, y_max)
+        plot_estimates(ax, input.func_estimates, input.func_ground_truth, alpha=alpha)
 
         ax = axs[3]
         ax.set_title("High-dimensional")
-        plot_estimates(ax, input.highdim_estimates, input.highdim_ground_truth)
+        plot_estimates(ax, input.highdim_estimates, input.highdim_ground_truth, alpha=alpha)
 
 
         for ax in axs:
