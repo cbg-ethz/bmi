@@ -12,15 +12,16 @@ from bmi.samplers.base import BaseSampler, cast_to_rng
 def _cite_gao_2017() -> str:
     return (
         "@inproceedings{Gao2017-DiscreteContinuousMI,\n"
-        + "   author = {Gao, Weihao and Kannan, Sreeram and Oh, Sewoong and Viswanath, Pramod},\n"
-        + "   booktitle = {Advances in Neural Information Processing Systems},\n"
-        + "   editor = {I. Guyon and U. Von Luxburg and S. Bengio and H. Wallach and R. Fergus and S. Vishwanathan and R. Garnett},\n"  # noqa: E501
-        + "   pages = {},\n"
-        + "   publisher = {Curran Associates, Inc.},\n"
-        + "   title = {Estimating Mutual Information for Discrete-Continuous Mixtures},\n"
-        + "   url = {https://proceedings.neurips.cc/paper_files/paper/2017/file/ef72d53990bc4805684c9b61fa64a102-Paper.pdf},\n"  # noqa: E501
-        + "   volume = {30},\n"
-        + "year = {2017}"
+        + "  author = {Gao, Weihao and Kannan, Sreeram and Oh, Sewoong and Viswanath, Pramod},\n"
+        + "  booktitle = {Advances in Neural Information Processing Systems},\n"
+        + "  editor = {I. Guyon and U. Von Luxburg and S. Bengio and H. Wallach and R. Fergus and S. Vishwanathan and R. Garnett},\n"  # noqa: E501
+        + "  pages = {},\n"
+        + "  publisher = {Curran Associates, Inc.},\n"
+        + "  title = {Estimating Mutual Information for Discrete-Continuous Mixtures},\n"
+        + "  url = {https://proceedings.neurips.cc/paper_files/paper/2017/file/ef72d53990bc4805684c9b61fa64a102-Paper.pdf},\n"  # noqa: E501
+        + "  volume = {30},\n"
+        + "  year = {2017}n"
+        + "}"
     )
 
 
