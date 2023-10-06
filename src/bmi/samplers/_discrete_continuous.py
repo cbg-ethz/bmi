@@ -5,6 +5,7 @@ import numpy as np
 from jax import random
 
 from bmi.interface import KeyArray
+from bmi.samplers._independent_coordinates import IndependentConcatenationSampler
 from bmi.samplers.base import BaseSampler, cast_to_rng
 
 
@@ -67,42 +68,24 @@ class DiscreteUniformMixtureSampler(BaseSampler):
         return _cite_gao_2017()
 
 
-class MultivariateDiscreteUniformMixtureSampler(BaseSampler):
+class MultivariateDiscreteUniformMixtureSampler(IndependentConcatenationSampler):
     """Multivariate alternative for `DiscreteUniformMixtureSampler`,
     which is a concatenation of several independent samplers.
 
     Namely, the variables X = (X1, ..., Xk) and Y = (Y1, ..., Yk) are sampled as
       Xk ~ Categorical(1/m, ..., 1/m) is between {0, ..., m-1}
       Yk | Xk ~ Uniform(Xk, Xk + 2)
+
+    See Also:
+        IndependentConcatenationSampler
     """
 
     def __init__(self, *, ns_discrete: Sequence[int], use_discrete_x: bool = True) -> None:
-        ns_discrete = list(ns_discrete)
-        dim = len(ns_discrete)
-
-        if dim <= 0:
-            raise ValueError(f"Dimension must be positive, was {dim}.")
-
-        super().__init__(dim_x=dim, dim_y=dim)
-        self._samplers = [
+        samplers = [
             DiscreteUniformMixtureSampler(n_discrete=n, use_discrete_x=use_discrete_x)
             for n in ns_discrete
         ]
-
-    def sample(self, n_points: int, rng: Union[int, KeyArray]) -> tuple[jnp.ndarray, jnp.ndarray]:
-        rng = cast_to_rng(rng)
-        keys = random.split(rng, self._dim_x)
-        xs = []
-        ys = []
-        for key, sampler in zip(keys, self._samplers):
-            x, y = sampler.sample(n_points, key)
-            xs.append(x)
-            ys.append(y)
-
-        return jnp.hstack(xs), jnp.hstack(ys)
-
-    def mutual_information(self) -> float:
-        return jnp.sum([sampler.mutual_information() for sampler in self._samplers])
+        super().__init__(samplers=samplers)
 
     @staticmethod
     def cite() -> str:
