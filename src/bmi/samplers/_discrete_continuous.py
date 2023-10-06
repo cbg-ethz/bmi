@@ -127,14 +127,19 @@ class ZeroInflatedPoissonizationSampler(BaseSampler):
     $$Y \\mid X = p\\, \\delta_0 + (1-p) \\, \\mathrm{Poisson}(X) $$
     """
 
-    def __init__(self, p: float = 0.15) -> None:
+    def __init__(self, p: float = 0.15, use_discrete_y: bool = True) -> None:
         """
         Args:
             p: zero-inflation parameter. Must be in [0, 1).
         """
         if p < 0 or p >= 1:
             raise ValueError(f"p must be in [0, 1), was {p}.")
-        self._p = p
+        self._p = float(p)
+
+        if use_discrete_y:
+            self._y_factor = 1
+        else:
+            self._y_factor = 1.0
 
     def sample(self, n_points: int, rng: Union[int, KeyArray]) -> tuple[jnp.ndarray, jnp.ndarray]:
         rng = cast_to_rng(rng)
@@ -145,7 +150,7 @@ class ZeroInflatedPoissonizationSampler(BaseSampler):
         poissons = random.poisson(key_poisson, lam=xs)
         # Note that this corresponds to a mixture model: with probability p we sample
         # from Dirac delta at 0 and with probability 1-p we sample from Poisson
-        ys = zeros * poissons
+        ys = zeros * poissons * self._y_factor
 
         return xs, ys
 

@@ -45,4 +45,6 @@ class IndependentConcatenationSampler(BaseSampler):
         return jnp.hstack(xs), jnp.hstack(ys)
 
     def mutual_information(self) -> float:
-        return jnp.sum([sampler.mutual_information() for sampler in self._samplers])
+        return float(
+            jnp.sum(jnp.asarray([sampler.mutual_information() for sampler in self._samplers]))
+        )
