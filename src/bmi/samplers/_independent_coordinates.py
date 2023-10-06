@@ -8,16 +8,17 @@ from bmi.samplers.base import BaseSampler, cast_to_rng
 
 
 class IndependentConcatenationSampler(BaseSampler):
-    """Consider a sequence of samplers Sk, k = 1, ..., m
+    """Consider a sequence of samplers $S_k$, where $k \\in \\{1, \\dotsc, m \\}$
     and variables
-    (Xk, Yk) ~ Sk
+
+    $$(X_k, Y_k) \\sim S_k.$$
 
     If the variables are sampled independently, we can concatenate them
-    to X = (X1, ..., Xm) and Y = (Y1, ..., Ym)
+    to $X = (X_1, \\dotsc, X_m)$ and $Y = (Y_1, \\dotsc, Y_m)$
 
     and have
 
-    I(X; Y) = I(X1; Y1) + ... + I(Xm; Ym)
+    $$I(X; Y) = I(X_1; Y_1) + \\dotsc + I(X_m; Y_m).$$
     """
 
     def __init__(self, samplers: Sequence[ISampler]) -> None:

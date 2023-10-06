@@ -26,10 +26,19 @@ def _cite_gao_2017() -> str:
 
 
 class DiscreteUniformMixtureSampler(BaseSampler):
-    """Sampler from Gao et al. (2017) for the discrete-continuous mixture model.
+    """Sampler from Gao et al. (2017) for the discrete-continuous mixture model:
 
-    X ~ Categorical(1/m, ..., 1/m) is between {0, ..., m-1}
-    Y | X ~ Uniform(X, X+2)
+    $$X \\sim \\mathrm{Categorical}(1/m, ..., 1/m)$$
+
+    is sampled from the set $\\{0, ..., m-1\\}$.
+
+    Then,
+
+    $$Y | X \\sim \\mathrm{Uniform}(X, X+2).$$
+
+    It holds that
+
+    $$I(X; Y) = \\log m - \\frac{m-1}{m} \\log 2.$$
     """
 
     def __init__(self, *, n_discrete: int = 5, use_discrete_x: bool = True) -> None:
@@ -73,12 +82,26 @@ class MultivariateDiscreteUniformMixtureSampler(IndependentConcatenationSampler)
     """Multivariate alternative for `DiscreteUniformMixtureSampler`,
     which is a concatenation of several independent samplers.
 
-    Namely, the variables X = (X1, ..., Xk) and Y = (Y1, ..., Yk) are sampled as
-      Xk ~ Categorical(1/m, ..., 1/m) is between {0, ..., m-1}
-      Yk | Xk ~ Uniform(Xk, Xk + 2)
+    Namely, for a sequence of integers $(m_k)$,
+    the variables $X = (X_1, ..., X_k)$ and $Y = (Y_1, ..., Y_k)$ are sampled coordinate-wise.
 
-    See Also:
-        IndependentConcatenationSampler
+    Each coordinate
+
+    $$X_k \\sim \\mathrm{Categorical}(1/m_k, ..., 1/m_k)$$
+
+    is from the set $\\{0, ..., m_k-1\\}$.
+
+    Then,
+
+    $$Y_k | X_k \\sim \\mathrm{Uniform}(X_k, X_k + 2).$$
+
+    Mutual information can be calculated as
+
+    $$I(X; Y) = \\sum_k I(X_k; Y_k),$$
+
+    where
+
+    $$I(X_k; Y_k) = \\log m_k - \\frac{m_k-1}{m_k} \\log 2.$$
     """
 
     def __init__(self, *, ns_discrete: Sequence[int], use_discrete_x: bool = True) -> None:
@@ -94,6 +117,14 @@ class MultivariateDiscreteUniformMixtureSampler(IndependentConcatenationSampler)
 
 
 class ZeroInflatedPoissonizationSampler(BaseSampler):
+    """Sampler from Gao et al. (2017) modelling zero-inflated Poissonization
+    of the exponential distribution.
+
+    Let $X \\sim \\mathrm{Exponential}(1)$. Then, $Y$ is sampled from the mixture distribution
+
+    $$Y \\mid X = p\\, \\delta_0 + (1-p) \\, \\mathrm{Poisson}(X) $$
+    """
+
     def __init__(self, p: float = 0.15) -> None:
         """
         Args:
@@ -118,13 +149,17 @@ class ZeroInflatedPoissonizationSampler(BaseSampler):
 
     def mutual_information(self, truncation: Optional[int] = None) -> float:
         """Ground-truth mutual information is equal to
-        I(X; Y) = (1-p) (2 log 2 - gamma - S)
+
+        $$I(X; Y) = (1-p) \\cdot (2 \\log 2 - \\gamma - S)$$
+
+
         where
-        S = sum_{i=1}^{infinity} log(i) * 2^{-i},
+
+        $$S = \\sum_{k=1}^{\\infty} \\log k \\cdot 2^{-k},$$
 
         so that the approximation
 
-        I(X; Y) = (1-p) * 0.3012
+        $$I(X; Y) \\approx (1-p) \\cdot 0.3012 $$
 
         holds.
 
