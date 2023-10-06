@@ -75,6 +75,7 @@ class DiscreteUniformMixtureSampler(BaseSampler):
 
     @staticmethod
     def cite() -> str:
+        """Returns the BibTeX citation."""
         return _cite_gao_2017()
 
 
@@ -113,6 +114,7 @@ class MultivariateDiscreteUniformMixtureSampler(IndependentConcatenationSampler)
 
     @staticmethod
     def cite() -> str:
+        """Returns the BibTeX citation."""
         return _cite_gao_2017()
 
 
@@ -181,4 +183,5 @@ class ZeroInflatedPoissonizationSampler(BaseSampler):
 
     @staticmethod
     def cite() -> str:
+        """Returns the BibTeX citation."""
         return _cite_gao_2017()
