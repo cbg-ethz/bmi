@@ -15,6 +15,21 @@ from sklearn import preprocessing
 from bmi.interface import Pathlike
 
 
+def add_noise(points: ArrayLike, noise_std: float = 1e-5, rng_key: int = 0) -> np.ndarray:
+    """Adds small noise.
+    Function useful when discrete random variables are involved.
+
+    Args:
+        points: array of points, shape (n_points, dim)
+        noise_std: standard deviation of the noise
+        rng_key: random number generator seed, used for reproducibility
+    """
+    rng = np.random.default_rng(rng_key)
+    points = np.asarray(points)
+    noise = rng.normal(scale=noise_std, size=points.shape)
+    return points + noise
+
+
 def save_sample(path: Pathlike, samples_x: ArrayLike, samples_y: ArrayLike):
     samples_x = np.asarray(samples_x)
     samples_y = np.asarray(samples_y)
