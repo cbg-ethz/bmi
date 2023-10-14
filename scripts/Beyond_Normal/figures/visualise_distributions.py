@@ -7,8 +7,8 @@ import bmi.benchmark.task_list as tl
 def main() -> None:
     n_points: int = 5_000
     seed: int = 0
-    alpha: float = 0.5
-    size: int = 3
+    alpha: float = 0.3
+    size: float = 0.9**2
 
     task_gaussian = tl.BINORMAL_BASE
     task_uniform = tl.UNIFORM_BASE
@@ -23,7 +23,7 @@ def main() -> None:
 
     plt.set_cmap("turbo")
 
-    fig = plt.figure(figsize=plt.figaspect(0.19))
+    fig = plt.figure(figsize=(5 * 2 + 0.2, 2))
 
     ax = fig.add_subplot(1, 5, 1)
     x, y = task_gaussian.sample(n_points, seed)
@@ -72,6 +72,8 @@ def main() -> None:
     ax.yaxis.pane.fill = False
     ax.zaxis.pane.fill = False
     ax.set_title("Swiss roll mapping")
+    ax.set_xticks([0, 0.5])
+    ax.set_yticks([0, 0.5])
 
     fig.tight_layout()
     fig.savefig("transformed_samplers.pdf", dpi=350)
