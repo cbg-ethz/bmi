@@ -1,4 +1,5 @@
 [![arXiv](https://img.shields.io/badge/arXiv-2306.11078-b31b1b.svg)](https://arxiv.org/abs/2306.11078)
+[![Venue](https://img.shields.io/badge/venue-NeurIPS_2023-darkblue)](https://neurips.cc/virtual/2023/poster/72978)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![PyPI Latest Release](https://img.shields.io/pypi/v/benchmark-mi.svg)](https://pypi.org/project/benchmark-mi/)
 [![build](https://github.com/cbg-ethz/bmi/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/cbg-ethz/bmi/actions/workflows/build.yml)
@@ -56,13 +57,11 @@ print(f"Estimate by KSG: {ksg.estimate(X, Y):.2f}")
 If you find this code useful in your research, consider citing [our manuscript](https://arxiv.org/abs/2306.11078):
 
 ```
-@misc{beyond_normal2023,
-      title={Beyond Normal: On the Evaluation of Mutual Information Estimators}, 
-      author={Paweł Czyż and Frederic Grabowski and Julia E. Vogt and Niko Beerenwinkel and Alexander Marx},
-      year={2023},
-      eprint={2306.11078},
-      archivePrefix={arXiv},
-      primaryClass={stat.ML}
+@inproceedings{beyond-normal-2023,
+  title={Beyond Normal: On the Evaluation of Mutual Information Estimators},
+  author={Paweł Czyż and Frederic Grabowski and Julia E. Vogt and Niko Beerenwinkel and Alexander Marx},
+  booktitle={Thirty-seventh Conference on Neural Information Processing Systems},
+  year={2023}
 }
 ```
 
