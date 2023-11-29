@@ -179,17 +179,19 @@ class KSGEnsembleFirstEstimatorSlow(IMutualInformationPointEstimator):
         self._fitted = False
         self._mi_dict = dict()  # set by fit()
 
-    def fit(self, x: ArrayLike, y: ArrayLike) -> None:
+    def _calculate_digammas(
+        self, x: ArrayLike, y: ArrayLike, ks: Sequence[int]
+    ) -> dict[int, np.ndarray]:
         space = ProductSpace(x=x, y=y, standardize=self._params.standardize)
 
         n_points = len(space)
-        if n_points <= max(self._params.neighborhoods):
+        if n_points <= max(ks):
             raise ValueError(
-                f"Maximum neighborhood used is {max(self._params.neighborhoods)} "
+                f"Maximum neighborhood used is {max(ks)} "
                 f"but the number of points provided is only {n_points}."
             )
 
-        digammas_dict = {k: [] for k in self._params.neighborhoods}
+        digammas_dict = {k: [] for k in ks}
 
         for index in range(n_points):
             # Distances from x[index] to all the points:
@@ -205,7 +207,7 @@ class KSGEnsembleFirstEstimatorSlow(IMutualInformationPointEstimator):
             # And we sort the point indices by being the closest to the considered one
             closest_points = sorted(range(len(distances_z)), key=lambda i: distances_z[i])
 
-            for k in self._params.neighborhoods:
+            for k in ks:
                 # Note that the points are 0-indexed and that the "0th neighbor"
                 # is the point itself (as distance(x, x) = 0 is the smallest possible)
                 # Hence, the kth neighbour is at index k
@@ -219,9 +221,17 @@ class KSGEnsembleFirstEstimatorSlow(IMutualInformationPointEstimator):
                 digammas_per_point = _DIGAMMA(n_x + 1) + _DIGAMMA(n_y + 1)
                 digammas_dict[k].append(digammas_per_point)
 
+        for k in digammas_dict.keys():
+            raw_values = digammas_dict[k]
+            digammas_dict[k] = _DIGAMMA(k) - np.array(raw_values) + _DIGAMMA(n_points)
+
+        return digammas_dict
+
+    def fit(self, x: ArrayLike, y: ArrayLike) -> None:
+        digammas_dict = self._calculate_digammas(x, y, ks=self._params.neighborhoods)
+
         for k, digammas in digammas_dict.items():
-            mi_estimate = _DIGAMMA(k) - np.mean(digammas) + _DIGAMMA(n_points)
-            self._mi_dict[k] = max(0.0, mi_estimate)
+            self._mi_dict[k] = max(0.0, np.mean(digammas))
 
         self._fitted = True
 
