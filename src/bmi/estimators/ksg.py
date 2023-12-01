@@ -221,11 +221,10 @@ class KSGEnsembleFirstEstimatorSlow(IMutualInformationPointEstimator):
                 digammas_per_point = _DIGAMMA(n_x + 1) + _DIGAMMA(n_y + 1)
                 digammas_dict[k].append(digammas_per_point)
 
-        for k in digammas_dict.keys():
-            raw_values = digammas_dict[k]
-            digammas_dict[k] = _DIGAMMA(k) - np.array(raw_values) + _DIGAMMA(n_points)
-
-        return digammas_dict
+        return {
+            k: _DIGAMMA(k) - np.array(raw_values) + _DIGAMMA(n_points)
+            for k, raw_values in digammas_dict.items()
+        }
 
     def fit(self, x: ArrayLike, y: ArrayLike) -> None:
         digammas_dict = self._calculate_digammas(x, y, ks=self._params.neighborhoods)
