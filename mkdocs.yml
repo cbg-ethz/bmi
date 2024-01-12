@@ -45,6 +45,7 @@ plugins:
 nav:
   - Home: index.md
   - Estimators: estimators.md
+  - Fine distributions: fine-distributions.md
   - Contributing: contributing.md
   - API: api/index.md
 
