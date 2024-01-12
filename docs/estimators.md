@@ -34,7 +34,7 @@ The API is [here](api/estimators.md).
 ### How can I add a new estimator?
 Thank you for considering contributing to this project! Please, consult [contributing guidelines](contributing.md) and reach out to us on [GitHub](https://github.com/cbg-ethz/bmi/issues), so we can discuss the best way of adding the estimator to the package.
 Generally, the following steps are required:
-1. Implement the interface `IMutualInformationPointEstimator` in a new file inside `src/bmi/estimators` directory. The unit tests should be added in `tests/estimators` directory.
+1. Implement the interface [`IMutualInformationPointEstimator`](api/interfaces.md#bmi.interface.IMutualInformationPointEstimator) in a new file inside `src/bmi/estimators` directory. The unit tests should be added in `tests/estimators` directory.
 2. Export the new estimator to the public API by adding an entry in `src/bmi/estimators/__init__.py`.
 3. Export the docstring of new estimator to `docs/api/estimators.md`.
 4. Add the estimator to the [list of estimators](#list-of-estimators).
