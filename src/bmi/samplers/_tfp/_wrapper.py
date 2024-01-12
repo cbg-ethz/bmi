@@ -8,7 +8,7 @@ from bmi.samplers.base import BaseSampler, KeyArray, cast_to_rng
 
 
 class FineSampler(BaseSampler):
-    """Wrapper around a fine distribution."""
+    """Wraps a given fine distribution into a sampler."""
 
     def __init__(
         self,
