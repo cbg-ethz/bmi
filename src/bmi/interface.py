@@ -39,15 +39,16 @@ class EstimateResult(BaseModel):
 
 
 class IMutualInformationPointEstimator(Protocol):
-    """Interface for the mutual information estimator."""
+    """Interface for the mutual information estimator returning point estimates.
+    All estimators should be implementations of this interface."""
 
     @abstractmethod
     def estimate(self, x: ArrayLike, y: ArrayLike) -> float:
-        """A point estimate of MI(X; Y) from an i.i.d sample from the P(X, Y) distribution.
+        """A point estimate of MI(X; Y) from an i.i.d. sample from the $P(X, Y)$ distribution.
 
         Args:
-            x: shape (n_samples, dim_x)
-            y: shape (n_samples, dim_y)
+            x: shape `(n_samples, dim_x)`
+            y: shape `(n_samples, dim_y)`
 
         Returns:
             mutual information estimate
@@ -65,7 +66,7 @@ class IMutualInformationPointEstimator(Protocol):
 
 
 class ISampler(Protocol):
-    """Interface for a distribution P(X, Y)."""
+    """Interface for a distribution $P(X, Y)$."""
 
     @abstractmethod
     def sample(self, n_points: int, rng: Union[int, KeyArray]) -> tuple[np.ndarray, np.ndarray]:

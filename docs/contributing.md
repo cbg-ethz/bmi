@@ -28,7 +28,7 @@ To be able to reproduce a bug, we will usually need the following information:
 
 **Don't:**
 
-  - Don't include license information. This project is MIT licensed and by submitting your pull request you implicitly and irrevocably agree to use this.
+  - Don't include license information. This project uses the MIT license. By submitting your pull request you implicitly and irrevocably agree to using this license.
   - Don't implement too many ideas in a single pull request. Multiple features should be implemented in separate pull requests.
 
 
