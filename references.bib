@@ -1,0 +1,658 @@
+@inproceedings{beyond-normal-2023,
+title={Beyond Normal: On the Evaluation of Mutual Information Estimators},
+author={Paweł Czyż and Frederic Grabowski and Julia E. Vogt and Niko Beerenwinkel and Alexander Marx},
+booktitle={Thirty-seventh Conference on Neural Information Processing Systems},
+year={2023}
+}
+
+% ----- Mutual information estimators ------
+@article{kraskov:04:ksg,
+	author = {Kraskov, Alexander and St{\"o}gbauer, Harald and Grassberger, Peter},
+	journal = {Physical Review E},
+	number = {6},
+	pages = {066138},
+	publisher = {APS},
+	title = {Estimating mutual information},
+	volume = {69},
+	year = {2004}
+}
+
+% Histogram-based estimator
+@article{Cellucci-HistogramsMI,
+  title={Statistical validation of mutual information calculations: Comparison of alternative numerical algorithms},
+  author={Cellucci, Christopher J and Albano, Alfonso M and Rapp, Paul E},
+  journal={Physical review E},
+  volume={71},
+  number={6},
+  pages={066208},
+  year={2005},
+  publisher={APS}
+}
+% Another histogram-based estimator
+@article{Darbellay-HistogramsMI,
+	author = {Darbellay, Georges A and Vajda, Igor},
+	journal = {IEEE Transactions on Information Theory},
+	number = {4},
+	pages = {1315--1321},
+	publisher = {IEEE},
+	title = {Estimation of the information by an adaptive partitioning of the observation space},
+	volume = {45},
+	year = {1999}}
+
+% Discrete-continuous mixtures
+@inproceedings{Gao-2017-DiscreteContinuous,
+ author = {Gao, Weihao and Kannan, Sreeram and Oh, Sewoong and Viswanath, Pramod},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {I. Guyon and U. Von Luxburg and S. Bengio and H. Wallach and R. Fergus and S. Vishwanathan and R. Garnett},
+ pages = {},
+ publisher = {Curran Associates, Inc.},
+ title = {Estimating Mutual Information for Discrete-Continuous Mixtures},
+ url = {https://proceedings.neurips.cc/paper_files/paper/2017/file/ef72d53990bc4805684c9b61fa64a102-Paper.pdf},
+ volume = {30},
+ year = {2017}
+}
+
+@book{politis:91:entropy-mixture,
+  title={On the entropy of a mixture distribution},
+  author={Politis, Dimitris N},
+  year={1991},
+  publisher={Purdue University. Department of Statistics}
+}
+
+@InProceedings{marx:21:myl,
+	author = {Alexander Marx and Lincen Yang and Matthijs van Leeuwen},
+	title = {Estimating Conditional Mutual Information for Discrete-Continuous Mixtures using Multi-Dimensional Adaptive Histograms},
+	booktitle = {Proceedings of the SIAM International Conference on Data Mining (SDM)},
+	pages = {387-395},
+	year={2021}
+}
+
+% ----- Very nice applications of mutual information -----
+
+@article{Nalecz-Jawecki-2023,
+    doi = {10.1371/journal.pcbi.1011155},
+    author = {Na{\l}{\c e}cz-Jawecki, Pawe{\l} AND Gagliardi, Paolo Armando AND Kochańczyk, Marek AND Dessauges, Coralie AND Pertz, Olivier AND Lipniacki, Tomasz},
+    journal = {PLOS Computational Biology},
+    publisher = {Public Library of Science},
+    title = {The {MAPK}/{ERK} channel capacity exceeds 6 bit/hour},
+    year = {2023},
+    month = {05},
+    volume = {19},
+    url = {https://doi.org/10.1371/journal.pcbi.1011155},
+    pages = {1-21},
+    number = {5}
+}
+
+% KSG + Monte Carlo Tree Search + ATLAS SUSY experiment
+@misc{Carrara2023-KSG-MCTS,
+      title={Using {Monte Carlo} Tree Search to Calculate Mutual Information in High Dimensions}, 
+      author={Nick Carrara and Jesse Ernst},
+      year={2023},
+      eprint={2309.08516},
+      archivePrefix={arXiv},
+      primaryClass={physics.data-an}
+}
+
+@article{Grabowski-2019-systems-biology,
+author = {Grabowski, Frederic  and Czyż, Paweł  and Kochańczyk, Marek  and Lipniacki, Tomasz },
+title = {Limits to the rate of information transmission through the {MAPK} pathway},
+journal = {Journal of The Royal Society Interface},
+volume = {16},
+number = {152},
+pages = {20180792},
+year = {2019},
+doi = {10.1098/rsif.2018.0792},
+URL = {https://royalsocietypublishing.org/doi/abs/10.1098/rsif.2018.0792},
+eprint = {https://royalsocietypublishing.org/doi/pdf/10.1098/rsif.2018.0792}
+}
+
+% CCA as an estimator
+@INPROCEEDINGS{kay-elliptic,
+  author={Kay, J.},
+  booktitle={IJCNN International Joint Conference on Neural Networks}, 
+  title={Feature discovery under contextual supervision using mutual information}, 
+  year={1992},
+  volume={4},
+  pages={79--84},
+  doi={10.1109/IJCNN.1992.227286}
+}
+
+% MINE estimator
+@inproceedings{belghazi:18:mine,
+  title={Mutual information neural estimation},
+  author={Belghazi, Mohamed Ishmael and Baratin, Aristide and Rajeshwar, Sai and Ozair, Sherjil and Bengio, Yoshua and Courville, Aaron and Hjelm, Devon},
+  booktitle={International conference on machine learning},
+  pages={531--540},
+  year={2018},
+  organization={PMLR}
+}
+
+% NWJ estimator
+@inproceedings{NWJ2007,
+ author = {Nguyen, XuanLong and Wainwright, Martin J and Jordan, Michael},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {J. Platt and D. Koller and Y. Singer and S. Roweis},
+ pages = {},
+ publisher = {Curran Associates, Inc.},
+ title = {Estimating divergence functionals and the likelihood ratio by penalized convex risk minimization},
+ url = {https://proceedings.neurips.cc/paper_files/paper/2007/file/72da7fd6d1302c0a159f6436d01e9eb0-Paper.pdf},
+ volume = {20},
+ year = {2007}
+}
+
+% InfoNCE estimator
+@article{oord:18:infonce,
+  title={Representation learning with contrastive predictive coding},
+  author={Oord, Aaron van den and Li, Yazhe and Vinyals, Oriol},
+  journal={arXiv preprint arXiv:1807.03748},
+  year={2018}
+}
+
+% Model-based mutual information estimation for discrete data
+@inproceedings{Hutter-2001,
+ author = {Hutter, Marcus},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {T. Dietterich and S. Becker and Z. Ghahramani},
+ pages = {},
+ publisher = {MIT Press},
+ title = {Distribution of Mutual Information},
+ url = {https://proceedings.neurips.cc/paper_files/paper/2001/file/fb2e203234df6dee15934e448ee88971-Paper.pdf},
+ volume = {14},
+ year = {2001}
+}
+
+% Model-based MI estimation (discrete case and CCA)
+@article{Brillinger-2004,
+ ISSN = {01030752, 23176199},
+ URL = {http://www.jstor.org/stable/43601047},
+ author = {David R. Brillinger},
+ journal = {Brazilian Journal of Probability and Statistics},
+ number = {2},
+ pages = {163--182},
+ publisher = {[Brazilian Statistical Association, Institute of Mathematical Statistics]},
+ title = {Some data analyses using mutual information},
+ urldate = {2023-09-24},
+ volume = {18},
+ year = {2004}
+}
+
+% ----- Mixtures and their entropy ------
+
+@Article{Kolchinsky-2017-mixtures-entropy,
+AUTHOR = {Kolchinsky, Artemy and Tracey, Brendan D.},
+TITLE = {Estimating Mixture Entropy with Pairwise Distances},
+JOURNAL = {Entropy},
+VOLUME = {19},
+YEAR = {2017},
+NUMBER = {7},
+ARTICLE-NUMBER = {361},
+URL = {https://www.mdpi.com/1099-4300/19/7/361},
+ISSN = {1099-4300},
+DOI = {10.3390/e19070361}
+}
+@article{Haussler-1997-mixtures-entropy,
+author = {David Haussler and Manfred Opper},
+title = {{Mutual information, metric entropy and cumulative relative entropy risk}},
+volume = {25},
+journal = {The Annals of Statistics},
+number = {6},
+publisher = {Institute of Mathematical Statistics},
+pages = {2451 -- 2492},
+keywords = {Bayes risk, Density estimation, Hellinger distance, Kullback-Leibler distance, Metric entropy, minimax risk, mutual information, Relative entropy},
+year = {1997},
+doi = {10.1214/aos/1030741081},
+URL = {https://doi.org/10.1214/aos/1030741081}
+}
+
+
+% ----- Bayesian statistics and model misspecification -----
+
+@article{Watson-Holmes-2014,
+author = {James Watson and Chris Holmes},
+title = {{Approximate Models and Robust Decisions}},
+volume = {31},
+journal = {Statistical Science},
+number = {4},
+publisher = {Institute of Mathematical Statistics},
+pages = {465 -- 489},
+keywords = {Bayesian nonparametrics, Computational decision theory, D-open problem, Kullback–Leibler divergence, model misspecification, robustness},
+year = {2016},
+doi = {10.1214/16-STS592},
+URL = {https://doi.org/10.1214/16-STS592}
+}
+
+@misc{Gelman2020-BayesianWorkflow,
+      title={{B}ayesian Workflow}, 
+      author={Andrew Gelman and Aki Vehtari and Daniel Simpson and Charles C. Margossian and Bob Carpenter and Yuling Yao and Lauren Kennedy and Jonah Gabry and Paul-Christian Bürkner and Martin Modrák},
+      year={2020},
+      eprint={2011.01808},
+      archivePrefix={arXiv},
+      primaryClass={stat.ME}
+}
+
+@book{Gelman-2013-BayesianDataAnalysis,
+  title={{B}ayesian Data Analysis, Third Edition},
+  author={Gelman, A. and Carlin, J.B. and Stern, H.S. and Dunson, D.B. and Vehtari, A. and Rubin, D.B.},
+  isbn={9781439840955},
+  lccn={2013039507},
+  series={Chapman \& Hall/CRC Texts in Statistical Science},
+  url={https://books.google.pl/books?id=ZXL6AQAAQBAJ},
+  year={2013},
+  publisher={Taylor \& Francis}
+}
+
+@book{Brooks-Handbook_of_Markov_Chain_Monte_Carlo,
+  title={Handbook of {M}arkov Chain {M}onte {C}arlo},
+  author={Brooks, S. and Gelman, A. and Jones, G. and Meng, X.L.},
+  isbn={9781420079425},
+  series={Chapman \& Hall/CRC Handbooks of Modern Statistical Methods},
+  url={https://books.google.ch/books?id=qfRsAIKZ4rIC},
+  year={2011},
+  publisher={CRC Press}
+}
+
+@article{Sankaran-Holmes-GenerativeModels,
+author = {Sankaran, Kris and Holmes, Susan P.},
+title = {Generative Models: An Interdisciplinary Perspective},
+journal = {Annual Review of Statistics and Its Application},
+volume = {10},
+number = {1},
+pages = {325-352},
+year = {2023},
+doi = {10.1146/annurev-statistics-033121-110134},
+URL = {https://doi.org/10.1146/annurev-statistics-033121-110134},
+eprint = {https://doi.org/10.1146/annurev-statistics-033121-110134}
+}
+
+@article{Hoffman-2014-NUTS-sampler,
+  author  = {Matthew D. Hoffman and Andrew Gelman},
+  title   = {The {No-U-Turn Sampler}: Adaptively Setting Path Lengths in {Hamiltonian Monte Carlo}},
+  journal = {Journal of Machine Learning Research},
+  year    = {2014},
+  volume  = {15},
+  number  = {47},
+  pages   = {1593--1623},
+  url     = {http://jmlr.org/papers/v15/hoffman14a.html}
+}
+
+@article{Yao-hierarchical-stacking,
+author = {Yuling Yao and Gregor Pirš and Aki Vehtari and Andrew Gelman},
+title = {{Bayesian Hierarchical Stacking: Some Models Are (Somewhere) Useful}},
+volume = {17},
+journal = {Bayesian Analysis},
+number = {4},
+publisher = {International Society for Bayesian Analysis},
+pages = {1043 -- 1071},
+keywords = {Bayesian hierarchical modeling, conditional prediction, covariate shift, model averaging, prior construction, stacking},
+year = {2022},
+doi = {10.1214/21-BA1287},
+URL = {https://doi.org/10.1214/21-BA1287}
+}
+
+% The LKJ prior on correlation matrices
+@article{LKJ-prior-2009,
+title = {Generating random correlation matrices based on vines and extended onion method},
+journal = {Journal of Multivariate Analysis},
+volume = {100},
+number = {9},
+pages = {1989-2001},
+year = {2009},
+issn = {0047-259X},
+doi = {https://doi.org/10.1016/j.jmva.2009.04.008},
+url = {https://www.sciencedirect.com/science/article/pii/S0047259X09000876},
+author = {Daniel Lewandowski and Dorota Kurowicka and Harry Joe},
+keywords = {Dependence vines, Correlation matrix, Partial correlation, Onion method},
+}
+% The CSP prior used to model covariance matrix
+@article{Legramanti-CSP_prior,
+    author = {Legramanti, Sirio and Durante, Daniele and Dunson, David B},
+    title = "{Bayesian cumulative shrinkage for infinite factorizations}",
+    journal = {Biometrika},
+    volume = {107},
+    number = {3},
+    pages = {745-752},
+    year = {2020},
+    month = {05},
+    issn = {0006-3444},
+    doi = {10.1093/biomet/asaa008},
+    url = {https://doi.org/10.1093/biomet/asaa008},
+    eprint = {https://academic.oup.com/biomet/article-pdf/107/3/745/33658376/asaa008.pdf},
+}
+
+% Sequential Monte Carlo samplers
+@article{DelMoral-2006-SMC-samplers,
+author = {Del Moral, Pierre and Doucet, Arnaud and Jasra, Ajay},
+title = {Sequential {Monte Carlo} samplers},
+journal = {Journal of the Royal Statistical Society: Series B (Statistical Methodology)},
+volume = {68},
+number = {3},
+pages = {411-436},
+keywords = {Importance sampling, Markov chain Monte Carlo methods, Ratio of normalizing constants, Resampling, Sequential Monte Carlo methods, Simulated annealing},
+doi = {https://doi.org/10.1111/j.1467-9868.2006.00553.x},
+url = {https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/j.1467-9868.2006.00553.x},
+eprint = {https://rss.onlinelibrary.wiley.com/doi/pdf/10.1111/j.1467-9868.2006.00553.x},
+year = {2006}
+}
+
+% Piironen-cross_validation
+﻿@Article{Piironen2017-cross-validation,
+author={Piironen, Juho
+and Vehtari, Aki},
+title={Comparison of {B}ayesian predictive methods for model selection},
+journal={Statistics and Computing},
+year={2017},
+month={May},
+day={01},
+volume={27},
+number={3},
+pages={711-735},
+issn={1573-1375},
+doi={10.1007/s11222-016-9649-y},
+url={https://doi.org/10.1007/s11222-016-9649-y}
+}
+
+% Bayesian neural network posteriors
+@InProceedings{Izmailov-BNN_posteriors,
+  title = 	 {What Are {B}ayesian Neural Network Posteriors Really Like?},
+  author =       {Izmailov, Pavel and Vikram, Sharad and Hoffman, Matthew D and Wilson, Andrew Gordon Gordon},
+  booktitle = 	 {Proceedings of the 38th International Conference on Machine Learning},
+  pages = 	 {4629--4640},
+  year = 	 {2021},
+  editor = 	 {Meila, Marina and Zhang, Tong},
+  volume = 	 {139},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {18--24 Jul},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v139/izmailov21a/izmailov21a.pdf},
+  url = 	 {https://proceedings.mlr.press/v139/izmailov21a.html}
+}
+
+% Sparse finite mixture models
+@article{Fruehwirth-From_here_to_infinity,
+author={Fr{\"u}hwirth-Schnatter, Sylvia
+and Malsiner-Walli, Gertraud},
+title={From here to infinity: sparse finite versus {D}irichlet process mixtures in model-based clustering},
+journal={Advances in Data Analysis and Classification},
+year={2019},
+month={Mar},
+day={01},
+volume={13},
+number={1},
+pages={33-64},
+issn={1862-5355},
+doi={10.1007/s11634-018-0329-y},
+url={https://doi.org/10.1007/s11634-018-0329-y}
+}
+
+@article{Flegal-Monte_Carlo-Standard_Error,
+author = {James M. Flegal and Murali Haran and Galin L. Jones},
+title = {{Markov Chain Monte Carlo}: {C}an We Trust the Third Significant Figure?},
+volume = {23},
+journal = {Statistical Science},
+number = {2},
+publisher = {Institute of Mathematical Statistics},
+pages = {250 -- 260},
+keywords = {Convergence diagnostic, Markov chain, Monte Carlo, standard errors},
+year = {2008},
+doi = {10.1214/08-STS257},
+URL = {https://doi.org/10.1214/08-STS257}
+}
+
+@article{Koehler-Monte_Carlo_error,
+    author = {Koehler, E. and Brown, E. and Haneuse, S.J.-P.A.},
+    title = {On the Assessment of {Monte Carlo} Error in Simulation-Based Statistical Analyses},
+    journal = {The American Statistician},
+    volume = {63},
+    number = {2},
+    pages = {155-162},
+    year = {2009},
+    publisher = {Taylor & Francis},
+    doi = {10.1198/tast.2009.0030}
+}
+
+
+% ----- General information theory and probability theory ----- 
+
+
+% Derivation of mutual information for multivariate Student distribution
+@article{skew-elliptical,
+  author  = "Arellano-{V}alle, R.B. and Contreras-Reyes, J.E. and Genton, M.G.",
+  title   = "Shannon Entropy and Mutual Information for Multivariate Skew-Elliptical Distributions",
+  journal = "Scandinavian Journal of Statistics",
+  year    = 2013,
+  volume  = "49",
+  pages   = "42--62"
+}
+
+% Pinsker's book defining mutual information in general. Especially important is Chapter 2.
+@book{pinsker1964information,
+  title={Information and Information Stability of Random Variables and Processes},
+  author={Pinsker, M.S. and Feinstein, A.},
+  isbn={9780816268047},
+  lccn={64014623},
+  series={Holden-Day series in time series analysis},
+  year={1964},
+  publisher={Holden-Day}
+}
+
+% Wonderful book, we use it to prove the inequality of mutual information in mixture distributions
+@book{Polyanskiy-Wu-Information-Theory,
+    author={Polyanskiy, Y. and Wu, Y.},
+    title={Information Theory: From Coding to Learning},
+    year={2022},
+    publisher={Cambridge University Press},
+    note={Book draft}
+}
+
+% Upper bound on variance known as Popoviciu's inequality
+@article{Popoviciu-BoundedVariance,
+    author = {Popoviciu, Tiberiu},
+    title = {Sur les équations algébriques ayant toutes leurs racines réelles},
+    journal = {Mathematica (Cluj)},
+    year = {1935},
+    volume={9},
+    pages={129--145}
+}
+
+@book{cover:06:elements,
+  author = {Cover, Thomas M. and Thomas, Joy A.},
+  title = {Elements of Information Theory},
+  publisher = {Wiley-Interscience New York},
+  year = {2006},
+}
+
+ @book{Murphy-ProbabilisticMachineLearning-AdvancedTopics,
+ author = "Kevin P. Murphy",
+ title = "Probabilistic Machine Learning: Advanced Topics",
+ publisher = "MIT Press",
+ year = 2023,
+ url = "http://probml.github.io/book2"
+}
+
+% ------ Software ------
+
+% Snakemake
+@Article{Moelder-2021-snakemake,
+AUTHOR = { Mölder, F and Jablonski, KP and Letcher, B and Hall, MB and Tomkins-Tinch, CH and Sochat, V and Forster, J and Lee, S and Twardziok, SO and Kanitz, A and Wilm, A and Holtgrewe, M and Rahmann, S and Nahnsen, S and Köster, J},
+TITLE = {Sustainable data analysis with {S}nakemake},
+JOURNAL = {F1000Research},
+VOLUME = {10},
+YEAR = {2021},
+NUMBER = {33},
+DOI = {10.12688/f1000research.29032.1}
+}
+
+% TensorFlow Probability
+@article{Dillon-TensorFlowProbability,
+  author       = {Joshua V. Dillon and
+                  Ian Langmore and
+                  Dustin Tran and
+                  Eugene Brevdo and
+                  Srinivas Vasudevan and
+                  Dave Moore and
+                  Brian Patton and
+                  Alex Alemi and
+                  Matthew D. Hoffman and
+                  Rif A. Saurous},
+  title        = {TensorFlow Distributions},
+  journal      = {CoRR},
+  volume       = {abs/1711.10604},
+  year         = {2017},
+  url          = {http://arxiv.org/abs/1711.10604},
+  eprinttype    = {arXiv},
+  eprint       = {1711.10604},
+  timestamp    = {Mon, 13 Aug 2018 16:48:50 +0200},
+  biburl       = {https://dblp.org/rec/journals/corr/abs-1711-10604.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+% JAX
+@misc{JAX,
+  author = {James Bradbury and Roy Frostig and Peter Hawkins and Matthew James Johnson and Chris Leary and Dougal Maclaurin and George Necula and Adam Paszke and Jake Vander{P}las and Skye Wanderman-{M}ilne and Qiao Zhang},
+  title = {{JAX}: composable transformations of {P}ython+{N}um{P}y programs},
+  url = {http://github.com/google/jax},
+  version = {0.3.13},
+  year = {2018},
+}
+
+% NumPyro
+@article{Phan-2019-NumPyro,
+  title={Composable Effects for Flexible and Accelerated Probabilistic Programming in NumPyro},
+  author={Phan, Du and Pradhan, Neeraj and Jankowiak, Martin},
+  journal={arXiv preprint arXiv:1912.11554},
+  year={2019}
+}
+% Pyro
+@article{Bingham-2019-Pyro,
+  author    = {Eli Bingham and
+               Jonathan P. Chen and
+               Martin Jankowiak and
+               Fritz Obermeyer and
+               Neeraj Pradhan and
+               Theofanis Karaletsos and
+               Rohit Singh and
+               Paul A. Szerlip and
+               Paul Horsfall and
+               Noah D. Goodman},
+  title     = {Pyro: Deep Universal Probabilistic Programming},
+  journal   = {J. Mach. Learn. Res.},
+  volume    = {20},
+  pages     = {28:1--28:6},
+  year      = {2019},
+  url       = {http://jmlr.org/papers/v20/18-403.html}
+}
+
+@article{geomstats,
+  author  = {Nina Miolane and Nicolas Guigui and Alice Le Brigant and Johan Mathe and Benjamin Hou and Yann Thanwerdas and Stefan Heyder and Olivier Peltre and Niklas Koep and Hadi Zaatiti and Hatem Hajri and Yann Cabanes and Thomas Gerald and Paul Chauchat and Christian Shewmake and Daniel Brooks and Bernhard Kainz and Claire Donnat and Susan Holmes and Xavier Pennec},
+  title   = {Geomstats:  A {P}ython Package for {R}iemannian Geometry in Machine Learning},
+  journal = {Journal of Machine Learning Research},
+  year    = {2020},
+  volume  = {21},
+  number  = {223},
+  pages   = {1-9},
+  url     = {http://jmlr.org/papers/v21/19-027.html}
+}
+
+% ----- Other works -----
+
+% Normalizing flows: an overview
+@article{Papamakarios-Normalizing_flows,
+  author  = {George Papamakarios and Eric Nalisnick and Danilo Jimenez Rezende and Shakir Mohamed and Balaji Lakshminarayanan},
+  title   = {Normalizing Flows for Probabilistic Modeling and Inference},
+  journal = {Journal of Machine Learning Research},
+  year    = {2021},
+  volume  = {22},
+  number  = {57},
+  pages   = {1--64},
+  url     = {http://jmlr.org/papers/v22/19-1028.html}
+}
+@article{Kobyzev-Normalizing_flows,
+author = {I. Kobyzev and S. D. Prince and M. A. Brubaker},
+journal = {IEEE Transactions on Pattern Analysis \& Machine Intelligence},
+title = {Normalizing Flows: An Introduction and Review of Current Methods},
+year = {2021},
+volume = {43},
+number = {11},
+issn = {1939-3539},
+pages = {3964-3979},
+keywords = {estimation;jacobian matrices;mathematical model;training;computational modeling;context modeling;random variables},
+doi = {10.1109/TPAMI.2020.2992934},
+publisher = {IEEE Computer Society},
+address = {Los Alamitos, CA, USA},
+month = {nov}
+}
+
+
+
+% Very nice overview of CCA as a whitening transformation, we use this result in Appendix
+﻿@Article{Jendoubi2019-CCA,
+author={Jendoubi, Takoua
+and Strimmer, Korbinian},
+title={A whitening approach to probabilistic canonical correlation analysis for omics data integration},
+journal={BMC Bioinformatics},
+year={2019},
+month={Jan},
+day={09},
+volume={20},
+number={1},
+pages={15},
+issn={1471-2105},
+doi={10.1186/s12859-018-2572-9},
+url={https://doi.org/10.1186/s12859-018-2572-9}
+}
+
+% General matrix identities
+@MISC{Petersen-MatrixCookbook,
+    author       = "K. B. Petersen and M. S. Pedersen",
+    title        = "The Matrix Cookbook",
+    year         = "2012",
+    month        = "November",
+    keywords     = "Matrix identity, matrix relations, inverse, matrix derivative",
+    publisher    = "Technical University of Denmark",
+    note         = "Version 20121115",
+    url          = "http://www2.compute.dtu.dk/pubdb/pubs/3274-full.html",
+    abstract     = "Matrix identities, relations and approximations. A desktop reference for quick overview of mathematics of matrices."
+}
+
+% We use this result to characterize PMI profile of the normal distribution
+@article{Imhof-Generalized-chi-squared,
+ ISSN = {00063444},
+ URL = {http://www.jstor.org/stable/2332763},
+ author = {J. P. Imhof},
+ journal = {Biometrika},
+ number = {3/4},
+ pages = {419--426},
+ publisher = {[Oxford University Press, Biometrika Trust]},
+ title = {Computing the Distribution of Quadratic Forms in Normal Variables},
+ urldate = {2023-08-28},
+ volume = {48},
+ year = {1961}
+}
+
+% Carl's paper which discusses PMI histogram between words
+@InProceedings{allen-2019,
+  title = 	 {Analogies Explained: Towards Understanding Word Embeddings},
+  author =       {Allen, Carl and Hospedales, Timothy},
+  booktitle = 	 {Proceedings of the 36th International Conference on Machine Learning},
+  pages = 	 {223--231},
+  year = 	 {2019},
+  editor = 	 {Chaudhuri, Kamalika and Salakhutdinov, Ruslan},
+  volume = 	 {97},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {09--15 Jun},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v97/allen19a/allen19a.pdf},
+  url = 	 {https://proceedings.mlr.press/v97/allen19a.html}
+}
+
+% Smooth manifolds
+@book{Lee-2003-SmoothManifolds,
+  title={Introduction to Smooth Manifolds},
+  author={Lee, J.M.},
+  isbn={9781441999825},
+  series={Graduate Texts in Mathematics},
+  year={2012},
+  edition={2nd},
+  url={https://doi.org/10.1007/978-1-4419-9982-5},
+  publisher={Springer}
+}

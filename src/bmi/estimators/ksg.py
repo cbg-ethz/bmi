@@ -30,7 +30,12 @@ class KSGEnsembleParameters(pydantic.BaseModel):
 
 
 class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
-    """Ensemble estimator built using the first approximation (equation (8) in the paper)."""
+    """An implementation of of the neighborhood-based KSG estimator.
+
+    We use the first approximation (i.e., equation (8) in the paper) and allow
+    for using different neighborhood sizes. The final estimate is the average
+    of the estimates using different neighborhood sizes.
+    """
 
     def __init__(
         self,

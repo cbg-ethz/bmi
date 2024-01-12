@@ -37,9 +37,12 @@ plugins:
           options:
             show_source: false
             show_root_heading: true
+  - bibtex:
+      bib_file: 'references.bib'
 
 nav:
   - Home: index.md
+  - Estimators: estimators.md
   - Contributing: contributing.md
   - API: api/index.md
 
