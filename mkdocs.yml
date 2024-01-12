@@ -5,7 +5,9 @@ theme:
   name: material
   features:
     - navigation.tabs
+    - navigation.indexes
     - navigation.sections
+    - navigation.top
     - toc.integrate
     - search.suggest
     - search.highlight

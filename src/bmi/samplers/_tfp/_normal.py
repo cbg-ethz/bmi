@@ -14,6 +14,7 @@ tfd = tfp.distributions
 def construct_multivariate_normal_distribution(
     mean: jnp.ndarray, covariance: jnp.ndarray
 ) -> tfd.MultivariateNormalLinearOperator:
+    """Constructs a multivariate normal distribution."""
     # Lower triangular matrix such that `covariance = scale @ scale^T`
     scale = jnp.linalg.cholesky(covariance)
     return tfd.MultivariateNormalLinearOperator(
@@ -23,14 +24,19 @@ def construct_multivariate_normal_distribution(
 
 
 class MultivariateNormalDistribution(JointDistribution):
+    """Multivariate normal distribution $P_{XY}$,
+    such that $P_X$ is a multivariate normal distribution on the space
+    of dimension `dim_x` and $P_Y$ is a multivariate normal distribution
+    on the space of dimension `dim_y`."""
+
     def __init__(
         self, *, dim_x: int, dim_y: int, covariance: ArrayLike, mean: Optional[ArrayLike] = None
     ) -> None:
         """
 
         Args:
-            dim_x: dimension of the X space
-            dim_y: dimension of the Y space
+            dim_x: dimension of the $X$ support
+            dim_y: dimension of the $Y$ support
             mean: mean vector, shape `(n,)` where `n = dim_x + dim_y`.
               Default: zero vector
             covariance: covariance matrix, shape (n, n)
