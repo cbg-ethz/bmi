@@ -38,7 +38,7 @@ class MultivariateNormalDistribution(JointDistribution):
             dim_x: dimension of the $X$ support
             dim_y: dimension of the $Y$ support
             mean: mean vector, shape `(n,)` where `n = dim_x + dim_y`.
-              Default: zero vector
+                Default: zero vector
             covariance: covariance matrix, shape (n, n)
         """
         # The default mean vector is zero

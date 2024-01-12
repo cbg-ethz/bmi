@@ -118,7 +118,7 @@ class SplitStudentT(BaseSampler):
             array, shape `(dim_x+dim_y, dim_x+dim_y)`
 
         Raises:
-            ValueError, if covariance is not defined (for `df` $\\le 2$)
+            ValueError: if covariance is not defined (for `df` $\\le 2$)
         """
         if self.df <= 2:
             raise ValueError(

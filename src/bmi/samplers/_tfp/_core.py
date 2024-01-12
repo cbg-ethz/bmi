@@ -22,7 +22,7 @@ class JointDistribution:
         dim_x: dimension of the support of $X$
         dim_y: dimension of the support of $Y$
         analytic_mi: analytical mutual information.
-          Use `None` if unknown (in most cases)
+            Use `None` if unknown (in most cases)
     """
 
     dist_joint: tfd.Distribution

@@ -16,6 +16,13 @@ def construct_multivariate_student_distribution(
     dispersion: jnp.ndarray,
     df: Union[int, float],
 ) -> tfd.MultivariateStudentTLinearOperator:
+    """Constructs a multivariate Student distribution.
+
+    Args:
+        mean: location vector, shape `(dim,)`
+        dispersion: dispersion matrix, shape `(dim, dim)`
+        df: degrees of freedom
+    """
     # Lower triangular matrix such that `dispersion = scale @ scale^T`
     scale = jnp.linalg.cholesky(dispersion)
     return tfd.MultivariateStudentTLinearOperator(
@@ -26,6 +33,14 @@ def construct_multivariate_student_distribution(
 
 
 class MultivariateStudentDistribution(JointDistribution):
+    """Multivariate Student distribution $P_{XY}$,
+    such that $P_X$ is a multivariate Student distribution on the space
+    of dimension `dim_x` and $P_Y$ is a multivariate Student distribution
+    on the space of dimension `dim_y`.
+
+    Note that the degrees of freedom `df` are the same for all distributions.
+    """
+
     def __init__(
         self,
         *,
@@ -38,12 +53,12 @@ class MultivariateStudentDistribution(JointDistribution):
         """
 
         Args:
-            dim_x: dimension of the X space
-            dim_y: dimension of the Y space
+            dim_x: dimension of the $X$ support
+            dim_y: dimension of the $Y$ support
             df: degrees of freedom
             mean: mean vector, shape `(n,)` where `n = dim_x + dim_y`.
-              Default: zero vector
-            dispersion: dispersion matrix, shape (n, n)
+                Default: zero vector
+            dispersion: dispersion matrix, shape `(n, n)`
         """
         # The default mean vector is zero
         if mean is None:

@@ -99,7 +99,7 @@ class SplitMultinormal(BaseSampler):
             dim_x: dimension of the X space
             dim_y: dimension of the Y space
             mean: mean vector, shape `(n,)` where `n = dim_x + dim_y`.
-              Default: zero vector
+                Default: zero vector
             covariance: covariance matrix, shape (n, n)
         """
         super().__init__(dim_x=dim_x, dim_y=dim_y)
