@@ -39,7 +39,7 @@ Then, we will run two estimators on this task.
 ```python
 import bmi
 
-task = bmi.benchmark.BENCHMARK_TASKS['multinormal-dense-2-5-0.5']
+task = bmi.benchmark.BENCHMARK_TASKS['1v1-normal-0.75']
 print(f"Task {task.name} with dimensions {task.dim_x} and {task.dim_y}")
 print(f"Ground truth mutual information: {task.mutual_information():.2f}")
 

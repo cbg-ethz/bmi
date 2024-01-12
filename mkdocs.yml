@@ -1,5 +1,7 @@
 site_name: Benchmarking Mutual Information
 theme:
+  icon:
+    logo: material/alpha-i-box
   name: material
   features:
     - navigation.tabs
