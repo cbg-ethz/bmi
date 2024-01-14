@@ -19,7 +19,8 @@ def identity(x: _T) -> _T:
 
 
 class TransformedSampler(base.BaseSampler):
-    """Pushforward of a distribution $P_{XY}$
+    """
+    Pushforward of a distribution $P_{XY}$
     via a product mapping
         $f \\times g$.
 
@@ -45,21 +46,21 @@ class TransformedSampler(base.BaseSampler):
     ) -> None:
         """
         Args:
-            base_sampler: allows sampling from P(X, Y)
-            transform_x: diffeomorphism f, so that we have variable f(X).
-              By default the identity mapping.
-            transform_y: diffeomorphism g, so that we have variable g(Y).
-              By default the identity mapping.
-            add_dim_x: the difference in dimensions of the output of `f` and its input.
-              Note that for any diffeomorphism it must be zero
-            add_dim_y: similarly as `add_dim_x`, but for `g`
+            base_sampler: allows sampling from $P(X, Y)$
+            transform_x: diffeomorphism $f$,
+                so that we have variable $f(X)$. By default the identity mapping.
+            transform_y: diffeomorphism $g$,
+                so that we have variable $g(Y)$. By default the identity mapping.
+            add_dim_x: the difference in dimensions of the output of $f$ and its input.
+                Note that for any diffeomorphism it must be zero
+            add_dim_y: similarly as `add_dim_x`, but for $g$.
             vectorise: whether to use `jax.vmap` to vectorise transforms.
                 If False, provided `transform_X` and `transform_Y` need to already be vectorized.
 
         Note:
-          If you don't use diffeomorphisms (in particular,
-          non-default `add_dim_x` or `add_dim_y`), overwrite the
-          `mutual_information()` method
+            If you don't use diffeomorphisms (in particular,
+            non-default `add_dim_x` or `add_dim_y`), overwrite the
+            `mutual_information()` method
         """
         if add_dim_x < 0 or add_dim_y < 0:
             raise ValueError("Transformed samplers cannot decrease dimensionality.")
@@ -92,12 +93,12 @@ class TransformedSampler(base.BaseSampler):
         return self._vectorized_transform_x(x), self._vectorized_transform_y(y)
 
     def sample(self, n_points: int, rng: Union[int, KeyArray]) -> tuple[jnp.ndarray, jnp.ndarray]:
-        """Samples from P(f(X), g(Y)).
+        """Samples from the distribution $P(f(X), g(Y))$.
 
         Returns:
             paired samples
-            from f(X), shape (n_points, dim(X) + add_dim_x) and
-            from g(Y), shape (n_points, dim(Y) + add_dim_y)
+                from $f(X)$, shape `(n_points, dim(X) + add_dim_x)` and
+                from $g(Y)$, shape `(n_points, dim(Y) + add_dim_y)`
         """
         x, y = self._base_sampler.sample(n_points=n_points, rng=rng)
         return self.transform(x, y)

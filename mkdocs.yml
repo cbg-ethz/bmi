@@ -5,7 +5,9 @@ theme:
   name: material
   features:
     - navigation.tabs
+    - navigation.indexes
     - navigation.sections
+    - navigation.top
     - toc.integrate
     - search.suggest
     - search.highlight
@@ -48,6 +50,7 @@ nav:
   - Fine distributions: fine-distributions.md
   - Contributing: contributing.md
   - API: api/index.md
+
 
 watch:
   - src/bmi

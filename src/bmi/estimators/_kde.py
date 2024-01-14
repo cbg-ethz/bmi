@@ -42,17 +42,12 @@ class DifferentialEntropies(BaseModel):
 class KDEMutualInformationEstimator(IMutualInformationPointEstimator):
     """The kernel density mutual information estimator based on
 
-    .. math::
+    $I(X; Y) = h(X) + h(Y) - h(X, Y)$,
 
-       I(X; Y) = h(X) + h(Y) - h(X, Y),
+    where $h(X)$ is the differential entropy
+    $h(X) = -\\mathbb{E}[ \\log p(X) ]$.
 
-    where :math:`h(X)` is the differential entropy
-
-    .. math::
-
-       h(X) = -\\mathbb{E}[ \\log p(X) ].
-
-    The logarithm of probability density function :math:`\\log p(X)`
+    The logarithm of probability density function $\\log p(X)$
     is estimated via a kernel density estimator (KDE) using SciKit-Learn.
 
     Note:
@@ -74,16 +69,16 @@ class KDEMutualInformationEstimator(IMutualInformationPointEstimator):
 
         Args:
             kernel_xy: kernel to be used for joint distribution
-              PDF :math:`p_{XY}` estimation.
-              See SciKit-Learn's ``KernelDensity`` object for more information.
+                PDF $p_{XY}$ estimation.
+                See SciKit-Learn's ``KernelDensity`` object for more information.
             kernel_x: kernel to be used for the :math:`p_X` estimation.
-              If ``None`` (default), ``kernel_xy`` will be used.
+                If ``None`` (default), ``kernel_xy`` will be used.
             kernel_y: similarly to ``kernel_x``.
             bandwidth_xy: kernel bandwidth to be used for joint distribution
-              estimation.
+                estimation.
             bandwidth_x: kernel bandwidth to be used
-              for :math:`p_X` estimation.
-              If set to None (default), then ``bandwidth_xy`` is used.
+                for $p_X$ estimation.
+                If set to None (default), then ``bandwidth_xy`` is used.
             bandwidth_y: similar to ``bandwidth_x``
             standardize: whether to standardize the data points
         """

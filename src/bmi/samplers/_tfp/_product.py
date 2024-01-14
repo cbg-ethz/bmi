@@ -7,20 +7,19 @@ tfd = tfp.distributions
 
 
 class ProductDistribution(JointDistribution):
-    """From distributions P_X and P_Y creates a distribution
+    """From distributions $P_X$ and $P_Y$ creates a distribution $P_{XY} = P_X \\otimes P_Y$,
+    so that $X$ and $Y$ are independent.
 
-        P_{XY} = P_X x P_Y
-
-    in which the variables X and Y are independent.
-
-    In particular,
-
-        I(X; Y) = 0
-
-    under this distribution.
+    In particular, $I(X; Y) = 0$.
     """
 
     def __init__(self, dist_x: tfd.Distribution, dist_y: tfd.Distribution) -> None:
+        """Creates a product distribution.
+
+        Args:
+            dist_x: distribution $P_X$
+            dist_y: distribution $P_Y$
+        """
         dims_x = dist_x.event_shape_tensor()
         dims_y = dist_y.event_shape_tensor()
 

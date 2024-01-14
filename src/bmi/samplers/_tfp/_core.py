@@ -11,17 +11,18 @@ tfb = tfp.bijectors
 
 @dataclasses.dataclass
 class JointDistribution:
-    """Represents a joint distribution of X and Y with known marginals.
-    This is the main object of this package.
+    """The main object of this package.
+    Represents a joint distribution $P_{XY}$ together
+    with the marginal distributions $P_X$ and $P_Y$.
 
     Attributes:
-        dist: tfd.Distribution, joint distribution of X and Y
-        dist_x: tfd.Distribution, marginal distribution of X
-        dist_y: tfd.Distribution, marginal distribution of Y
-        dim_x: dimension of the support of X
-        dim_y: dimension of the support of Y
+        dist: $P_{XY}$
+        dist_x: $P_X$
+        dist_y: $P_Y$
+        dim_x: dimension of the support of $X$
+        dim_y: dimension of the support of $Y$
         analytic_mi: analytical mutual information.
-          Use `None` if unknown (in most cases)
+            Use `None` if unknown (in most cases)
     """
 
     dist_joint: tfd.Distribution
@@ -34,7 +35,7 @@ class JointDistribution:
     def sample(
         self, n_points: int, key: jax.random.PRNGKeyArray
     ) -> tuple[jnp.ndarray, jnp.ndarray]:
-        """Sample from the joint distribution.
+        """Sample from the joint distribution $P_{XY}$.
 
         Args:
             n_points: number of samples to draw
@@ -55,7 +56,7 @@ class JointDistribution:
 
         Returns:
             pointwise mutual information evaluated at (x, y) points,
-              shape `(n_points,)`
+                shape `(n_points,)`
 
         Note:
             This function is vectorized, i.e. it can calculate PMI for multiple points at once.
@@ -75,8 +76,8 @@ def mixture(
 
     Args:
         proportions: mixture proportions should be positive and sum up to 1,
-          shape `(n_components,)`
-        components: sequence of `JointDistribution` objects which will be mixed
+            shape `(n_components,)`
+        components: sequence of distributions to be mixed
 
     Returns:
         mixture distribution
@@ -120,13 +121,13 @@ def transform(
     x_transform: Optional[tfb.Bijector] = None,
     y_transform: Optional[tfb.Bijector] = None,
 ) -> JointDistribution:
-    """For given diffeomorphisms `f` and `g` transforms the joint distribution P_{XY}
-    into P_{f(X)g(Y)}.
+    """For given diffeomorphisms $f$ and $g$ transforms the joint distribution $P_{XY}$
+    into $P_{f(X)g(Y)}$.
 
     Args:
         dist: distribution to be transformed
-        x_transform: diffeomorphism to transform X. Defaults to identity.
-        y_transform: diffeomorphism to transform Y. Defaults to identity.
+        x_transform: diffeomorphism $f$ to transform $X$. Defaults to identity.
+        y_transform: diffeomorphism $g$ to transform $Y$. Defaults to identity.
 
     Returns:
         transformed distribution
@@ -169,11 +170,11 @@ def pmi_profile(key: jax.random.PRNGKeyArray, dist: JointDistribution, n: int) -
 def monte_carlo_mi_estimate(
     key: jax.random.PRNGKeyArray, dist: JointDistribution, n: int
 ) -> tuple[float, float]:
-    """Estimates the mutual information between X and Y using Monte Carlo sampling.
+    """Estimates the mutual information $I(X; Y)$ using Monte Carlo sampling.
 
     Returns:
-        float, mutual information estimate
-        float, standard error estimate
+        mutual information estimate
+        standard error estimate
 
     Note:
         It is worth to run this procedure multiple times and see whether

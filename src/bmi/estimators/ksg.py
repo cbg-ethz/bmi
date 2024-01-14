@@ -50,17 +50,17 @@ class KSGEnsembleFirstEstimator(IMutualInformationPointEstimator):
 
         Args:
             neighborhoods: sequence of positive integers,
-              specifying the size of neighborhood for MI calculation
+                specifying the size of neighborhood for MI calculation
             standardize: whether to standardize the data before MI calculation, by default true
             metric_x: metric on the X space
             metric_y: metric on the Y space. If None, `metric_x` will be used
             n_jobs: number of jobs to be launched to compute distances.
-              Use -1 to use all processors.
+                Use -1 to use all processors.
             chunk_size: internal batch size, used to speed up the computations while fitting
-              into the memory
+                into the memory
 
         Note:
-            If you use Chebyshev (l-infinity) distance for both X and Y,
+            If you use Chebyshev ($\\l_\\infty$) distance for both $X$ and $Y$ spaces,
             `KSGChebyshevEstimator` may be faster.
         """
 
