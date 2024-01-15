@@ -41,7 +41,7 @@ import bmi
 
 task = bmi.benchmark.BENCHMARK_TASKS['1v1-normal-0.75']
 print(f"Task {task.name} with dimensions {task.dim_x} and {task.dim_y}")
-print(f"Ground truth mutual information: {task.mutual_information():.2f}")
+print(f"Ground truth mutual information: {task.mutual_information:.2f}")
 
 X, Y = task.sample(1000, seed=42)
 
