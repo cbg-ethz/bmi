@@ -7,6 +7,8 @@
 
 # Benchmarking Mutual Information
 
+![image](https://github.com/cbg-ethz/bmi/assets/26434160/0a838dee-f64f-44f5-9276-df8d03109b76)
+
 BMI is the package for estimation of mutual information between continuous random variables and testing new estimators.
 
 - **Documentation**: [https://cbg-ethz.github.io/bmi/](https://cbg-ethz.github.io/bmi/)
