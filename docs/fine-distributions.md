@@ -3,7 +3,11 @@
 In this tutorial we will take a closer look at the family of *fine distributions*, proposed in [The Mixtures and the Neural Critics](https://arxiv.org/abs/2310.10240) paper[@mixtures-neural-critics-2023].
 
 A distribution $P_{XY}$ is fine, if it is possible to evaluate the densities $\log p_{XY}(x, y)$, $\log p_X(x)$, and $\log p_Y(y)$ for arbitrary points and to efficiently generate samples from $P_{XY}$.
-In particular, one can evaluate [pointwise mutual information](https://en.wikipedia.org/wiki/Pointwise_mutual_information) $\mathrm{PMI}(x, y) = \log \frac{p_{XY}(x, y)}{p_X(x)p_Y(y)}$ and use a Monte Carlo approximation of the mutual information $I(X; Y) = \mathbb E_{(x, y)\sim P_{XY}}[\mathrm{PMI}(x, y)]$.
+In particular, one can evaluate [pointwise mutual information](https://en.wikipedia.org/wiki/Pointwise_mutual_information) 
+
+$\mathrm{PMI}(x, y) = \log \frac{p_{XY}(x, y)}{p_X(x)p_Y(y)}$
+
+and use a Monte Carlo approximation of the mutual information $I(X; Y) = \mathbb E_{(x, y)\sim P_{XY}}[\mathrm{PMI}(x, y)]$.
 
 The fine distribution can therefore be implemented as a triple of [TensorFlow Probability on JAX](https://www.tensorflow.org/probability/examples/TensorFlow_Probability_on_JAX) distributions: the joint distribution $P_{XY}$ and marginals $P_X$ and $P_Y$.
 
@@ -14,22 +18,51 @@ import jax.numpy as jnp
 from bmi.samplers import fine
 
 # Define a fine distribution
-r = 0.8
-cov = jnp.asarray([[1., r], [r, 1.]])
+cov = jnp.asarray([[1., 0.8], [0.8, 1.]])
 dist = fine.MultivariateNormalDistribution(dim_x=1, dim_y=1, covariance=cov)
-
-# Evaluate the PMI at a specified point
-print(dist.pmi(2.0, 3.5))  # 1.6219368
 ```
 
-The distribution can be constructed.
-To see how a fine distribution can be used in the benchmark see [this section](#connecting-fine-distributions-and-samplers).
+To see how fine distributions can be used in the benchmark, see [this section](#connecting-fine-distributions-and-samplers).
 
 ## Basic operations supported by fine distributions
 
-!!! todo
+A fine distribution $P_{XY}$ can be used to sample from $P_{XY}$ or evaluate the pointwise mutual information $\mathrm{PMI}(x, y)$ at any point.
+The distribution of $\mathrm{PMI}(x, y)$, where $(x, y)\sim P_{XY}$ is called the *PMI profile* and can be approximated via the histograms from the samples.
+Similarly, sample-based Monte Carlo approximation can be used to estimate the mutual information $I(X; Y)$, which is the mean of the PMI profile.
 
-    Explain how to estimate MI and how to use PMI profiles.
+```python
+import jax.numpy as jnp
+from jax import random
+
+from bmi.samplers import fine
+
+# Define a fine distribution:
+cov = jnp.asarray([[1., 0.8], [0.8, 1.]])
+dist = fine.MultivariateNormalDistribution(dim_x=1, dim_y=1, covariance=cov)
+
+# Sample 100_000 points from the distribution:
+key = random.PRNGKey(42)
+n_samples = 100_000
+X, Y = dist.sample(1000, key=key)
+
+# Calculate the PMI, obtaining the sample from the PMI profile:
+pmis = dist.pmi(X, Y)
+
+# If one wants only the samples from the PMI profile,
+# one can use a helper function.
+# We use the same key to get the same output as in the previous example.
+pmis = fine.pmi_profile(key=key, dist=dist, n=1000)
+
+# Estimate mutual information from samples:
+print(jnp.mean(pmis))  # 0.51192063
+
+# One can also estimate the mutual information
+# and the associated Monte Carlo Standard Error (MCSE)
+# using the helper function:
+mi_estimate, mi_mcse = fine.estimate_mutual_information(key=key, dist=dist, n=n_samples)
+print(mi_estimate)  # 0.51192063
+print(mi_mcse)  # 0.00252177
+```
 
 ### Combining and transforming fine distributions
 
@@ -37,16 +70,48 @@ One can construct new fine distributions from the existing ones by two basic ope
 
 #### Transformation by a diffeomorphism 
 
-!!! todo
-    
-    Add an example on how to use all operations.
+A fine distribution $P_{XY}$ can be transformed by a diffeomorphism of the form $f\times g$ to obtain a new fine distribution $P_{f(X)g(Y)}$.
+Any diffeomorphism supported by [TensorFlow Probability on JAX](https://www.tensorflow.org/probability/examples/TensorFlow_Probability_on_JAX#bijectors) can be used.
+
+```python
+import jax.numpy as jnp
+from tensorflow_probability.substrates import jax as tfp
+
+from bmi.samplers import fine, SparseLVMParametrization
+
+# Define a normal distribution
+cov = SparseLVMParametrization(dim_x=2, dim_y=3, n_interacting=1).covariance
+normal = fine.MultivariateNormalDistribution(dim_x=2, dim_y=3, covariance=cov)
+
+# Use a TensorFlow Probability bijector to transform the distribution
+transformed_normal = fine.transform(dist=normal, x_transform=tfp.bijectors.Sigmoid(), y_transform=tfp.bijectors.Sigmoid())
+```
+
+Note that samplers can be transformed by arbitrary continuous injective functions, not only diffeomorphisms, which preserve mutual information. However, this comes at the cost of losing the ability to compute pointwise mutual information. To wrap a fine distribution into a sampler, see [this section](#connecting-fine-distributions-and-samplers).
 
 #### Constructing a mixture
 
+If $P_{X_1Y_1}, \dotsc, P_{X_KY_K}$ are arbitrary fine distributions defined on the same space $\mathcal X\times \mathcal Y$, and $w_1, \dotsc, w_K$ are positive numbers such that $w_1 + \dotsc + w_K=1$, then the mixture
 
-!!! todo
-    
-    Add an example on how to use all operations.
+$$P_{XY} = \sum_{k=1}^K w_k P_{X_kY_K}$$
+
+is also a fine distribution. Note that even if the component distributions do not encode any information ($I(X_k; Y_k) = 0$), the mixture $P_{XY}$ can have $I(X; Y) > 0$ and be as large as $\log K$.
+
+```python
+import jax.numpy as jnp
+from tensorflow_probability.substrates import jax as tfp
+
+from bmi.samplers import fine, SparseLVMParametrization
+
+# Define a normal distribution
+cov1 = SparseLVMParametrization(dim_x=2, dim_y=3, n_interacting=1).covariance
+normal1 = fine.MultivariateNormalDistribution(dim_x=2, dim_y=3, covariance=cov1)
+
+cov2 = SparseLVMParametrization(dim_x=2, dim_y=3, n_interacting=2).covariance
+normal2 = fine.MultivariateNormalDistribution(dim_x=2, dim_y=3, covariance=cov2)
+
+mixture = fine.mixture(proportions=[0.8, 0.2], components=[normal1, normal2])
+```
 
 ## Discrete variables
 
@@ -140,5 +205,13 @@ As an example using NumPyro to fit a mixture of multivariate normal distribution
 
 ### Where is the API?
 The API is [here](api/fine-distributions.md).
+
+### What is the difference between a fine distribution and a sampler?
+Samplers are more general than fine distributions. [This section](#connecting-fine-distributions-and-samplers) explains how to wrap a fine distribution into a sampler.
+
+### How should I choose the number of samples for the mutual information estimation?
+If variance of the PMI profile is finite and equal to $V$, then the Monte Carlo Standard Error (MCSE) of the mutual information estimate is equal to $\sqrt{V/n}$.
+We suggest to obtain an estimate for e.g., 10,000 samples (which should be fast) and observing whether the MCSE is small enough.
+Additionally, we suggest to repeat sampling several times and observing whether the MCSE is stable: it may be possible that for some problems the variance of the PMI profile may be infinite and MCSE is not a valid uncertainty estimate.
 
 \bibliography
