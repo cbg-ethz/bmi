@@ -219,7 +219,7 @@ rule plot_pdf:
         mi_approx = np.mean(pmi_approx, axis=1)  # (num_mcmc_samples,)
         ax.set_xlabel("MI")
 
-        ax.hist(mi_approx, bins=50, density=True, alpha=0.5, color="red")
+        ax.hist(mi_approx, bins=50, density=True, alpha=0.5, color="red", rasterized=True)
         ax.axvline(mi_approx.mean(), color="red")  # Visualise posterior mean
         ax.axvline(mi_true, color="k", linestyle=":")  # Visualise true value
 
@@ -234,10 +234,10 @@ rule plot_pdf:
         bins = np.linspace(min_val, max_val, 50)
         for pmi_vals in pmi_approx:
             prof, _ = np.histogram(pmi_vals, bins=bins, density=True)
-            ax.stairs(prof, edges=bins, color="red", alpha=0.05)
+            ax.stairs(prof, edges=bins, color="red", alpha=0.05, rasterized=True)
         
         prof_true, _ = np.histogram(pmi_true, bins=bins, density=True)
-        ax.stairs(prof_true, edges=bins, color="k", alpha=1)
+        ax.stairs(prof_true, edges=bins, color="k", alpha=1, rasterized=True)
 
         for ax in [axs[2], axs[3]]:
             ax.set_ylabel("")
