@@ -51,7 +51,7 @@ def train_test_split(
 
     else:
         # get random int from jax key
-        random_state = int(jax.random.randint(key, (1,), 0, 1000))
+        random_state = int(jax.random.randint(key, shape=(), minval=0, maxval=1000))
 
         xs_train, xs_test, ys_train, ys_test = msel.train_test_split(
             xs,
