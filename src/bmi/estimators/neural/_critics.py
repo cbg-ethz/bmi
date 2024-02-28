@@ -41,22 +41,23 @@ class MLP(eqx.Module):
               - 8 -> 12
               - 12 -> 1
         """
-        # We have in total the following dimensionalities:
-        dim_sizes = [dim_x + dim_y] + list(hidden_layers) + [1]
-        # ... and one layer less:
-        keys = jax.random.split(key, len(hidden_layers) + 1)
 
+        key_hidden, key_final = jax.random.split(key)
+        keys_hidden = jax.random.split(key, len(hidden_layers))
+
+        dim_ins = [dim_x + dim_y] + list(hidden_layers)[:-1]
+        dim_outs = list(hidden_layers)
         self.layers = []
+        for dim_in, dim_out, key in zip(dim_ins, dim_outs, keys_hidden):
+            self.layers.append(eqx.nn.Linear(dim_in, dim_out, key=key))
+            self.layers.append(jax.nn.relu)
 
-        for i, key in enumerate(keys):
-            self.layers.append(eqx.nn.Linear(dim_sizes[i], dim_sizes[i + 1], key=key))
+        self.layers.append(eqx.nn.Linear(dim_outs[-1], 1, key=key_final))
 
-        # This is ann additional trainable parameter.
-        self.extra_bias = jax.numpy.ones(1)
-
-    def __call__(self, x: Point, y: Point) -> float:
+    def __call__(self, x: Point, y: Point) -> jax.Array:
         z = jnp.concatenate([x, y])
 
-        for layer in self.layers[:-1]:
-            z = jax.nn.relu(layer(z))
-        return jnp.mean(self.layers[-1](z) + self.extra_bias)
+        for layer in self.layers:
+            z = layer(z)
+
+        return z[..., 0]  # return scalar
