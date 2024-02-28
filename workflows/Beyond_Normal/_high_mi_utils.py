@@ -1,5 +1,6 @@
 """Utilities for generating tasks
 for high mutual information plot."""
+
 from typing import Callable, Optional
 
 import numpy as np

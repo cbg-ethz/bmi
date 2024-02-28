@@ -1,5 +1,6 @@
 """Subpackage with different samplers, which can be used to define benchmark tasks
 or used directly to sample from distributions with known mutual information."""
+
 from bmi.samplers._additive_uniform import AdditiveUniformSampler
 
 # isort: off

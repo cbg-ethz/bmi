@@ -1,5 +1,6 @@
 """Estimation of mutual information via kernel density estimation
 of the differential entropy."""
+
 from typing import Literal, Optional, Union
 
 import numpy as np

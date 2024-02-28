@@ -1,4 +1,5 @@
 """Visualisation of several samplers used."""
+
 import matplotlib.pyplot as plt
 
 import bmi.benchmark.task_list as tl

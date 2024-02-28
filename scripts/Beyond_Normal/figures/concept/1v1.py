@@ -1,4 +1,5 @@
 """Main figure for the paper, like a visual abstract."""
+
 from typing import Optional
 
 import jax

@@ -5,7 +5,7 @@ repos:
     - id: isort
       name: isort (python)
 - repo: https://github.com/psf/black
-  rev: 23.3.0
+  rev: 24.2.0
   hooks:
     - id: black
       name: black (python)

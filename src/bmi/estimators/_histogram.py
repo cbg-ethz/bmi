@@ -3,6 +3,7 @@
 Note: if a bin p(x, y) has zero counts, we assign zero contribution from it to the MI:
   MI \\approx \\sum p(x, y) \\log( p(x, y) / p(x)p(y) )
 """
+
 from itertools import product
 from typing import Optional
 

@@ -1,4 +1,5 @@
 """API of the neural estimators implemented in JAX."""
+
 from typing import Any, Callable, Literal, Optional, Sequence
 
 import equinox as eqx
@@ -43,14 +44,14 @@ def train_test_split(
     xs: BatchedPoints,
     ys: BatchedPoints,
     train_size: Optional[float],
-    key: jax.random.PRNGKeyArray,
+    key: jax.Array,
 ) -> tuple[BatchedPoints, BatchedPoints, BatchedPoints, BatchedPoints]:
     if train_size is None:
         return xs, xs, ys, ys
 
     else:
         # get random int from jax key
-        random_state = int(jax.random.randint(key, (1,), 0, 1000))
+        random_state = int(jax.random.randint(key, shape=(), minval=0, maxval=1000))
 
         xs_train, xs_test, ys_train, ys_test = msel.train_test_split(
             xs,

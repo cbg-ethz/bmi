@@ -1,4 +1,5 @@
 """Simple comparison of the speed of our KSG estimators."""
+
 import argparse
 import time
 

@@ -1,4 +1,5 @@
 """Utilities for creating dispersion matrices."""
+
 import dataclasses
 from typing import Optional
 

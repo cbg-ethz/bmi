@@ -5,6 +5,7 @@ Note:
     They require quadratic, that is O(batch size ** 2), memory
     so they cannot be used with large batches.
 """
+
 import jax
 import jax.numpy as jnp
 from jax.scipy.special import logsumexp
