@@ -1,4 +1,5 @@
 """The example distributions used in the paper."""
+
 import dataclasses
 
 import jax.numpy as jnp

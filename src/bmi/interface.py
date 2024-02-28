@@ -5,6 +5,7 @@ Note:
     This restriction is to ensure that any subpackage can import from
     the `interface` module and that we do not run into the circular imports issue.
 """
+
 import pathlib
 from abc import abstractmethod
 from typing import Any, Optional, Protocol, Union
@@ -25,7 +26,7 @@ class BaseModel(pydantic.BaseModel):  # pytype: disable=invalid-annotation
     pass
 
 
-# This should be updated to the PRNGKeyArray (or possibly union with Any)
+# This should be updated to the Array (or possibly union with Any)
 # when it becomes a part of public JAX API
 KeyArray = Any
 Pathlike = Union[str, pathlib.Path]

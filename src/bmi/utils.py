@@ -5,6 +5,7 @@ Note:
     When we refactor the code and observe patterns,
     the methods implemented here will move.
 """
+
 from typing import Generator, Union
 
 import numpy as np

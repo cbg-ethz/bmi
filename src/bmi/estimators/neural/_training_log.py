@@ -1,4 +1,5 @@
 """Utility class for keeping information about training and displaying tqdm."""
+
 from typing import Union
 
 import jax
