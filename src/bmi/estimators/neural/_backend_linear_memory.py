@@ -3,6 +3,7 @@ is O(batch size) rather than O(batch size ** 2).
 
 In particular, we can use larger batches.
 """
+
 import jax
 import jax.numpy as jnp
 from jax.scipy.special import logsumexp

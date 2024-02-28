@@ -1,4 +1,5 @@
 """Creates a Timer class, a convenient thing to measure the elapsed time."""
+
 import time
 
 

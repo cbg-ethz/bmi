@@ -1,4 +1,5 @@
 """Module with neural networks used as critics."""
+
 from typing import Sequence
 
 import equinox as eqx

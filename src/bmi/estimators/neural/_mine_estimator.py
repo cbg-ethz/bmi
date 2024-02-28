@@ -7,6 +7,7 @@ https://arxiv.org/abs/1801.04062v5
 The expression for the gradient
 is given by Equation (12) in Section 3.2.
 """
+
 from typing import Optional, Sequence
 
 import equinox as eqx

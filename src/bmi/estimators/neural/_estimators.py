@@ -1,4 +1,5 @@
 """API of the neural estimators implemented in JAX."""
+
 from typing import Any, Callable, Literal, Optional, Sequence
 
 import equinox as eqx

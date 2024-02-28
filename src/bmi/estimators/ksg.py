@@ -1,4 +1,5 @@
 """Kraskov estimators."""
+
 from typing import Literal, Optional, Sequence, cast
 
 import numpy as np

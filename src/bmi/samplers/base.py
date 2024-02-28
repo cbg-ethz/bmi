@@ -1,4 +1,5 @@
 """Partial implementation of the ISampler interface, convenient to inherit from."""
+
 from typing import Union
 
 import numpy as np

@@ -1,4 +1,5 @@
 """Appearing and vanishing mutual information illustration."""
+
 import matplotlib.pyplot as plt
 import numpy as np
 

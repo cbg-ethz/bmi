@@ -1,4 +1,5 @@
 """Benchmarking mutual information package."""
+
 import bmi.benchmark as benchmark
 import bmi.estimators as estimators
 import bmi.samplers as samplers

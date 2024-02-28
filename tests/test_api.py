@@ -1,4 +1,5 @@
 """The tests for public API."""
+
 import pytest
 
 

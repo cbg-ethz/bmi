@@ -1,4 +1,5 @@
 """Basic training loop used for most neural estimators."""
+
 from typing import Callable, Optional
 
 import equinox as eqx

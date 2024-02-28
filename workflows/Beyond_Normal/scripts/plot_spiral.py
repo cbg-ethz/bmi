@@ -1,5 +1,6 @@
 """This script visualises the 2D spirals, sampling some points
 and applying spiral diffeomorphism with different speed parameter."""
+
 import jax
 import matplotlib.pyplot as plt
 import numpy as np

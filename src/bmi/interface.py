@@ -5,6 +5,7 @@ Note:
     This restriction is to ensure that any subpackage can import from
     the `interface` module and that we do not run into the circular imports issue.
 """
+
 import pathlib
 from abc import abstractmethod
 from typing import Any, Optional, Protocol, Union
