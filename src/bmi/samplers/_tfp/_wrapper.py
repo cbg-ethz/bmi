@@ -1,4 +1,5 @@
 """A wrapper from TFP distributions to BMI samplers."""
+
 from typing import Optional, Union
 
 import jax

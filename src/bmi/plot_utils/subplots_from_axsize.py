@@ -1,4 +1,5 @@
 """Allows creating """
+
 from collections.abc import Iterable
 from typing import Union
 

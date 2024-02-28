@@ -1,4 +1,5 @@
 """Tests of the kernel density estimator."""
+
 import numpy as np
 import pytest
 

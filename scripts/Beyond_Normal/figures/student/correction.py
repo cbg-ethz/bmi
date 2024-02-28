@@ -7,6 +7,7 @@ where the correction term depends on:
 This script plots the correction term as a function
 of the degrees of freedom for several dimensions.
 """
+
 from typing import cast
 
 import matplotlib.pyplot as plt

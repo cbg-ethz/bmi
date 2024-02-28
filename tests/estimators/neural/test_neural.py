@@ -1,4 +1,5 @@
 """Tests of the neural estimators on simple distributions."""
+
 import equinox as eqx
 import numpy as np
 import pytest

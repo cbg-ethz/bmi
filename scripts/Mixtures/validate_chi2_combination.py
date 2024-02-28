@@ -1,5 +1,6 @@
 """This script is used to validate the chi2 combination for
 the multivariate normal PMI profile."""
+
 import jax
 import matplotlib.pyplot as plt
 import numpy as np
