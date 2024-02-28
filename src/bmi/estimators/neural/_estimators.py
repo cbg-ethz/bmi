@@ -44,7 +44,7 @@ def train_test_split(
     xs: BatchedPoints,
     ys: BatchedPoints,
     train_size: Optional[float],
-    key: jax.random.PRNGKeyArray,
+    key: jax.Array,
 ) -> tuple[BatchedPoints, BatchedPoints, BatchedPoints, BatchedPoints]:
     if train_size is None:
         return xs, xs, ys, ys

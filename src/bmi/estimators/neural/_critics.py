@@ -17,7 +17,7 @@ class MLP(eqx.Module):
 
     def __init__(
         self,
-        key: jax.random.PRNGKeyArray,
+        key: jax.Array,
         dim_x: int,
         dim_y: int,
         hidden_layers: Sequence[int] = (5,),

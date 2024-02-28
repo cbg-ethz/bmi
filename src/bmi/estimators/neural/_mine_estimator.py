@@ -101,7 +101,7 @@ def _mine_value_neg_grad_log_denom(
 
 
 def _sample_paired_unpaired(
-    key: jax.random.PRNGKeyArray,
+    key: jax.Array,
     xs: BatchedPoints,
     ys: BatchedPoints,
     batch_size: Optional[int],
@@ -133,7 +133,7 @@ def _sample_paired_unpaired(
 
 
 def mine_training(
-    rng: jax.random.PRNGKeyArray,
+    rng: jax.Array,
     critic: eqx.Module,
     xs: BatchedPoints,
     ys: BatchedPoints,
@@ -313,7 +313,7 @@ class MINEEstimator(IMutualInformationPointEstimator):
     def parameters(self) -> MINEParams:
         return self._params
 
-    def _create_critic(self, dim_x: int, dim_y: int, key: jax.random.PRNGKeyArray) -> MLP:
+    def _create_critic(self, dim_x: int, dim_y: int, key: jax.Array) -> MLP:
         return MLP(dim_x=dim_x, dim_y=dim_y, key=key, hidden_layers=self._params.hidden_layers)
 
     def estimate_with_info(self, x: ArrayLike, y: ArrayLike) -> EstimateResult:

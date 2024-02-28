@@ -26,7 +26,7 @@ class BaseModel(pydantic.BaseModel):  # pytype: disable=invalid-annotation
     pass
 
 
-# This should be updated to the PRNGKeyArray (or possibly union with Any)
+# This should be updated to the Array (or possibly union with Any)
 # when it becomes a part of public JAX API
 KeyArray = Any
 Pathlike = Union[str, pathlib.Path]

@@ -32,9 +32,7 @@ class JointDistribution:
     dim_y: int
     analytic_mi: Optional[float] = None
 
-    def sample(
-        self, n_points: int, key: jax.random.PRNGKeyArray
-    ) -> tuple[jnp.ndarray, jnp.ndarray]:
+    def sample(self, n_points: int, key: jax.Array) -> tuple[jnp.ndarray, jnp.ndarray]:
         """Sample from the joint distribution $P_{XY}$.
 
         Args:
@@ -152,7 +150,7 @@ def transform(
     )
 
 
-def pmi_profile(key: jax.random.PRNGKeyArray, dist: JointDistribution, n: int) -> jnp.ndarray:
+def pmi_profile(key: jax.Array, dist: JointDistribution, n: int) -> jnp.ndarray:
     """Monte Carlo draws a sample of size `n` from the PMI distribution.
 
     Args:
@@ -168,7 +166,7 @@ def pmi_profile(key: jax.random.PRNGKeyArray, dist: JointDistribution, n: int) -
 
 
 def monte_carlo_mi_estimate(
-    key: jax.random.PRNGKeyArray, dist: JointDistribution, n: int
+    key: jax.Array, dist: JointDistribution, n: int
 ) -> tuple[float, float]:
     """Estimates the mutual information $I(X; Y)$ using Monte Carlo sampling.
 

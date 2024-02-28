@@ -10,9 +10,7 @@ from bmi.estimators.neural._training_log import TrainingLog
 from bmi.estimators.neural._types import BatchedPoints, Critic, Point
 
 
-def get_batch(
-    xs: BatchedPoints, ys: BatchedPoints, key: jax.random.PRNGKeyArray, batch_size: Optional[int]
-):
+def get_batch(xs: BatchedPoints, ys: BatchedPoints, key: jax.Array, batch_size: Optional[int]):
     if batch_size is not None:
         batch_indices = jax.random.choice(
             key,
@@ -26,7 +24,7 @@ def get_batch(
 
 
 def basic_training(
-    rng: jax.random.PRNGKeyArray,
+    rng: jax.Array,
     critic: eqx.Module,
     mi_formula: Callable[[Critic, Point, Point], float],
     xs: BatchedPoints,
