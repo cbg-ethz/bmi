@@ -13,7 +13,6 @@ class MLP(eqx.Module):
     """Multi-layer perceptron with ReLU layers."""
 
     layers: list
-    extra_bias: jax.numpy.ndarray
 
     def __init__(
         self,
@@ -43,11 +42,13 @@ class MLP(eqx.Module):
               - 12 -> 1
         """
 
-        key_hidden, key_final = jax.random.split(key)
-        keys_hidden = jax.random.split(key, len(hidden_layers))
+        key_final, key_hidden = jax.random.split(key)
+        keys_hidden = jax.random.split(key_hidden, len(hidden_layers))
 
         dim_ins = [dim_x + dim_y] + list(hidden_layers)[:-1]
         dim_outs = list(hidden_layers)
+        assert len(dim_ins) == len(dim_outs), f"Length mismatch: {len(dim_ins)} != {len(dim_outs)}"
+
         self.layers = []
         for dim_in, dim_out, key in zip(dim_ins, dim_outs, keys_hidden):
             self.layers.append(eqx.nn.Linear(dim_in, dim_out, key=key))
