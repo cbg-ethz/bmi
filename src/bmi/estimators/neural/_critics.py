@@ -45,21 +45,22 @@ class MLP(eqx.Module):
         key_final, key_hidden = jax.random.split(key)
         keys_hidden = jax.random.split(key_hidden, len(hidden_layers))
 
-        dim_ins = [dim_x + dim_y] + list(hidden_layers)[:-1]
-        dim_outs = list(hidden_layers)
-        assert len(dim_ins) == len(dim_outs), f"Length mismatch: {len(dim_ins)} != {len(dim_outs)}"
+        dims = [dim_x + dim_y] + list(hidden_layers)
 
         self.layers = []
-        for dim_in, dim_out, key in zip(dim_ins, dim_outs, keys_hidden):
+        for dim_in, dim_out, key in zip(dims, dims[1:], keys_hidden):
             self.layers.append(eqx.nn.Linear(dim_in, dim_out, key=key))
-            self.layers.append(jax.nn.relu)
 
-        self.layers.append(eqx.nn.Linear(dim_outs[-1], 1, key=key_final))
+        self.layers.append(eqx.nn.Linear(dims[-1], 1, key=key_final))
 
     def __call__(self, x: Point, y: Point) -> jax.Array:
         z = jnp.concatenate([x, y])
 
-        for layer in self.layers:
+        for layer in self.layers[:-1]:
             z = layer(z)
+            z = jax.nn.relu(z)
+
+        # last layer without activation
+        z = self.layers[-1](z)
 
         return z[..., 0]  # return scalar
