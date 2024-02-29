@@ -37,7 +37,7 @@ def test_mine_estimator_2d(n_points: int = 8_000, correlation: float = 0.7) -> N
     points_x, points_y = distribution.sample(n_points, rng=19)
 
     estimator = mine.MINEEstimator(
-        hidden_layers=(8, 5),
+        hidden_layers=(10, 5),
         verbose=False,
     )
 
