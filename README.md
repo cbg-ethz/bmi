@@ -54,14 +54,19 @@ print(f"Estimate by KSG: {ksg.estimate(X, Y):.2f}")
 
 ## Citing
 
-If you find this code useful in your research, consider citing [our manuscript](https://arxiv.org/abs/2306.11078):
+If you find this code useful in your research, consider citing [our manuscript](https://papers.nips.cc/paper_files/paper/2023/hash/36b80eae70ff629d667f210e13497edf-Abstract-Conference.html):
 
 ```
 @inproceedings{beyond-normal-2023,
-  title={Beyond Normal: On the Evaluation of Mutual Information Estimators},
-  author={Paweł Czyż and Frederic Grabowski and Julia E. Vogt and Niko Beerenwinkel and Alexander Marx},
-  booktitle={Thirty-seventh Conference on Neural Information Processing Systems},
-  year={2023}
+ title = {Beyond Normal: On the Evaluation of Mutual Information Estimators},
+ author = {Czy\.{z}, Pawe{\l}  and Grabowski, Frederic and Vogt, Julia and Beerenwinkel, Niko and Marx, Alexander},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {A. Oh and T. Neumann and A. Globerson and K. Saenko and M. Hardt and S. Levine},
+ pages = {16957--16990},
+ publisher = {Curran Associates, Inc.},
+ url = {https://proceedings.neurips.cc/paper_files/paper/2023/file/36b80eae70ff629d667f210e13497edf-Paper-Conference.pdf},
+ volume = {36},
+ year = {2023}
 }
 ```
 
