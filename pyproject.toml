@@ -8,9 +8,8 @@ readme = "README.md"
 packages = [{include = "bmi", from = "src"}]
 
 [tool.poetry.dependencies]
-# <3.11 because of PyType. Update when it's resolved
 # <3.12 because of SciPy. Update when it's resolved
-python = ">=3.9,<3.11"
+python = ">=3.9,<3.12"
 equinox = "^0.10.2"
 jax = "^0.4.8"
 jaxlib = "^0.4.7"
