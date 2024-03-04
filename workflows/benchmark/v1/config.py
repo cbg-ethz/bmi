@@ -18,7 +18,8 @@ from bmi.benchmark.tasks.spiral import transform_spiral_task as spiralise
 from bmi.benchmark.tasks.wiggly import transform_wiggly_task as wigglify
 
 # === ESTIMATORS ===
-# Defines the estimator to be run in the benchmark
+# Defines the estimators to be run in the benchmark
+# Note that each estimator implements `IMutualInformationPointEstimator` interface
 
 ESTIMATORS_DICT = {
     "MINE-10_5": estimators.MINEEstimator(verbose=False, hidden_layers=(10, 5)),

@@ -9,7 +9,8 @@ from bmi.benchmark.tasks import transform_rescale
 from bmi.benchmark.tasks.normal_cdf import transform_normal_cdf_task as normal_cdfise
 
 # === ESTIMATORS ===
-# Defines the estimator to be run in the benchmark
+# Defines the estimators to be run in the benchmark
+# Note that each estimator implements `IMutualInformationPointEstimator` interface
 
 ESTIMATORS_DICT = {
     "KSG-5": estimators.KSGEnsembleFirstEstimator(neighborhoods=(5,)),
