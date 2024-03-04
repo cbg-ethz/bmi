@@ -1,8 +1,8 @@
 # SnakeMake workflow used to generate results
 # 
 # ASSUMES THAT THE FOLLOWING ARE DECLARED:
-#   - ESTIMATORS: dict estimator_id -> estimator
-#   - TASKS: dict task_id -> task
+#   - ESTIMATORS_DICT: dict estimator_id -> estimator
+#   - TASKS: list of tasks
 #   - N_SAMPLES: list of ints
 #   - SEEDS: list of ints
 
@@ -14,6 +14,11 @@ import pandas as pd
 from bmi.benchmark import run_estimator
 
 
+TASKS_DICT = {
+    task.id: task for task in TASKS
+}
+
+
 # Gather all results into one CVS file
 rule results:
     output: 'results.csv'
@@ -21,7 +26,7 @@ rule results:
         expand(
             'results/{estimator_id}/{task_id}/{n_samples}-{seed}.yaml',
             estimator_id=ESTIMATORS,
-            task_id=TASKS,
+            task_id=TASKS_DICT,
             n_samples=N_SAMPLES,
             seed=SEEDS,
         )
@@ -30,8 +35,9 @@ rule results:
         for result_path in input:
             with open(result_path) as f:
                 result = yaml.load(f, yaml.SafeLoader)
-                task = TASKS[result['task_id']]
+                task = TASKS_DICT[result['task_id']]
                 result['mi_true'] = task.mutual_information
+                result['task_name'] = task.name
                 result['task_params'] = task.params
                 results.append(result)
         pd.DataFrame(results).to_csv(str(output), index=False)
@@ -44,7 +50,7 @@ rule sample_task:
         task_id = wildcards.task_id
         n_samples = int(wildcards.n_samples)
         seed = int(wildcards.seed)
-        task = TASKS[task_id]
+        task = TASKS_DICT[task_id]
         task.save_sample(str(output), n_samples, seed)
 
 
