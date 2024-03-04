@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
-import seaborn as sns
 import yaml
-from subplots_from_axsize import subplots_from_axsize
 
 
 def read_results(
@@ -35,19 +33,7 @@ def read_results(
     return results
 
 
-def subplots_benchmark(results):
-    n_tasks = len(results["task_id"].unique())
-    n_estimators = len(results["estimator_id"].unique())
-    fig, ax = subplots_from_axsize(
-        axsize=(n_tasks * 0.3, n_estimators * 0.3),
-        left=1.2,
-        bottom=4.0,
-    )
-    return fig, ax
-
-
-# TODO(frdrc): estimator order, task order, estimator names, task names
-def plot_benchmark(ax, results, n_samples=None):
+def create_benchmark_table(results, n_samples=None):
     if n_samples is None:
         n_samples = results["n_samples"].max()
 
@@ -56,7 +42,7 @@ def plot_benchmark(ax, results, n_samples=None):
 
     # relative_error
     with np.errstate(all="ignore"):
-        data["log_relative_error"] = np.log(data["mi_estimate"] / data["mi_true"])
+        data["log_relative_error"] = np.log2(data["mi_estimate"] / data["mi_true"])
 
     # TODO(frdrc): filter out convergence failures
 
@@ -88,16 +74,22 @@ def plot_benchmark(ax, results, n_samples=None):
     table_mi = data.pivot(index="task_id", columns="estimator_id", values="mi_estimate")
     table_err = data.pivot(index="task_id", columns="estimator_id", values="log_relative_error")
 
-    sns.heatmap(
-        table_err.transpose(),
-        annot=table_mi.transpose(),
-        cmap="RdBu_r",
-        vmin=-1,
-        vmax=1,
-        ax=ax,
-        square=False,
-        fmt=".1f",
-        cbar=False,
-    )
-    ax.set_xlabel("")
-    ax.set_ylabel("")
+    def make_pretty(styler):
+        styler.format(lambda x: f"{x:.2f}")
+        styler.set_table_styles(
+            [{"selector": "td", "props": "text-align: center; min-width: 5em;"}]
+        )
+        styler.background_gradient(
+            vmin=-1.0,
+            vmax=+1.0,
+            cmap="coolwarm",
+            gmap=table_err,
+            axis=None,
+        )
+        return styler
+
+    table_pretty = table_mi.style.pipe(make_pretty)
+    table_pretty.index.name = None
+    table_pretty.columns.name = None
+
+    return table_pretty

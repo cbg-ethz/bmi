@@ -21,20 +21,16 @@ workdir: "generated/benchmark_v1/"
 
 # Define workflow targets
 rule all:
-    input: 'results.csv', 'figures/benchmark.pdf'
+    input: 'results.csv', 'benchmark.html'
 
 
-# TODO(frdrc): _append_precomputed.smk which tries to merge precomputed results?
-
-
-rule plot_benchmark:
+rule benchmark_table:
     input: 'results.csv'
-    output: 'figures/benchmark.pdf'
+    output: 'benchmark.html'
     run:
         results = utils.read_results(str(input))
-        fig, ax = utils.subplots_benchmark(results)
-        utils.plot_benchmark(ax, results)
-        fig.savefig(str(output))
+        table = utils.create_benchmark_table(results)
+        table.to_html(str(output))
 
 
 # Gather all results into one CVS file
@@ -43,7 +39,7 @@ rule results:
     input:
         expand(
             'results/{estimator_id}/{task_id}/{n_samples}-{seed}.yaml',
-            estimator_id=ESTIMATORS,
+            estimator_id=ESTIMATORS_DICT,
             task_id=TASKS_DICT,
             n_samples=N_SAMPLES,
             seed=SEEDS,
@@ -78,7 +74,7 @@ rule apply_estimator:
     input: 'tasks/{task_id}/{n_samples}-{seed}.csv'
     run:
         estimator_id = wildcards.estimator_id
-        estimator = ESTIMATORS[estimator_id]
+        estimator = ESTIMATORS_DICT[estimator_id]
         task_id = wildcards.task_id
         seed = int(wildcards.seed)
         
