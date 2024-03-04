@@ -1,27 +1,16 @@
 # Main workflow for running the benchmark.
-# To configure the benchmark see config.py
 
 import resource
 import yaml
 import pandas as pd
 
 from bmi.benchmark import run_estimator
-from config import ESTIMATORS_DICT, TASKS, N_SAMPLES, SEEDS
 import _utils as utils
 
 
 TASKS_DICT = {
     task.id: task for task in TASKS
 }
-
-
-# Set location where results will be saved
-workdir: "generated/benchmark_v1/"
-
-
-# Define workflow targets
-rule all:
-    input: 'results.csv', 'benchmark.html'
 
 
 rule benchmark_table:
@@ -33,7 +22,7 @@ rule benchmark_table:
         table.to_html(str(output))
 
 
-# Gather all results into one CVS file
+# Gather all results into one CSV file
 rule results:
     output: 'results.csv'
     input:
@@ -89,4 +78,3 @@ rule apply_estimator:
             seed=seed,
         )
         result.dump(str(output))
-

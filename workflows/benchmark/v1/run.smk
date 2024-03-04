@@ -1,4 +1,10 @@
-# File used for configuring the benchmark
+# ==============================================
+# == Main workflow for running the benchmark. ==
+# ==============================================
+
+
+# Set location where results will be saved
+workdir: "generated/benchmark/v1/"
 
 import bmi.benchmark.tasks.additive_noise as additive_noise
 import bmi.benchmark.tasks.bimodal_gaussians as bimodal_gaussians
@@ -117,3 +123,12 @@ N_SAMPLES = [5_000]
 # Seeds used for task sampling
 
 SEEDS = list(range(10))
+
+
+# === SNAKEMAKE RULES ===
+# Rules for running the benchmark
+
+rule all:
+    input: 'results.csv', 'benchmark.html'
+
+include: "../_common.smk"
