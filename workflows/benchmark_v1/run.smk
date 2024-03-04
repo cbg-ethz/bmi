@@ -1,22 +1,40 @@
-# SnakeMake workflow used to generate results
-# 
-# ASSUMES THAT THE FOLLOWING ARE DECLARED:
-#   - ESTIMATORS_DICT: dict estimator_id -> estimator
-#   - TASKS: list of tasks
-#   - N_SAMPLES: list of ints
-#   - SEEDS: list of ints
+# Main workflow for running the benchmark.
+# To configure the benchmark see config.py
 
 import resource
 import yaml
-
 import pandas as pd
 
 from bmi.benchmark import run_estimator
+from config import ESTIMATORS_DICT, TASKS, N_SAMPLES, SEEDS
+import _utils as utils
 
 
 TASKS_DICT = {
     task.id: task for task in TASKS
 }
+
+
+# Set location where results will be saved
+workdir: "generated/benchmark_v1/"
+
+
+# Define workflow targets
+rule all:
+    input: 'results.csv', 'figures/benchmark.pdf'
+
+
+# TODO(frdrc): _append_precomputed.smk which tries to merge precomputed results?
+
+
+rule plot_benchmark:
+    input: 'results.csv'
+    output: 'figures/benchmark.pdf'
+    run:
+        results = utils.read_results(str(input))
+        fig, ax = utils.subplots_benchmark(results)
+        utils.plot_benchmark(ax, results)
+        fig.savefig(str(output))
 
 
 # Gather all results into one CVS file
