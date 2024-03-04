@@ -57,14 +57,16 @@ print(f"Estimate by KSG: {ksg.estimate(X, Y):.2f}")
 The above code snippet may be convenient for estimating mutual information on a given data set or for the development of a new mutual information estimator.
 However, for extensive benchmarking it may be more convenient to use one benchmark suites available in the `workflows/benchmark/` subdirectory.
 
-For example, you can install [Snakemake](https://snakemake.readthedocs.io/en/stable/) and run benchmark suite using the default estimators using:
+For example, you can install [Snakemake](https://snakemake.readthedocs.io/en/stable/) and run a small benchmark suite on several estimators using:
 
 ```bash
-$ snakemake -c4 -s workflows/benchmark/v1-mini/run.smk
+$ snakemake -c4 -s workflows/benchmark/demo/run.smk
 ```
 
-If you have an estimator implemented in Python, you can easily run it on any benchmark by simply adding it to the dictionary of tested estimators defined in the workflow: Snakemake files are fully compatible with Python.
-Similarly, each workflow can be easily adjusted to different sample sizes or problems by adjusting the configuration dictionaries defined in the workflow.
+In about a minute it should generate minibenchmark results in the `generated/benchmark/demo` directory. Note that the configuration file, `workflows/benchmark/demo/config.py`, explicitly defines the estimators and tasks used, as well as the number of samples.
+Hence, it is easy to benchmark a custom Python estimator by importing it and including it in the configuration dictionary. Similarly, it is easy to change the number of samples, used tasks.
+
+We defined several benchmark suites with the shared structure.
 
 ## List of implemented estimators
 

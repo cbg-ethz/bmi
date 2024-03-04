@@ -3,7 +3,7 @@
 # ==============================================
 from config import ESTIMATORS_DICT, TASKS, N_SAMPLES, SEEDS
 
-workdir: "generated/benchmark/v1/"
+workdir: "generated/benchmark/demo/"
 
 
 rule all:
