@@ -131,4 +131,4 @@ SEEDS = list(range(10))
 rule all:
     input: 'results.csv', 'benchmark.html'
 
-include: "../_common.smk"
+include: "../_common_benchmark_rules.smk"
