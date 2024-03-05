@@ -53,3 +53,25 @@ def test_critic_saved(estimator_class, n_points: int = 100) -> None:
 
     estimator.estimate(xs, ys)
     assert isinstance(estimator.trained_critic, eqx.Module)
+
+
+@pytest.mark.parametrize(
+    "estimator_class",
+    [
+        neural.DonskerVaradhanEstimator,
+        neural.NWJEstimator,
+        neural.InfoNCEEstimator,
+        neural.MINEEstimator,
+    ],
+)
+def test_batch_size_error(estimator_class, n_points: int = 100) -> None:
+    """Tests whether the critic is saved after estimation."""
+    batch_size = n_points + 1
+    estimator = estimator_class(batch_size=batch_size, learning_rate=0.15, max_n_steps=100)
+    sampler = samplers.SplitMultinormal(dim_x=2, dim_y=1, covariance=np.eye(3))
+    xs, ys = sampler.sample(n_points=n_points, rng=0)
+
+    result = estimator.estimate_with_info(xs, ys)
+    assert np.isnan(result.mi_estimate)
+    assert "batch_size_larger_than_train" in result.additional_information
+    assert result.additional_information["batch_size_larger_than_train"]
