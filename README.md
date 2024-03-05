@@ -55,7 +55,7 @@ print(f"Estimate by KSG: {ksg.estimate(X, Y):.2f}")
 ### Evaluating a new estimator
 
 The above code snippet may be convenient for estimating mutual information on a given data set or for the development of a new mutual information estimator.
-However, for extensive benchmarking it may be more convenient to use one benchmark suites available in the `workflows/benchmark/` subdirectory.
+However, for extensive benchmarking it may be more convenient to use one of the benchmark suites available in the `workflows/benchmark/` subdirectory.
 
 For example, you can install [Snakemake](https://snakemake.readthedocs.io/en/stable/) and run a small benchmark suite on several estimators using:
 
@@ -70,6 +70,8 @@ Similarly, it is easy to change the number of samples or adjust the tasks includ
 We defined several benchmark suites with shared structure.
 
 ## List of implemented estimators
+
+(Your estimator can be here too! Please, reach out to us if you would like to contribute.)
 
 - The neighborhood-based KSG estimator proposed in [Estimating Mutual Information](https://arxiv.org/abs/cond-mat/0305641) by Kraskov et al. (2003).
 - Donsker-Varadhan and MINE estimators proposed in [MINE: Mutual Information Neural Estimation](https://arxiv.org/abs/1801.04062) by Belghazi et al. (2018).
