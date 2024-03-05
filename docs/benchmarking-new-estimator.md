@@ -23,7 +23,7 @@ Every added estimator has to implement the [`IMutualInformationPointEstimator`](
 
 Let's take a look at the simplest possible estimator (which generally shouldn't be used in practice), which estimates mutual information as $\hat I(X; Y) = -0.5 \log\left( 1-\mathrm{Corr}(X_1, Y_1)^2 \right)$.
 
-```{python}
+```python
 import numpy as np
 
 from bmi.interface import BaseModel, IMutualInformationPointEstimator
