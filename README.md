@@ -52,7 +52,7 @@ ksg = bmi.estimators.KSGEnsembleFirstEstimator(neighborhoods=(5,))
 print(f"Estimate by KSG: {ksg.estimate(X, Y):.2f}")
 ```
 
-### Evaluating a new estimator
+## Evaluating a new estimator
 
 The above code snippet may be convenient for estimating mutual information on a given data set or for the development of a new mutual information estimator.
 However, for extensive benchmarking it may be more convenient to use one of the benchmark suites available in the `workflows/benchmark/` subdirectory.
@@ -64,9 +64,11 @@ $ snakemake -c4 -s workflows/benchmark/demo/run.smk
 ```
 
 In about a minute it should generate minibenchmark results in the `generated/benchmark/demo` directory. Note that the configuration file, `workflows/benchmark/demo/config.py`, explicitly defines the estimators and tasks used, as well as the number of samples.
-Hence, it is easy to benchmark a custom Python estimator by importing it and including it in the configuration dictionary.
-Similarly, it is easy to change the number of samples or adjust the tasks included in the benchmark.
 
+Hence, it is easy to benchmark a custom estimator by importing it and including it in the configuration dictionary.
+More information is available [here](https://cbg-ethz.github.io/bmi/benchmarking-new-estimator/), where we cover evaluating new Python as well as non-Python estimators.
+
+Similarly, it is easy to change the number of samples or adjust the tasks included in the benchmark.
 We defined several benchmark suites with shared structure.
 
 ## List of implemented estimators
