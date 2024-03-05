@@ -1,5 +1,6 @@
-# File used for configuring the benchmark
-
+# ====================================
+# == Configuration of the benchmark ==
+# ====================================
 import bmi.benchmark.tasks.additive_noise as additive_noise
 import bmi.benchmark.tasks.bimodal_gaussians as bimodal_gaussians
 import bmi.benchmark.tasks.bivariate_normal as binormal
@@ -17,6 +18,8 @@ from bmi.benchmark.tasks.spiral import transform_spiral_task as spiralise
 from bmi.benchmark.tasks.wiggly import transform_wiggly_task as wigglify
 
 # === ESTIMATORS ===
+# Defines the estimators to be run in the benchmark
+# Note that each estimator implements `IMutualInformationPointEstimator` interface
 
 ESTIMATORS_DICT = {
     "MINE-10_5": estimators.MINEEstimator(verbose=False, hidden_layers=(10, 5)),
@@ -40,6 +43,8 @@ ESTIMATORS_DICT = {
 
 
 # === TASKS ===
+# Defines the benchmark tasks.
+# All tasks will be rescaled to the same range for numerical stability.
 
 TASK_MULTINORMAL_BIVAR_1x1 = binormal.task_bivariate_normal(gaussian_correlation=0.75)
 TASK_MULTINORMAL_2PAIR_3x3 = multinormal.task_multinormal_2pair(3, 3)
@@ -108,12 +113,12 @@ TASKS = (
 
 
 # === SAMPLES ===
-# Number of samples drawn from the tasks
+# Number of samples drawn from each task distribution
 
-N_SAMPLES = [5_000]
+N_SAMPLES: list[int] = [5_000]
 
 
 # === SEEDS ===
 # Seeds used for task sampling
 
-SEEDS = list(range(10))
+SEEDS: list[int] = list(range(10))
