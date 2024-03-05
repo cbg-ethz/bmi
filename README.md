@@ -64,9 +64,10 @@ $ snakemake -c4 -s workflows/benchmark/demo/run.smk
 ```
 
 In about a minute it should generate minibenchmark results in the `generated/benchmark/demo` directory. Note that the configuration file, `workflows/benchmark/demo/config.py`, explicitly defines the estimators and tasks used, as well as the number of samples.
-Hence, it is easy to benchmark a custom Python estimator by importing it and including it in the configuration dictionary. Similarly, it is easy to change the number of samples, used tasks.
+Hence, it is easy to benchmark a custom Python estimator by importing it and including it in the configuration dictionary.
+Similarly, it is easy to change the number of samples or adjust the tasks included in the benchmark.
 
-We defined several benchmark suites with the shared structure.
+We defined several benchmark suites with shared structure.
 
 ## List of implemented estimators
 
