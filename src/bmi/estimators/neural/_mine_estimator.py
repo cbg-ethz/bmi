@@ -330,7 +330,7 @@ class MINEEstimator(IMutualInformationPointEstimator):
         )
 
         if self._params.batch_size > len(xs_train):
-            if self.verbose:
+            if self._verbose:
                 print("ERROR: Batch size larger than train dataset.")
 
             return EstimateResult(
