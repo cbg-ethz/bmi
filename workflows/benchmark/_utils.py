@@ -44,7 +44,6 @@ def add_col_converged(results):
     mi_estimate_maxs = results.groupby(["estimator_id", "task_id", "n_samples"])[
         "mi_estimate"
     ].transform("max")
-    mi_estimate_maxs = np.maximum(mi_estimate_maxs, 0.0)
     results["converged"] = results["mi_estimate"] > 0.1 * mi_estimate_maxs
     return results
 
@@ -104,6 +103,11 @@ def create_benchmark_table(results, n_samples=None, converged_only=False):
             gmap=table_err,
             axis=None,
         )
+        if converged_only:
+            styler.set_caption(
+                "Estimates smaller than 10% of the maximal estimate are excluded."
+                "This can help neural estimators which sometimes fail to converge."
+            )
         return styler
 
     table_pretty = table_mi.style.pipe(make_pretty)
@@ -148,6 +152,10 @@ def create_convergance_table(results, n_samples=None):
             vmin=0.0,
             vmax=1.0,
             cmap="gray",
+        )
+        styler.set_caption(
+            "Estimates higher than 10% of the maximal estimate are considered"
+            "converged. This table shows the percentage of converged estimates."
         )
         return styler
 
