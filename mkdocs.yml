@@ -47,6 +47,7 @@ plugins:
 nav:
   - Home: index.md
   - Estimators: estimators.md
+  - Benchmark: benchmarking-new-estimator.md
   - Fine distributions: fine-distributions.md
   - Contributing: contributing.md
   - API: api/index.md

@@ -52,6 +52,36 @@ ksg = bmi.estimators.KSGEnsembleFirstEstimator(neighborhoods=(5,))
 print(f"Estimate by KSG: {ksg.estimate(X, Y):.2f}")
 ```
 
+## Evaluating a new estimator
+
+The above code snippet may be convenient for estimating mutual information on a given data set or for the development of a new mutual information estimator.
+However, for extensive benchmarking it may be more convenient to use one of the benchmark suites available in the `workflows/benchmark/` subdirectory.
+
+For example, you can install [Snakemake](https://snakemake.readthedocs.io/en/stable/) and run a small benchmark suite on several estimators using:
+
+```bash
+$ snakemake -c4 -s workflows/benchmark/demo/run.smk
+```
+
+In about a minute it should generate minibenchmark results in the `generated/benchmark/demo` directory. Note that the configuration file, `workflows/benchmark/demo/config.py`, explicitly defines the estimators and tasks used, as well as the number of samples.
+
+Hence, it is easy to benchmark a custom estimator by importing it and including it in the configuration dictionary.
+More information is available [here](https://cbg-ethz.github.io/bmi/benchmarking-new-estimator/), where we cover evaluating new Python as well as non-Python estimators.
+
+Similarly, it is easy to change the number of samples or adjust the tasks included in the benchmark.
+We defined several benchmark suites with shared structure.
+
+## List of implemented estimators
+
+(Your estimator can be here too! Please, reach out to us if you would like to contribute.)
+
+- The neighborhood-based KSG estimator proposed in [Estimating Mutual Information](https://arxiv.org/abs/cond-mat/0305641) by Kraskov et al. (2003).
+- Donsker-Varadhan and MINE estimators proposed in [MINE: Mutual Information Neural Estimation](https://arxiv.org/abs/1801.04062) by Belghazi et al. (2018).
+- InfoNCE estimator proposed in [Representation Learning with Contrastive Predictive Coding](https://arxiv.org/abs/1807.03748) by Oord et al. (2018).
+- NWJ estimator proposed in [Estimating divergence functionals and the likelihood ratio by convex risk minimization](https://arxiv.org/abs/0809.0853) by Nguyen et al. (2008).
+- Estimator based on canonical correlation analysis described in [Feature discovery under contextual supervision using mutual information](https://ieeexplore.ieee.org/document/227286) by Kay (1992) and in [Some data analyses using mutual information](https://www.jstor.org/stable/43601047) by Brillinger (2004).
+
+
 ## Citing
 
 If you find this code useful in your research, consider citing [our manuscript](https://papers.nips.cc/paper_files/paper/2023/hash/36b80eae70ff629d667f210e13497edf-Abstract-Conference.html):
@@ -70,10 +100,3 @@ If you find this code useful in your research, consider citing [our manuscript](
 }
 ```
 
-## List of estimators
-
-- The neighborhood-based KSG estimator proposed in [Estimating Mutual Information](https://arxiv.org/abs/cond-mat/0305641) by Kraskov et al. (2003).
-- Donsker-Varadhan and MINE estimators proposed in [MINE: Mutual Information Neural Estimation](https://arxiv.org/abs/1801.04062) by Belghazi et al. (2018).
-- InfoNCE estimator proposed in [Representation Learning with Contrastive Predictive Coding](https://arxiv.org/abs/1807.03748) by Oord et al. (2018).
-- NWJ estimator proposed in [Estimating divergence functionals and the likelihood ratio by convex risk minimization](https://arxiv.org/abs/0809.0853) by Nguyen et al. (2008).
-- Estimator based on canonical correlation analysis described in [Feature discovery under contextual supervision using mutual information](https://ieeexplore.ieee.org/document/227286) by Kay (1992) and in [Some data analyses using mutual information](https://www.jstor.org/stable/43601047) by Brillinger (2004).
