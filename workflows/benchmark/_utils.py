@@ -105,7 +105,7 @@ def create_benchmark_table(results, n_samples=None, converged_only=False):
         )
         if converged_only:
             styler.set_caption(
-                "Estimates smaller than 10% of the maximal estimate are excluded."
+                "Estimates smaller than 10% of the maximal estimate are excluded. "
                 "This can help neural estimators which sometimes fail to converge."
             )
         return styler
@@ -154,7 +154,7 @@ def create_convergance_table(results, n_samples=None):
             cmap="gray",
         )
         styler.set_caption(
-            "Estimates higher than 10% of the maximal estimate are considered"
+            "Estimates higher than 10% of the maximal estimate are considered "
             "converged. This table shows the percentage of converged estimates."
         )
         return styler

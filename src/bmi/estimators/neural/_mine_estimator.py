@@ -329,6 +329,15 @@ class MINEEstimator(IMutualInformationPointEstimator):
             xs, ys, train_size=self._params.train_test_split, key=key_split
         )
 
+        if self._params.batch_size > len(xs_train):
+            if self._verbose:
+                print("ERROR: Batch size larger than train dataset.")
+
+            return EstimateResult(
+                mi_estimate=float("nan"),
+                additional_information={"batch_size_larger_than_train": True},
+            )
+
         # initialize critic
         critic = self._create_critic(dim_x=space.dim_x, dim_y=space.dim_y, key=key_init)
 
