@@ -37,7 +37,7 @@ def test_samples_produced(x: int, y: int, n_samples: int, df: int, dispersion: f
     assert xy_sample.shape == (
         n_samples,
         x + y,
-    ), f"XxY sample shape: {xy_sample.shape} != {(n_samples, x+y)}"
+    ), f"XxY sample shape: {xy_sample.shape} != {(n_samples, x + y)}"
 
     assert np.allclose(
         mean, xy_sample.mean(axis=0), rtol=0.12, atol=0.07

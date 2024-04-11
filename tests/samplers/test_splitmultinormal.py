@@ -46,7 +46,7 @@ def test_symmetric_gaussian_mi(x: int, y: int, variance: float, n_samples: int =
     assert xy_sample.shape == (
         n_samples,
         x + y,
-    ), f"XxY sample shape: {xy_sample.shape} != {(n_samples, x+y)}"
+    ), f"XxY sample shape: {xy_sample.shape} != {(n_samples, x + y)}"
 
     assert np.allclose(
         mean, xy_sample.mean(axis=0), rtol=0.05, atol=0.07

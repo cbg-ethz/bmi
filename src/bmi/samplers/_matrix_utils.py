@@ -329,17 +329,17 @@ class GaussianLVMParametrization:
     def latent_variable_labels(self) -> list[str]:
         return (
             ["$U_\\mathrm{all}$", "$U_X$", "$U_Y$"]
-            + [f"$Z_{i+1}$" for i in range(self.n_interacting)]
-            + [f"$E_{i+1}$" for i in range(self.dim_x)]
-            + [f"$F_{i+1}$" for i in range(self.dim_y)]
-            + [f"$V_{i+1}$" for i in range(self.n_interacting, self.dim_x)]
+            + [f"$Z_{i + 1}$" for i in range(self.n_interacting)]
+            + [f"$E_{i + 1}$" for i in range(self.dim_x)]
+            + [f"$F_{i + 1}$" for i in range(self.dim_y)]
+            + [f"$V_{i + 1}$" for i in range(self.n_interacting, self.dim_x)]
             + [f"$W_{i + 1}$" for i in range(self.n_interacting, self.dim_y)]
         )
 
     @property
     def xy_labels(self) -> list[str]:
-        return [f"$X_{i+1}$" for i in range(self.dim_x)] + [
-            f"$Y_{j+1}$" for j in range(self.dim_y)
+        return [f"$X_{i + 1}$" for i in range(self.dim_x)] + [
+            f"$Y_{j + 1}$" for j in range(self.dim_y)
         ]
 
 
