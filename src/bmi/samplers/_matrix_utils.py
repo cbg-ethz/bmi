@@ -1,7 +1,7 @@
 """Utilities for creating dispersion matrices."""
 
 import dataclasses
-from typing import Optional
+from typing import List, Optional, Union
 
 import numpy as np
 
@@ -73,7 +73,9 @@ def parametrised_correlation_matrix(
     return corr_matrix
 
 
-def canonical_correlation(rho: np.ndarray, additional_y: int = 0) -> np.ndarray:
+def canonical_correlation(
+    rho: Union[np.ndarray, List[float]], additional_y: int = 0
+) -> np.ndarray:
     """Constructs a covariance matrix given by canonical correlations.
 
     Namely,
