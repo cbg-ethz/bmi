@@ -20,11 +20,11 @@ from bmi.benchmark.tasks.spiral import transform_spiral_task as spiralise
 
 ESTIMATORS_DICT = {
     "NWJ-10_5": estimators.NWJEstimator(verbose=False, hidden_layers=(10, 5)),
-    # "MINE-10_5": estimators.MINEEstimator(verbose=False, hidden_layers=(10, 5)),
-    # "InfoNCE-10_5": estimators.InfoNCEEstimator(verbose=False, hidden_layers=(10, 5)),
-    # "Donsker-Varadhan-10_5": estimators.DonskerVaradhanEstimator(
-    #    verbose=False, hidden_layers=(10, 5)
-    # ),
+    "MINE-10_5": estimators.MINEEstimator(verbose=False, hidden_layers=(10, 5)),
+    "InfoNCE-10_5": estimators.InfoNCEEstimator(verbose=False, hidden_layers=(10, 5)),
+    "Donsker-Varadhan-10_5": estimators.DonskerVaradhanEstimator(
+        verbose=False, hidden_layers=(10, 5)
+    ),
     "KSG-10": estimators.KSGEnsembleFirstEstimator(neighborhoods=(10,)),
     "CCA": estimators.CCAMutualInformationEstimator(),
 }
@@ -97,4 +97,4 @@ N_SAMPLES: list[int] = [5_000]
 # === SEEDS ===
 # Seeds used for task sampling
 
-SEEDS: list[int] = list(range(3))  # TODO(frdrc): 10
+SEEDS: list[int] = list(range(10))
