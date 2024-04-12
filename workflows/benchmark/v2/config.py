@@ -19,12 +19,10 @@ from bmi.benchmark.tasks.spiral import transform_spiral_task as spiralise
 # Note that each estimator implements `IMutualInformationPointEstimator` interface
 
 ESTIMATORS_DICT = {
-    "NWJ-10_5": estimators.NWJEstimator(verbose=False, hidden_layers=(10, 5)),
-    "MINE-10_5": estimators.MINEEstimator(verbose=False, hidden_layers=(10, 5)),
-    "InfoNCE-10_5": estimators.InfoNCEEstimator(verbose=False, hidden_layers=(10, 5)),
-    "Donsker-Varadhan-10_5": estimators.DonskerVaradhanEstimator(
-        verbose=False, hidden_layers=(10, 5)
-    ),
+    "NWJ": estimators.NWJEstimator(verbose=False),
+    "MINE": estimators.MINEEstimator(verbose=False),
+    "InfoNCE": estimators.InfoNCEEstimator(verbose=False),
+    "Donsker-Varadhan": estimators.DonskerVaradhanEstimator(verbose=False),
     "KSG-10": estimators.KSGEnsembleFirstEstimator(neighborhoods=(10,)),
     "CCA": estimators.CCAMutualInformationEstimator(),
 }
