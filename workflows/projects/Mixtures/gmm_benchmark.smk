@@ -15,10 +15,10 @@ from bmi.utils import read_sample
 TASKS = [
     tasks.task_additive_noise(epsilon=0.75),
     mixtures.task_x(),
-    # mixtures.task_ai(),
-    # mixtures.task_galaxy(),
-    # mixtures.task_concentric_multinormal(dim_x=5, n_components=5),
-    # mixtures.task_multinormal_sparse_w_inliers(dim_x=5, dim_y=5, inlier_fraction=0.2),
+    mixtures.task_ai(),
+    mixtures.task_galaxy(),
+    mixtures.task_concentric_multinormal(dim_x=5, n_components=5),
+    mixtures.task_multinormal_sparse_w_inliers(dim_x=5, dim_y=5, inlier_fraction=0.2),
 ]
 
 TASKS_DICT = {
@@ -30,8 +30,7 @@ N_SAMPLES: int = 5_000
 
 # We only allow GMMEstimator
 ESTIMATORS_DICT = {
-    # "GMM": GMMEstimator(),
-    "GMM-dummy": GMMEstimator(mcmc_num_warmup=5, mcmc_num_samples=4, mi_estimate_num_samples=5),
+    "GMM": GMMEstimator(),
 }
 
 workdir: "generated/projects/Mixtures/gmm_benchmark"
@@ -99,13 +98,18 @@ rule results:
             mi_samples = np.asarray(run_info["posterior_mi"])
 
             original_length = mi_samples.shape[0]
-
-            mi_samples = x[np.isfinite(x)]
+            mi_samples = mi_samples[np.isfinite(mi_samples)]
             new_length = mi_samples.shape[0]
 
-            q_low = np.quantile(mi_samples, q=0.1)
-            mean = np.mean(mi_samples)
-            q_high = np.quantile(mi_samples, q=0.9)
+            if new_length > 0:
+                q_low = np.quantile(mi_samples, q=0.1)
+                mean = np.mean(mi_samples)
+                q_high = np.quantile(mi_samples, q=0.9)
+            else:
+                q_low = -1
+                mean = -1
+                q_high = -1
+
 
             task = TASKS_DICT[run_info['task_id']]
             results.append({
@@ -116,6 +120,7 @@ rule results:
                 "task_name": task.name,
                 "task_params": task.params,
                 "entries_filtered_out": original_length - new_length,
+                "used_length": new_length,
                 "mi_q_low": float(q_low),
                 "mi_mean": float(mean),
                 "mi_q_high": float(q_high),
