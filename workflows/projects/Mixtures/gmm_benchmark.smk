@@ -8,6 +8,10 @@ import jax.numpy as jnp
 from bmi.estimators.external.gmm import GMMEstimator
 import bmi.benchmark.tasks as tasks
 import bmi.benchmark.tasks.mixtures as mixtures
+import bmi.benchmark.tasks.multinormal as multinormal
+import bmi.benchmark.tasks.student as student
+from bmi.benchmark.tasks.asinh import transform_asinh_task as asinh
+
 
 from bmi.utils import read_sample
 
@@ -17,8 +21,22 @@ TASKS = [
     mixtures.task_x(),
     mixtures.task_ai(),
     mixtures.task_galaxy(),
+    # Concentric
+    mixtures.task_concentric_multinormal(dim_x=3, n_components=5),
     mixtures.task_concentric_multinormal(dim_x=5, n_components=5),
+    mixtures.task_concentric_multinormal(dim_x=3, n_components=10),
+    mixtures.task_concentric_multinormal(dim_x=5, n_components=10),
+    # Inliers
     mixtures.task_multinormal_sparse_w_inliers(dim_x=5, dim_y=5, inlier_fraction=0.2),
+    mixtures.task_multinormal_sparse_w_inliers(dim_x=5, dim_y=5, inlier_fraction=0.5),
+    # Multivariate normal
+    multinormal.task_multinormal_dense(5, 5),
+    multinormal.task_multinormal_2pair(5, 5),
+    # Student
+    asinh(student.task_student_identity(dim_x=1, dim_y=1, df=1)),
+    asinh(student.task_student_identity(dim_x=2, dim_y=2, df=1)),
+    asinh(student.task_student_identity(dim_x=3, dim_y=3, df=2)),
+    asinh(student.task_student_identity(dim_x=5, dim_y=5, df=2)),
 ]
 
 TASKS_DICT = {
