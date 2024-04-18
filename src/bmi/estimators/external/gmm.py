@@ -135,8 +135,8 @@ class GMMEstimator(IMutualInformationPointEstimator):
         n_components: int = 10,
         alpha: Optional[float] = None,
         standardize: bool = True,
-        mcmc_num_warmup: int = 500,
-        mcmc_num_samples: int = 500,
+        mcmc_num_warmup: int = 1_000,
+        mcmc_num_samples: int = 1_000,
         mi_estimate_num_samples: int = 1_000,
         n_thinned_samples: Optional[int] = None,
     ) -> None:

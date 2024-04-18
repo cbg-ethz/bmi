@@ -42,7 +42,7 @@ TASKS = [
 TASKS_DICT = {
     task.id: task for task in TASKS
 }
-SEEDS = [0]
+SEEDS = [0, 1, 2]
 
 N_SAMPLES: int = 5_000
 
