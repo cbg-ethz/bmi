@@ -30,14 +30,13 @@ class FineSampler(BaseSampler):
         super().__init__(dim_x=dist.dim_x, dim_y=dist.dim_y)
         self._dist = dist
 
-        if mi is None:
-            rng = cast_to_rng(mi_estimate_seed)
-            self._mi, self._mi_stderr = monte_carlo_mi_estimate(
-                key=rng, dist=self._dist, n=mi_estimate_sample
-            )
-        else:
-            self._mi = mi
-            self._mi_stderr = None
+        self._mi = mi
+        self._mi_stderr = None
+
+        self._mi_estimate_seed = mi_estimate_seed
+        self._mi_estimate_sample = mi_estimate_sample
+        if self._mi_estimate_sample < 1:
+            raise ValueError(f"Provided too small sample size: {mi_estimate_sample}.")
 
     def sample(
         self, n_points: int, rng: Union[int, KeyArray]
@@ -46,4 +45,11 @@ class FineSampler(BaseSampler):
         return self._dist.sample(n_points=n_points, key=key)
 
     def mutual_information(self) -> float:
-        return self._mi
+        if self._mi is not None:
+            return self._mi
+        else:
+            rng = cast_to_rng(self._mi_estimate_seed)
+            self._mi, self._mi_stderr = monte_carlo_mi_estimate(
+                key=rng, dist=self._dist, n=self._mi_estimate_sample
+            )
+            return self._mi

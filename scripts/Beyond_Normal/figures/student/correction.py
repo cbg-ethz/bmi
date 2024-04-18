@@ -11,9 +11,9 @@ of the degrees of freedom for several dimensions.
 from typing import cast
 
 import matplotlib.pyplot as plt
+from subplots_from_axsize import subplots_from_axsize
 
-import bmi.api as bmi
-from bmi.plot_utils.subplots_from_axsize import subplots_from_axsize
+import bmi
 
 
 def correction(df: int, m: int, n: int) -> float:
@@ -43,7 +43,7 @@ def main() -> None:
     for i, (m, n) in enumerate(mns):
         values = [correction(df=df, m=m, n=n) for df in nus]
         # ax.scatter(nus, values, s=4, marker=MARKER_LIST[i], c=f"C{i+1}")
-        ax.plot(nus, values, c=f"C{i+1}", label=f"$m={m}$,\t$n={n}$")
+        ax.plot(nus, values, c=f"C{i + 1}", label=f"$m={m}$,\t$n={n}$")
 
     ax.spines[["right", "top"]].set_visible(False)
     ax.set_xlabel("Degrees of freedom")

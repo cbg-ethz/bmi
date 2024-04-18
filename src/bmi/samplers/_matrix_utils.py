@@ -1,7 +1,7 @@
 """Utilities for creating dispersion matrices."""
 
 import dataclasses
-from typing import Optional
+from typing import List, Optional, Union
 
 import numpy as np
 
@@ -73,7 +73,9 @@ def parametrised_correlation_matrix(
     return corr_matrix
 
 
-def canonical_correlation(rho: np.ndarray, additional_y: int = 0) -> np.ndarray:
+def canonical_correlation(
+    rho: Union[np.ndarray, List[float]], additional_y: int = 0
+) -> np.ndarray:
     """Constructs a covariance matrix given by canonical correlations.
 
     Namely,
@@ -327,17 +329,17 @@ class GaussianLVMParametrization:
     def latent_variable_labels(self) -> list[str]:
         return (
             ["$U_\\mathrm{all}$", "$U_X$", "$U_Y$"]
-            + [f"$Z_{i+1}$" for i in range(self.n_interacting)]
-            + [f"$E_{i+1}$" for i in range(self.dim_x)]
-            + [f"$F_{i+1}$" for i in range(self.dim_y)]
-            + [f"$V_{i+1}$" for i in range(self.n_interacting, self.dim_x)]
+            + [f"$Z_{i + 1}$" for i in range(self.n_interacting)]
+            + [f"$E_{i + 1}$" for i in range(self.dim_x)]
+            + [f"$F_{i + 1}$" for i in range(self.dim_y)]
+            + [f"$V_{i + 1}$" for i in range(self.n_interacting, self.dim_x)]
             + [f"$W_{i + 1}$" for i in range(self.n_interacting, self.dim_y)]
         )
 
     @property
     def xy_labels(self) -> list[str]:
-        return [f"$X_{i+1}$" for i in range(self.dim_x)] + [
-            f"$Y_{j+1}$" for j in range(self.dim_y)
+        return [f"$X_{i + 1}$" for i in range(self.dim_x)] + [
+            f"$Y_{j + 1}$" for j in range(self.dim_y)
         ]
 
 

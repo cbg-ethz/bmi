@@ -29,13 +29,19 @@ class Task:
         task_params: Optional[dict] = None,
     ):
         self.sampler = sampler
-        self.metadata = TaskMetadata(
-            task_id=task_id,
-            task_name=task_name,
+        self._task_id = task_id
+        self._task_name = task_name
+        self._task_params = task_params
+
+    @property
+    def metadata(self) -> TaskMetadata:
+        return TaskMetadata(
+            task_id=self._task_id,
+            task_name=self._task_name,
             dim_x=self.sampler.dim_x,
             dim_y=self.sampler.dim_y,
             mi_true=self.sampler.mutual_information(),
-            task_params=task_params or dict(),
+            task_params=self._task_params or dict(),
         )
 
     @property

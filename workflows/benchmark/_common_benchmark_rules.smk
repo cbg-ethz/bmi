@@ -15,7 +15,7 @@ TASKS_DICT = {
 
 rule benchmark_tables:
     input: 'results.csv'
-    output: 'benchmark.html', 'benchmark_converged_only.html', 'benchmark_convergance.html'
+    output: 'benchmark.html', 'benchmark_converged_only.html', 'benchmark_convergence.html'
     run:
         results = utils.read_results(str(input))
         table = utils.create_benchmark_table(results, converged_only=False)
@@ -24,8 +24,8 @@ rule benchmark_tables:
         table = utils.create_benchmark_table(results, converged_only=True)
         table.to_html('benchmark_converged_only.html')
 
-        table = utils.create_convergance_table(results)
-        table.to_html('benchmark_convergance.html')
+        table = utils.create_convergence_table(results)
+        table.to_html('benchmark_convergence.html')
 
 
 # Gather all results into one CSV file

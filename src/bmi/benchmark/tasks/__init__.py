@@ -12,6 +12,15 @@ from bmi.benchmark.tasks.multinormal import (
     task_multinormal_lvm,
 )
 
+from bmi.benchmark.tasks.mixtures import (
+    task_x,
+    task_ai,
+    task_waves,
+    task_galaxy,
+    task_concentric_multinormal,
+    task_multinormal_sparse_w_inliers,
+)
+
 # isort: on
 from bmi.benchmark.tasks.normal_cdf import transform_normal_cdf_task
 from bmi.benchmark.tasks.rotate import transform_rotate_task
@@ -44,6 +53,12 @@ __all__ = [
     "task_multinormal_dense",
     "task_multinormal_sparse",
     "task_multinormal_2pair",
+    "task_x",
+    "task_ai",
+    "task_waves",
+    "task_galaxy",
+    "task_concentric_multinormal",
+    "task_multinormal_sparse_w_inliers",
     "task_student_dense",
     "task_student_sparse",
     "task_student_2pair",

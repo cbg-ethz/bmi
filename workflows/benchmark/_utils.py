@@ -117,7 +117,7 @@ def create_benchmark_table(results, n_samples=None, converged_only=False):
     return table_pretty
 
 
-def create_convergance_table(results, n_samples=None):
+def create_convergence_table(results, n_samples=None):
     if n_samples is None:
         n_samples = results["n_samples"].max()
 
