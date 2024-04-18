@@ -37,10 +37,6 @@ TASKS = [
     asinh(student.task_student_identity(dim_x=2, dim_y=2, df=1)),
     asinh(student.task_student_identity(dim_x=3, dim_y=3, df=2)),
     asinh(student.task_student_identity(dim_x=5, dim_y=5, df=2)),
-    # High-dimensional
-    multinormal.task_multinormal_dense(25, 25),
-    multinormal.task_multinormal_2pair(25, 25),
-    mixtures.task_concentric_multinormal(dim_x=25, n_components=5),
 ]
 
 TASKS_DICT = {
