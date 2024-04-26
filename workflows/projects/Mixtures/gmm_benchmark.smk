@@ -5,6 +5,8 @@ import pandas as pd
 import numpy as np
 import jax.numpy as jnp
 
+from collections import defaultdict
+
 from bmi.estimators.external.gmm import GMMEstimator
 import bmi.benchmark.tasks as tasks
 import bmi.benchmark.tasks.mixtures as mixtures
@@ -39,6 +41,32 @@ TASKS = [
     asinh(student.task_student_identity(dim_x=5, dim_y=5, df=2)),
 ]
 
+
+NAMES = {
+    # one-dimensional
+    '1v1-additive-0.75': "Additive",
+    '1v1-AI': "AI",
+    '1v1-X-0.9': "X",
+    '2v1-galaxy-0.5-3.0': "Galaxy",
+    # Concentric
+    '3v1-concentric_gaussians-10': "Concentric (3-dim, 10)",
+    '3v1-concentric_gaussians-5': "Concentric (3-dim, 5)",
+    '5v1-concentric_gaussians-10': "Concentric (5-dim, 10)",
+    '5v1-concentric_gaussians-5': "Concentric (5-dim, 5)",
+    # Inliers
+    'mult-sparse-w-inliers-5-5-2-2.0-0.2': "Inliers (5-dim, 0.2)",
+    'mult-sparse-w-inliers-5-5-2-2.0-0.5': "Inliers (5-dim, 0.5)",
+    # Multivariate normal
+    'multinormal-dense-5-5-0.5': "Normal (5-dim, dense)",
+    'multinormal-sparse-5-5-2-2.0': "Normal (5-dim, sparse)",
+    # Student
+    'asinh-student-identity-1-1-1': "Student (1-dim)",
+    'asinh-student-identity-2-2-1': "Student (2-dim)",
+    'asinh-student-identity-3-3-2': "Student (3-dim)",
+    'asinh-student-identity-5-5-2': "Student (5-dim)",
+}
+
+
 TASKS_DICT = {
     task.id: task for task in TASKS
 }
@@ -54,7 +82,7 @@ ESTIMATORS_DICT = {
 workdir: "generated/projects/Mixtures/gmm_benchmark"
 
 rule all:
-    input: "results.csv"
+    input: ["results.csv", "bmm_table.txt"]
 
 
 # Sample task given a seed and number of samples.
@@ -145,3 +173,43 @@ rule results:
             })
     
         pd.DataFrame(results).to_csv(str(output), index=False)
+
+
+rule create_table:
+    output: 'bmm_table.txt'
+    input: 'results.csv'
+    run:
+        df = pd.read_csv(str(input), index_col=None)
+        print(df)
+
+        def create_result_entry(mean, qlow, qhigh):
+            return f"{mean:.2f} ({qlow:.2f}–{qhigh:.2f})"
+
+        def create_row():
+            return {
+                "Task name": "",
+                "True MI": -10,
+                "Run 1": "mean (qlow – qhigh)",
+                "Run 2": "mean (qlow – qhigh)",
+                "Run 3": "mean (qlow – qhigh)",
+            }
+
+        # task_id -> row in the table
+        table_map = defaultdict(create_row)
+
+        for _, record in df.iterrows():
+            task_id = record["task_id"]
+            result_entry = create_result_entry(record["mi_mean"], record["mi_q_low"], record["mi_q_high"])
+            mi_true = record["mi_true"]
+            seed = record["seed"]
+
+            row = table_map[task_id]
+            row["Task name"] = NAMES[task_id]
+            row["True MI"] = f"{mi_true:.2f}"
+            row[f"Run {seed + 1}"] = result_entry
+
+        table = pd.DataFrame(table_map.values())
+        table = table.set_index("Task name")
+
+        with open(str(output), "w") as fh:
+            fh.write(table.to_latex(escape=False))
