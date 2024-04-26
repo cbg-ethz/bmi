@@ -94,8 +94,8 @@ TASKS = {# task_id: task_name,
 
 N_SAMPLES = 5_000
 POINT_ESTIMATORS = [
-    EstimatorConfig(id="KSG-10", name="KSG", color="maroon"),
-    EstimatorConfig(id="InfoNCE", name="InfoNCE", color="orange"),
+    EstimatorConfig(id="KSG-10", name="KSG", color="green"),
+    EstimatorConfig(id="InfoNCE", name="InfoNCE", color="magenta"),
 ]
 
 DOT_SIZE = 7
