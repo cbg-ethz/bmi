@@ -1,7 +1,7 @@
 try:
-    import numpyro
-    import numpyro.distributions as dist
-    from numpyro.infer import MCMC, NUTS
+    import numpyro  # type: ignore
+    import numpyro.distributions as dist  # type: ignore
+    from numpyro.infer import MCMC, NUTS  # type: ignore
 except ImportError:
     numpyro, dist, MCMC, NUTS = [None] * 4
 
@@ -38,7 +38,7 @@ def model(
     """
     alpha = alpha or 1.0 / K
 
-    n_points, n_dim = data.shape
+    _, n_dim = data.shape
 
     # Prior for mixing proportions
     pi = numpyro.sample("pi", dist.Dirichlet(concentration=alpha * jnp.ones(K)))
