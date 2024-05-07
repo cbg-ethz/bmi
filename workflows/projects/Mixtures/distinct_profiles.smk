@@ -127,10 +127,10 @@ rule plot_samples:
     output:
         "figure_distinct_profiles.pdf"
     run:
-        fig, axs = plt.subplots(1, 4, figsize=(7, 2))
+        fig, axs = plt.subplots(1, 4, figsize=(7, 1.5), dpi=500)
 
-        color1 = "navy"
-        color2 = "salmon"
+        color1 = "mediumblue"
+        color2 = "forestgreen"
 
         # Plot normal distribution
         ax = axs[0]
@@ -163,6 +163,7 @@ rule plot_samples:
         ax.hist(pmi_u, bins=bins, density=True, color=color2, alpha=0.5, label="Mixture")
         ax.set_title("PMI profiles")
         ax.set_xlabel("PMI")
+        ax.set_xlim(-1, 2)
         ax.set_ylabel("")
         ax.set_yticks([])
         ax.spines[['right', 'top', 'left']].set_visible(False)

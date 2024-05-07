@@ -110,7 +110,7 @@ rule generate_figure:
         data_v2 = pd.read_csv(input.v2)
         data_bmm = pd.read_csv(input.bmm)
 
-        fig, axs = subplots_from_axsize(1, len(TASKS), (2.3, 0.8), left=0.8, right=0.05, top=0.3, bottom=0.3, dpi=350, wspace=0.0)
+        fig, axs = subplots_from_axsize(1, len(TASKS), (2.3, 0.8), left=0.8, right=0.05, top=0.3, bottom=0.3, dpi=350, wspace=0.05)
         
         y_scaler = YScaler(estimator_ids=["BMM"] + [config.id for config in POINT_ESTIMATORS], eps=0.12)
 
@@ -119,6 +119,7 @@ rule generate_figure:
             ax.set_xlim(*task_config.xlim)
             ax.set_xticks(task_config.xticks)
             ax.set_yticks([])
+            ax.spines[["top", "left", "right"]].set_visible(False)
 
             mi_true = data_v2.groupby("task_id")["mi_true"].mean()[task_id]
             ax.axvline(mi_true, linestyle="--", color="black", linewidth=2)
@@ -141,5 +142,8 @@ rule generate_figure:
                 y = y_scaler.get_y(estimator_id=estimator_id, n_points=len(estimates))
                 ax.scatter(estimates, y, color=estimator_config.color, s=DOT_SIZE)
 
-        axs[0].set_yticks(y_scaler.get_tick_locations(), ["BMM"] + [config.name for config in POINT_ESTIMATORS])
+        ax = axs[0]
+        ax.set_yticks(y_scaler.get_tick_locations(), ["BMM"] + [config.name for config in POINT_ESTIMATORS])
+        ax.spines["left"].set_visible(True)
+        
         fig.savefig(str(output))
