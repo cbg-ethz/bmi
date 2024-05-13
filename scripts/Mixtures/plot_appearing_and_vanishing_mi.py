@@ -20,36 +20,30 @@ def main() -> None:
 
     X, Y = np.meshgrid(x, y)
 
-    fig, axs = plt.subplots(2, 3, dpi=300)
+    fig, axs = plt.subplots(1, 5, dpi=300, sharex=True, sharey=True, figsize=(5.5, 1.2))
 
-    # First row: appearing MI
     # Component 1 (bottom left)
-    ax = axs[0, 0]
+    ax = axs[0]
     mask1 = (0 < X) & (X < 1) & (0 < Y) & (Y < 1)
     plot_density(ax, mask1, "$I=0$")
 
     # Component 2 (top right)
-    ax = axs[0, 1]
+    ax = axs[1]
     mask2 = (1 < X) & (X < 2) & (1 < Y) & (Y < 2)
     plot_density(ax, mask2, "$I=0$")
 
     # Mixture
-    ax = axs[0, 2]
+    ax = axs[2]
     mask3 = mask1 | mask2
     plot_density(ax, 0.5 * mask3, "$I=\\log 2$")
 
-    # Second row
-    # Component 1: mixture from first row
-    ax = axs[1, 0]
-    plot_density(ax, 0.5 * mask3, "$I=\\log 2$")
-
-    # Component 2: symmetric mixture
-    ax = axs[1, 1]
+    # A "complementary" mixture
+    ax = axs[3]
     mask4 = (0 < X) & (X < 1) & (1 < Y) & (Y < 2) | (1 < X) & (X < 2) & (0 < Y) & (Y < 1)
     plot_density(ax, 0.5 * mask4, "$I=\\log 2$")
 
     # Mixture: independent
-    ax = axs[1, 2]
+    ax = axs[4]
     plot_density(ax, 0.25 * (mask3 | mask4), "$I=0$")
 
     fig.tight_layout()
