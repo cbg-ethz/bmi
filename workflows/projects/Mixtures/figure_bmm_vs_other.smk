@@ -119,10 +119,11 @@ rule generate_figure:
             ax.set_xlim(*task_config.xlim)
             ax.set_xticks(task_config.xticks)
             ax.set_yticks([])
+            ax.set_ylim(-0.05, 1.01)
             ax.spines[["top", "left", "right"]].set_visible(False)
 
             mi_true = data_v2.groupby("task_id")["mi_true"].mean()[task_id]
-            ax.axvline(mi_true, linestyle="--", color="black", linewidth=2)
+            ax.axvline(mi_true, linestyle=":", color="black", linewidth=2)
 
             # Plot credible intervals from the BMM
             bmm_subtable = data_bmm[(data_bmm["task_id"] == task_id)].copy() 
@@ -140,7 +141,7 @@ rule generate_figure:
                 index = (data_v2["task_id"] == task_id) & (data_v2["estimator_id"] == estimator_id) & (data_v2["n_samples"] == N_SAMPLES)
                 estimates = data_v2[index]["mi_estimate"].values
                 y = y_scaler.get_y(estimator_id=estimator_id, n_points=len(estimates))
-                ax.scatter(estimates, y, color=estimator_config.color, s=DOT_SIZE)
+                ax.scatter(estimates, y, color=estimator_config.color, s=DOT_SIZE, alpha=0.4)
 
         ax = axs[0]
         ax.set_yticks(y_scaler.get_tick_locations(), ["BMM"] + [config.name for config in POINT_ESTIMATORS])
