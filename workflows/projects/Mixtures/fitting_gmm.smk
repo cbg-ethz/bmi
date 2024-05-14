@@ -117,7 +117,7 @@ DISTRIBUTIONS = {
 rule all:
     # For the main part of the manuscript
     input:
-        expand("plots/{dist_name}-{n_points}-10.pdf", dist_name=["AI", "Galaxy"], n_points=[250])
+        expand("plots/{dist_name}-{n_points}-10.pdf", dist_name=["AI", "Galaxy"], n_points=[500])
 
 
 rule plots_all:
@@ -192,20 +192,22 @@ rule plot_pdf:
         approx_sample = "approx_samples/{dist_name}-{n_points}-{n_components}-0.npz",
     output: "plots/{dist_name}-{n_points}-{n_components}.pdf"
     run:
-        fig, axs = subplots_from_axsize(1, 4, axsize=(1.5, 1.5), top=0.3, wspace=0.3)
+        fig, axs = subplots_from_axsize(1, 4, axsize=(1.2, 1.2), top=0.3, wspace=[0.3, 0.05, 0.05], left=0.5, right=0.15)
 
         for ax in axs:
             ax.spines[['right', 'top']].set_visible(False)
 
+        FONTDICT = {'fontsize': 10}
+
         # Visualise true sample
         ax = axs[0]
-        ax.set_title("Ground-truth sample")
+        ax.set_title("Ground-truth sample", fontdict=FONTDICT)
         true_sample = np.load(input.true_sample)
         visualise_points(true_sample["xs"], true_sample["ys"], ax)
 
         # Visualise approximate sample
         ax = axs[1]
-        ax.set_title("Simulated sample")
+        ax.set_title("Simulated sample", fontdict=FONTDICT)
         approx_sample = np.load(input.approx_sample)
         visualise_points(approx_sample["xs"], approx_sample["ys"], ax)
 
@@ -214,7 +216,7 @@ rule plot_pdf:
 
         # Visualise posterior on mutual information
         ax = axs[2]
-        ax.set_title("Posterior MI")
+        ax.set_title("Posterior MI", fontdict=FONTDICT)
         mi_true = np.mean(pmi_true)
         mi_approx = np.mean(pmi_approx, axis=1)  # (num_mcmc_samples,)
         ax.set_xlabel("MI")
@@ -225,11 +227,13 @@ rule plot_pdf:
 
         # Visualise posterior on profile
         ax = axs[3]
-        ax.set_title("Posterior PMI profile")
+        ax.set_title("Posterior PMI profile", fontdict=FONTDICT)
         ax.set_xlabel("PMI")
 
-        min_val = np.min([pmi_true.min(), pmi_approx.min()])
-        max_val = np.max([pmi_true.max(), pmi_approx.max()])
+        quantile_min = 0.02
+        quantile_max = 1 - quantile_min
+        min_val = np.min([np.quantile(pmi_true, quantile_min), np.quantile(pmi_approx, quantile_min)])
+        max_val = np.max([np.quantile(pmi_true, quantile_max), np.quantile(pmi_approx, quantile_max)])
 
         bins = np.linspace(min_val, max_val, 50)
         for pmi_vals in pmi_approx:
