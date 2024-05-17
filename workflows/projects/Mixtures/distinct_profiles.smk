@@ -174,7 +174,7 @@ rule plot_samples:
         if abs(mi_1 - mi_2) > 0.01:
             raise ValueError(f"MI different: {mi_1:.2f} != {mi_2:.2f}")
         
-        ax.axvline(mi_1, c="k",  linewidth=1, linestyle="--")
+        ax.axvline(mi_1, c="k",  linewidth=1, linestyle=":")
 
         fig.tight_layout()
         fig.savefig(str(output))
