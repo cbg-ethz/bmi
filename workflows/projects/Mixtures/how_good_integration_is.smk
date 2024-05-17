@@ -256,7 +256,7 @@ rule plot_performance_all:
         alpha = 0.2
 
         ax = axs[0]
-        ax.set_title("Mixture")
+        ax.set_title("Unbiased critic")
         ax.set_ylim(y_min, y_max)
         plot_estimates(ax, input.simple_estimates, input.simple_ground_truth, alpha=alpha)
 
@@ -271,7 +271,7 @@ rule plot_performance_all:
         plot_estimates(ax, input.func_estimates, input.func_ground_truth, alpha=alpha)
 
         ax = axs[3]
-        ax.set_title("High-dimensional")
+        ax.set_title("Unbiased critic, high dimensions")
         plot_estimates(ax, input.highdim_estimates, input.highdim_ground_truth, alpha=alpha)
 
 
