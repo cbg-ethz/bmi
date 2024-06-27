@@ -31,6 +31,7 @@ class JointDistribution:
     dim_x: int
     dim_y: int
     analytic_mi: Optional[float] = None
+    unwrap: bool = True
 
     def sample(self, n_points: int, key: jax.Array) -> tuple[jnp.ndarray, jnp.ndarray]:
         """Sample from the joint distribution $P_{XY}$.
@@ -42,7 +43,12 @@ class JointDistribution:
         if n_points < 1:
             raise ValueError("n must be positive")
 
+        # TODO(Pawel): Ensure that it works with JointDistribution
         xy = self.dist_joint.sample(seed=key, sample_shape=(n_points,))
+
+        if not self.unwrap:
+            return xy
+
         return xy[..., : self.dim_x], xy[..., self.dim_x :]  # noqa: E203 (formatting discrepancy)
 
     def pmi(self, x: jnp.ndarray, y: jnp.ndarray) -> jnp.ndarray:
@@ -59,7 +65,12 @@ class JointDistribution:
         Note:
             This function is vectorized, i.e. it can calculate PMI for multiple points at once.
         """
-        log_pxy = self.dist_joint.log_prob(jnp.hstack([x, y]))
+        # TODO(Pawel): Ensure it works with tfd.JointDistribution
+        if self.unwrap:
+            log_pxy = self.dist_joint.log_prob(jnp.hstack([x, y]))
+        else:
+            log_pxy = self.dist_joint.log_prob((x, y))
+
         log_px = self.dist_x.log_prob(x)
         log_py = self.dist_y.log_prob(y)
 
