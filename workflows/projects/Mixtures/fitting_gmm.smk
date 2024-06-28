@@ -79,7 +79,7 @@ def model(data, K: int = 10, alpha: Optional[float] = None, jitter: float = 1e-6
         obs=data)
 
 
-def sample_into_fine_distribution(
+def sample_into_bmm_distribution(
     means: jnp.ndarray,
     covariances: jnp.ndarray,
     proportions: jnp.ndarray,
@@ -286,7 +286,7 @@ rule create_approx_sample:
         
         idx = int(wildcards.sample_index)
 
-        approx_dist = sample_into_fine_distribution(
+        approx_dist = sample_into_bmm_distribution(
             means=samples["mu"][idx],
             covariances=samples["cov"][idx],
             proportions=samples["pi"][idx],
@@ -311,7 +311,7 @@ rule estimate_pmi_in_sample:
         
         idx = int(wildcards.sample_index)
 
-        approx_dist = sample_into_fine_distribution(
+        approx_dist = sample_into_bmm_distribution(
             means=samples["mu"][idx],
             covariances=samples["cov"][idx],
             proportions=samples["pi"][idx],
