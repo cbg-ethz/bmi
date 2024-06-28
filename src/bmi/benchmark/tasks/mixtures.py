@@ -27,7 +27,7 @@ def task_x(
             for x in [-1, 1]
         ],
     )
-    sampler = bmm.FineSampler(dist, mi_estimate_sample=mi_estimate_sample)
+    sampler = bmm.BMMSampler(dist, mi_estimate_sample=mi_estimate_sample)
 
     return Task(
         sampler=sampler,
@@ -94,7 +94,7 @@ def task_ai(
             ),
         ],
     )
-    sampler = bmm.FineSampler(dist, mi_estimate_sample=mi_estimate_sample)
+    sampler = bmm.BMMSampler(dist, mi_estimate_sample=mi_estimate_sample)
 
     return Task(
         sampler=sampler,
@@ -123,7 +123,7 @@ def task_galaxy(
         ],
     )
 
-    base_sampler = bmm.FineSampler(balls_mixt, mi_estimate_sample=mi_estimate_sample)
+    base_sampler = bmm.BMMSampler(balls_mixt, mi_estimate_sample=mi_estimate_sample)
     a = jnp.array([[0, -1], [1, 0]])
     spiral = transforms.Spiral(a, speed=speed)
 
@@ -162,7 +162,7 @@ def task_waves(
             for x in range(n_components)
         ],
     )
-    base_sampler = bmm.FineSampler(base_dist, mi_estimate_sample=mi_estimate_sample)
+    base_sampler = bmm.BMMSampler(base_dist, mi_estimate_sample=mi_estimate_sample)
     aux_sampler = samplers.TransformedSampler(
         base_sampler,
         transform_x=lambda x: x
@@ -205,7 +205,7 @@ def task_concentric_multinormal(
             for i in range(1, 1 + n_components)
         ],
     )
-    sampler = bmm.FineSampler(dist, mi_estimate_sample=mi_estimate_sample)
+    sampler = bmm.BMMSampler(dist, mi_estimate_sample=mi_estimate_sample)
 
     return Task(
         sampler=sampler,
@@ -254,7 +254,7 @@ def task_multinormal_sparse_w_inliers(
         components=[signal_dist, noise_dist],
     )
 
-    sampler = bmm.FineSampler(dist, mi_estimate_sample=mi_estimate_sample)
+    sampler = bmm.BMMSampler(dist, mi_estimate_sample=mi_estimate_sample)
 
     task_id = f"mult-sparse-w-inliers-{dim_x}-{dim_y}-{n_interacting}-{strength}-{inlier_fraction}"
     return Task(

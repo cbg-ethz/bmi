@@ -8,7 +8,7 @@ from bmi.samplers._tfp._core import JointDistribution, monte_carlo_mi_estimate
 from bmi.samplers.base import BaseSampler, KeyArray, cast_to_rng
 
 
-class FineSampler(BaseSampler):
+class BMMSampler(BaseSampler):
     """Wraps a given Bend and Mix Model (BMM) into a sampler."""
 
     def __init__(

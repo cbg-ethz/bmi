@@ -75,7 +75,7 @@ MIXING_TASKS = {}
 # Add mixing tasks
 for setup_name, setup in CHANGE_MIXING_SETUPS.items():
     for alpha in ALPHAS:
-        sampler = bmm.FineSampler(dist=setup.mixture(alpha=alpha), mi_estimate_sample=100_000)
+        sampler = bmm.BMMSampler(dist=setup.mixture(alpha=alpha), mi_estimate_sample=100_000)
         task = bmi.Task(
             sampler=sampler,
             task_id=f"mixing-{setup_name}-{alpha}",
@@ -95,7 +95,7 @@ for variance in VARIANCES:
             covariance=variance * jnp.eye(dist_signal_gauss.dim_y)
         ),
     )
-    sampler = bmm.FineSampler(
+    sampler = bmm.BMMSampler(
         dist=bmm.mixture(
             proportions=jnp.array([1.0-VARIANCE_MIXING, VARIANCE_MIXING]),
             components=[dist_signal_gauss, dist_noise_variance],

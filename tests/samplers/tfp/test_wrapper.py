@@ -10,7 +10,7 @@ def test_can_create_sampler() -> None:
     )
     mi = -0.5 * jnp.log(1 - 0.5**2)
 
-    sampler = bmm.FineSampler(dist=dist, mi_estimate_seed=0, mi_estimate_sample=1_000)
+    sampler = bmm.BMMSampler(dist=dist, mi_estimate_seed=0, mi_estimate_sample=1_000)
 
     x_sample, y_sample = sampler.sample(n_points=10, rng=0)
     assert x_sample.shape == (10, 1)

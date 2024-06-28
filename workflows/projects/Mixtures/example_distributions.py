@@ -38,7 +38,7 @@ def create_x_distribution(_sample: int = 100) -> ExampleDistribution:
             for x in [-1, 1]
         ],
     )
-    x_sampler = bmm.FineSampler(x_dist, mi_estimate_sample=_sample)
+    x_sampler = bmm.BMMSampler(x_dist, mi_estimate_sample=_sample)
     return ExampleDistribution(dist=x_dist, sampler=x_sampler)
 
 
@@ -57,7 +57,7 @@ def create_galaxy_distribution(_sample: int = 100) -> ExampleDistribution:
         ],
     )
 
-    base_balls_sampler = bmm.FineSampler(balls_mixt, mi_estimate_sample=_sample)
+    base_balls_sampler = bmm.BMMSampler(balls_mixt, mi_estimate_sample=_sample)
     a = jnp.array([[0, -1], [1, 0]])
     spiral = bmi.transforms.Spiral(a, speed=0.5)
 
@@ -121,7 +121,7 @@ def create_ai_distribution(_sample: int = 100) -> ExampleDistribution:
             ),
         ],
     )
-    ai_sampler = bmm.FineSampler(ai_dist, mi_estimate_sample=_sample)
+    ai_sampler = bmm.BMMSampler(ai_dist, mi_estimate_sample=_sample)
     return ExampleDistribution(dist=ai_dist, sampler=ai_sampler)
 
 
@@ -141,7 +141,7 @@ def create_waves_distribution(n_components: int = 12, _sample: int = 100) -> Exa
             for x in range(n_components)
         ],
     )
-    base_sampler = bmm.FineSampler(fence_base_dist, mi_estimate_sample=_sample)
+    base_sampler = bmm.BMMSampler(fence_base_dist, mi_estimate_sample=_sample)
     fence_aux_sampler = bmi.samplers.TransformedSampler(
         base_sampler,
         transform_x=lambda x: x + jnp.array([5.0, 0.0]) * jnp.sin(3 * x[1]),

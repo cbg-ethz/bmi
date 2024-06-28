@@ -52,9 +52,9 @@ infonce = bmi.estimators.neural.InfoNCEEstimator(
 #     dim_x=1, dim_y=1, df=1,
 # )
 
-# sampler_student = bmm.FineSampler(dist_student)
+# sampler_student = bmm.BMMSampler(dist_student)
 
-# sampler_student_arcsinh = bmm.FineSampler(bmm.transform(
+# sampler_student_arcsinh = bmm.BMMSampler(bmm.transform(
 #     dist_student,
 #     x_transform=arcsinh_bijector,
 #     y_transform=arcsinh_bijector,
@@ -63,7 +63,7 @@ infonce = bmi.estimators.neural.InfoNCEEstimator(
 # print(f"MI = {sampler_student.mutual_information():.4f}")
 
 # +
-sampler_four_balls = bmm.FineSampler(
+sampler_four_balls = bmm.BMMSampler(
     bmm.mixture(
         proportions=jnp.array([0.3, 0.3, 0.2, 0.2]),
         components=[
