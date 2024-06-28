@@ -17,12 +17,12 @@ For example, let's create a multivariate normal distribution:
 import jax.numpy as jnp
 from bmi.samplers import bmm
 
-# Define a fine distribution
+# Define a BMM
 cov = jnp.asarray([[1., 0.8], [0.8, 1.]])
 dist = bmm.MultivariateNormalDistribution(dim_x=1, dim_y=1, covariance=cov)
 ```
 
-To see how fine distributions can be used in the benchmark, see [this section](#connecting-bmms-and-samplers).
+To see how BMMs can be used in the benchmark, see [this section](#connecting-bmms-and-samplers).
 
 ## Basic operations supported by BMMs
 
@@ -51,7 +51,7 @@ pmis = dist.pmi(X, Y)
 # If one wants only the samples from the PMI profile,
 # one can use a helper function.
 # We use the same key to get the same output as in the previous example.
-pmis = fine.pmi_profile(key=key, dist=dist, n=1000)
+pmis = bmm.pmi_profile(key=key, dist=dist, n=1000)
 
 # Estimate mutual information from samples:
 print(jnp.mean(pmis))  # 0.51192063
@@ -59,7 +59,7 @@ print(jnp.mean(pmis))  # 0.51192063
 # One can also estimate the mutual information
 # and the associated Monte Carlo Standard Error (MCSE)
 # using the helper function:
-mi_estimate, mi_mcse = fine.estimate_mutual_information(key=key, dist=dist, n=n_samples)
+mi_estimate, mi_mcse = bmm.estimate_mutual_information(key=key, dist=dist, n=n_samples)
 print(mi_estimate)  # 0.51192063
 print(mi_mcse)  # 0.00252177
 ```
@@ -70,7 +70,7 @@ One can construct new Bend and Mix Models from the existing ones by two basic op
 
 #### Transformation by a diffeomorphism 
 
-A BMM $P_{XY}$ can be bent, i.e. transformed by a diffeomorphism of the form $f\times g$ to obtain a new fine distribution $P_{f(X)g(Y)}$.
+A BMM $P_{XY}$ can be bent, i.e. transformed by a diffeomorphism of the form $f\times g$ to obtain a new BMM $P_{f(X)g(Y)}$.
 Any diffeomorphism supported by [TensorFlow Probability on JAX](https://www.tensorflow.org/probability/examples/TensorFlow_Probability_on_JAX#bijectors) can be used.
 
 ```python
@@ -87,7 +87,8 @@ normal = bmm.MultivariateNormalDistribution(dim_x=2, dim_y=3, covariance=cov)
 transformed_normal = bmm.transform(dist=normal, x_transform=tfp.bijectors.Sigmoid(), y_transform=tfp.bijectors.Sigmoid())
 ```
 
-Note that samplers can be transformed by arbitrary continuous injective functions, not only diffeomorphisms, which preserve mutual information. However, this comes at the cost of losing the ability to compute pointwise mutual information. To wrap a fine distribution into a sampler, see [this section](#connecting-bmms-and-samplers).
+Note that samplers can be transformed by arbitrary continuous injective functions, not only diffeomorphisms, which preserve mutual information. However, this comes at the cost of losing the ability to compute pointwise mutual information.
+To wrap a BMM into a sampler, see [this section](#connecting-bmms-and-samplers).
 
 #### Constructing a mixture
 
@@ -118,7 +119,8 @@ mixture = bmm.mixture(proportions=[0.8, 0.2], components=[normal1, normal2])
 
 When both variables are discrete (and over an alphabet which is not too large), the joint distribution $P_{XY}$ can be represented by a probability table, and the mutual information can be computed exactly and the [`dit`](https://github.com/dit/dit) package is an excellent choice for these applications.
 
-However, discrete distributions $P_{XY}$ are also fine and Monte Carlo approximation can be used. Moreover, the fine distributions also encompass some cases where one of the variables is discrete and the other is continuous.
+However, discrete distributions $P_{XY}$ are also BMMs and a Monte Carlo approximation can be used.
+Moreover, the BMMs are flexible enough to model some cases where one of the variables is discrete and the other is continuous.
 
 Consider a family of distributions $P_{X_z}\otimes P_{Y_z}$, where each variable $X_z$ is a continuous variable and $Y_z$ is a discrete variable. Although we have $I(X_z; Y_z) = 0$, by mixing the distributions $P_{X_z}\otimes P_{Y_z}$ with different $z$ we can obtain a distribution with non-zero mutual information, represented by a Bayesian network $X \leftarrow Z\rightarrow Y$.
 
@@ -208,8 +210,8 @@ As an example using NumPyro to fit a mixture of multivariate normal distribution
 ### Where is the API?
 The API is [here](api/bmm.md).
 
-### What is the difference between a fine distribution and a sampler?
-Samplers are more general than fine distributions. [This section](#connecting-bmms-and-samplers) explains how to wrap a fine distribution into a sampler.
+### What is the difference between a BMM and a sampler?
+Samplers are more general than BMMs. [This section](#connecting-bmms-and-samplers) explains how to wrap a given BMM into a sampler.
 
 ### How should I choose the number of samples for the mutual information estimation?
 If variance of the PMI profile is finite and equal to $V$, then the Monte Carlo Standard Error (MCSE) of the mutual information estimate is equal to $\sqrt{V/n}$.
