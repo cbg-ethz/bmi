@@ -29,7 +29,7 @@ class ProductDistribution(JointDistribution):
         dim_x = int(dims_x[0])
         dim_y = int(dims_y[0])
 
-        dist_joint = tfd.Blockwise([dist_x, dist_y])
+        dist_joint = tfd.JointDistributionSequential((dist_x, dist_y))
 
         super().__init__(
             dim_x=dim_x,
