@@ -17,7 +17,7 @@ import jax
 import jax.numpy as jnp
 
 import bmi
-from bmi.samplers import fine
+from bmi.samplers import bmm
 
 
 # === WORKDIR ===
@@ -26,16 +26,16 @@ workdir: "generated/mixtures/outliers"
 
 @dataclasses.dataclass
 class ChangeMixingSetup:
-    dist_true: fine.JointDistribution
-    dist_noise: fine.JointDistribution
+    dist_true: bmm.JointDistribution
+    dist_noise: bmm.JointDistribution
 
-    def mixture(self, alpha: float) -> fine.JointDistribution:
+    def mixture(self, alpha: float) -> bmm.JointDistribution:
         """Return a mixture of the two distributions.
         
         Args:
             alpha: contamination level, i.e. the probability of the noise distribution
         """
-        return fine.mixture(
+        return bmm.mixture(
             components=[self.dist_true, self.dist_noise],
             proportions=jnp.asarray([1.0 - alpha, alpha]),
         )
@@ -43,23 +43,23 @@ class ChangeMixingSetup:
 signal_cov_parametrization = bmi.samplers.SparseLVMParametrization(dim_x=2, dim_y=2, n_interacting=2, beta=0.1, lambd=2.0)
 signal_cov_matrix = signal_cov_parametrization.correlation
 
-dist_signal_gauss = fine.MultivariateNormalDistribution(
+dist_signal_gauss = bmm.MultivariateNormalDistribution(
     dim_x=2,
     dim_y=2,
     covariance=signal_cov_matrix,
 )
 
 covariance_inlier = jnp.eye(dist_signal_gauss.dim_y)
-dist_gaussian_inlier = fine.ProductDistribution(
+dist_gaussian_inlier = bmm.ProductDistribution(
     dist_x=dist_signal_gauss.dist_x,
-    dist_y=fine.construct_multivariate_normal_distribution(mean=jnp.zeros(dist_signal_gauss.dim_y), covariance=covariance_inlier),
+    dist_y=bmm.construct_multivariate_normal_distribution(mean=jnp.zeros(dist_signal_gauss.dim_y), covariance=covariance_inlier),
 )
 
 # Outliers: 5 sigma
 covariance_outlier = 25 * jnp.eye(dist_signal_gauss.dim_y)
-dist_gaussian_outlier = fine.ProductDistribution(
+dist_gaussian_outlier = bmm.ProductDistribution(
     dist_x=dist_signal_gauss.dist_x,
-    dist_y=fine.construct_multivariate_normal_distribution(mean=jnp.zeros(dist_signal_gauss.dim_y), covariance=covariance_outlier),
+    dist_y=bmm.construct_multivariate_normal_distribution(mean=jnp.zeros(dist_signal_gauss.dim_y), covariance=covariance_outlier),
 )
 
 CHANGE_MIXING_SETUPS = {
@@ -75,7 +75,7 @@ MIXING_TASKS = {}
 # Add mixing tasks
 for setup_name, setup in CHANGE_MIXING_SETUPS.items():
     for alpha in ALPHAS:
-        sampler = fine.FineSampler(dist=setup.mixture(alpha=alpha), mi_estimate_sample=100_000)
+        sampler = bmm.FineSampler(dist=setup.mixture(alpha=alpha), mi_estimate_sample=100_000)
         task = bmi.Task(
             sampler=sampler,
             task_id=f"mixing-{setup_name}-{alpha}",
@@ -88,15 +88,15 @@ for setup_name, setup in CHANGE_MIXING_SETUPS.items():
 VARIANCE_TASKS = {}
 VARIANCE_MIXING: float = 0.2
 for variance in VARIANCES:
-    dist_noise_variance =  fine.ProductDistribution(
+    dist_noise_variance =  bmm.ProductDistribution(
         dist_x=dist_signal_gauss.dist_x,
-        dist_y=fine.construct_multivariate_normal_distribution(
+        dist_y=bmm.construct_multivariate_normal_distribution(
             mean=jnp.zeros(dist_signal_gauss.dim_y),
             covariance=variance * jnp.eye(dist_signal_gauss.dim_y)
         ),
     )
-    sampler = fine.FineSampler(
-        dist=fine.mixture(
+    sampler = bmm.FineSampler(
+        dist=bmm.mixture(
             proportions=jnp.array([1.0-VARIANCE_MIXING, VARIANCE_MIXING]),
             components=[dist_signal_gauss, dist_noise_variance],
         ),
@@ -276,7 +276,7 @@ rule estimate_mi_mixed_one_seed:
         dist = setup.mixture(alpha=float(wildcards.mixing))
 
         key = jax.random.PRNGKey(int(wildcards.seed))
-        mi, mi_stderr = fine.monte_carlo_mi_estimate(key=key, dist=dist, n=N_SAMPLES)
+        mi, mi_stderr = bmm.monte_carlo_mi_estimate(key=key, dist=dist, n=N_SAMPLES)
         mi, mi_stderr = float(mi), float(mi_stderr)
         with open(str(output), "w") as fh:
             json.dump({
@@ -299,7 +299,7 @@ rule estimate_mi_signal_one_seed:
         dist = setup.dist_true
 
         key = jax.random.PRNGKey(int(wildcards.seed))
-        mi, mi_stderr = fine.monte_carlo_mi_estimate(key=key, dist=dist, n=N_SAMPLES)
+        mi, mi_stderr = bmm.monte_carlo_mi_estimate(key=key, dist=dist, n=N_SAMPLES)
         mi, mi_stderr = float(mi), float(mi_stderr)
         with open(str(output), "w") as fh:
             json.dump({

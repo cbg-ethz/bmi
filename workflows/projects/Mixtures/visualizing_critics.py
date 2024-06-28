@@ -18,7 +18,7 @@ import jax.numpy as jnp
 from subplots_from_axsize import subplots_from_axsize
 
 import bmi
-from bmi.samplers import fine
+from bmi.samplers import bmm
 
 # -
 
@@ -46,15 +46,15 @@ infonce = bmi.estimators.neural.InfoNCEEstimator(
 # arcsinh_bijector = tfp.bijectors.Invert(tfp.bijectors.Sinh())
 
 # +
-# dist_student = fine.MultivariateStudentDistribution(
+# dist_student = bmm.MultivariateStudentDistribution(
 #     dispersion=0.1 * jnp.eye(2),
 #     mean=jnp.array([0., 0.]),
 #     dim_x=1, dim_y=1, df=1,
 # )
 
-# sampler_student = fine.FineSampler(dist_student)
+# sampler_student = bmm.FineSampler(dist_student)
 
-# sampler_student_arcsinh = fine.FineSampler(fine.transform(
+# sampler_student_arcsinh = bmm.FineSampler(bmm.transform(
 #     dist_student,
 #     x_transform=arcsinh_bijector,
 #     y_transform=arcsinh_bijector,
@@ -63,29 +63,29 @@ infonce = bmi.estimators.neural.InfoNCEEstimator(
 # print(f"MI = {sampler_student.mutual_information():.4f}")
 
 # +
-sampler_four_balls = fine.FineSampler(
-    fine.mixture(
+sampler_four_balls = bmm.FineSampler(
+    bmm.mixture(
         proportions=jnp.array([0.3, 0.3, 0.2, 0.2]),
         components=[
-            fine.MultivariateNormalDistribution(
+            bmm.MultivariateNormalDistribution(
                 covariance=bmi.samplers.canonical_correlation([0.0]),
                 mean=jnp.array([-1.25, -1.25]),
                 dim_x=1,
                 dim_y=1,
             ),
-            fine.MultivariateNormalDistribution(
+            bmm.MultivariateNormalDistribution(
                 covariance=bmi.samplers.canonical_correlation([0.0]),
                 mean=jnp.array([+1.25, +1.25]),
                 dim_x=1,
                 dim_y=1,
             ),
-            fine.MultivariateNormalDistribution(
+            bmm.MultivariateNormalDistribution(
                 covariance=0.2 * bmi.samplers.canonical_correlation([0.0]),
                 mean=jnp.array([-2.5, +2.5]),
                 dim_x=1,
                 dim_y=1,
             ),
-            fine.MultivariateNormalDistribution(
+            bmm.MultivariateNormalDistribution(
                 covariance=0.2 * bmi.samplers.canonical_correlation([0.0]),
                 mean=jnp.array([+2.5, -2.5]),
                 dim_x=1,

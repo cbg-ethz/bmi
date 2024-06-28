@@ -13,7 +13,7 @@ import numpyro.distributions as dist
 from numpyro.infer import MCMC, NUTS
 
 import bmi
-from bmi.samplers import fine
+from bmi.samplers import bmm
 
 from subplots_from_axsize import subplots_from_axsize
 
@@ -85,8 +85,8 @@ def sample_into_fine_distribution(
     proportions: jnp.ndarray,
     dim_x: int,
     dim_y: int,
-) -> fine.JointDistribution:
-    """Builds a fine distribution from a Gaussian mixture model parameters."""
+) -> bmm.JointDistribution:
+    """Builds a BMM from a Gaussian mixture model parameters."""
     # Check if the dimensions are right
     n_components = proportions.shape[0]
     n_dims = dim_x + dim_y
@@ -95,7 +95,7 @@ def sample_into_fine_distribution(
     
     # Build components
     components = [
-        fine.MultivariateNormalDistribution(
+        bmm.MultivariateNormalDistribution(
             dim_x=dim_x,
             dim_y=dim_y,
             mean=mean,
@@ -105,7 +105,7 @@ def sample_into_fine_distribution(
     ]
 
     # Build a mixture model
-    return fine.mixture(proportions=proportions, components=components)
+    return bmm.mixture(proportions=proportions, components=components)
 
 DISTRIBUTIONS = {
     "Galaxy": ed.create_galaxy_distribution(_sample=3),

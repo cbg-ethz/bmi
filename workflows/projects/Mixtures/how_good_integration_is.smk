@@ -18,7 +18,7 @@ import jax
 import jax.numpy as jnp
 
 import bmi
-from bmi.samplers import fine
+from bmi.samplers import bmm
 from bmi.estimators.neural._backend_linear_memory import infonce, donsker_varadhan, nwj
 
 def monte_carlo(pmi: Callable, xs: np.ndarray, ys: np.ndarray):
@@ -33,7 +33,7 @@ def nwj_shifted(pmi: Callable, xs, ys):
 
 @dataclasses.dataclass
 class DistributionAndPMI:
-    dist: fine.JointDistribution
+    dist: bmm.JointDistribution
     # If `pmi` is None, then `dist.pmi` will be used
     pmi: Optional[Callable] = None
 
@@ -57,25 +57,25 @@ ESTIMATOR_COLORS = {
     "MC": "mediumblue",
 }
 
-four_balls = fine.mixture(
+four_balls = bmm.mixture(
     proportions=jnp.array([0.3, 0.3, 0.2, 0.2]),
     components=[
-        fine.MultivariateNormalDistribution(
+        bmm.MultivariateNormalDistribution(
             covariance=bmi.samplers.canonical_correlation([0.0]),
             mean=jnp.array([-1.25, -1.25]),
             dim_x=1, dim_y=1,
         ),
-        fine.MultivariateNormalDistribution(
+        bmm.MultivariateNormalDistribution(
             covariance=bmi.samplers.canonical_correlation([0.0]),
             mean=jnp.array([+1.25, +1.25]),
             dim_x=1, dim_y=1,
         ),
-        fine.MultivariateNormalDistribution(
+        bmm.MultivariateNormalDistribution(
             covariance=0.2 * bmi.samplers.canonical_correlation([0.0]),
             mean=jnp.array([-2.5, +2.5]),
             dim_x=1, dim_y=1,
         ),
-        fine.MultivariateNormalDistribution(
+        bmm.MultivariateNormalDistribution(
             covariance=0.2 * bmi.samplers.canonical_correlation([0.0]),
             mean=jnp.array([+2.5, -2.5]),
             dim_x=1, dim_y=1,
@@ -97,7 +97,7 @@ _DISTRIBUTIONS: dict[str, DistributionAndPMI] = {
         pmi=lambda x, y: four_balls.pmi(x, y) + jnp.sin(jnp.square(x[..., 0])),
     ),
     "Normal-25Dim": DistributionAndPMI(
-        dist=fine.MultivariateNormalDistribution(dim_x=25, dim_y=25, covariance=bmi.samplers.canonical_correlation(rho=[0.8] * 25))
+        dist=bmm.MultivariateNormalDistribution(dim_x=25, dim_y=25, covariance=bmi.samplers.canonical_correlation(rho=[0.8] * 25))
     ),
 }
 # If PMI is left as None, override it with the PMI of the distribution
@@ -194,7 +194,7 @@ rule estimate_ground_truth_single_seed:
         N_SAMPLES: int = 100_000
         dist = DISTRIBUTION_AND_PMIS[wildcards.setup].dist
         key = jax.random.PRNGKey(int(wildcards.seed))
-        mi, mi_stderr = fine.monte_carlo_mi_estimate(key=key, dist=dist, n=N_SAMPLES)
+        mi, mi_stderr = bmm.monte_carlo_mi_estimate(key=key, dist=dist, n=N_SAMPLES)
         mi, mi_stderr = float(mi), float(mi_stderr)
         with open(str(output), "w") as fh:
             json.dump({
