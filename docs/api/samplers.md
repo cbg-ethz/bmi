@@ -26,9 +26,9 @@ Samplers represent probability distributions with known mutual information.
 
 ::: bmi.samplers.ZeroInflatedPoissonizationSampler
 
-## Fine distributions
+## Bend and Mix Models
 
-See the [fine distributions subpackage API](fine-distributions.md) for more information.
+See the [Bend and Mix Models subpackage API](bmm.md) for more information.
 
 ### Auxiliary
 

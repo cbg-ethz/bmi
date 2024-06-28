@@ -1,4 +1,4 @@
-# Fine distributions
+# Bend and Mix Models
 
 ## Core utilities
 
@@ -12,7 +12,7 @@
 
 ::: bmi.samplers._tfp.ProductDistribution
 
-::: bmi.samplers._tfp.FineSampler
+::: bmi.samplers._tfp.BMMSampler
 
 ## Basic distributions
 

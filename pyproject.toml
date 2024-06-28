@@ -22,6 +22,11 @@ scipy = "^1.10.1"
 tqdm = "^4.64.1"
 tensorflow-probability = {extras = ["jax"], version = "^0.20.1"}
 
+[tool.poetry.group.bayes]
+optional = true
+
+[tool.poetry.group.bayes.dependencies]
+numpyro = "^0.14.0"
 
 [tool.poetry.group.dev]
 optional = true

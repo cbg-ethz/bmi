@@ -8,8 +8,8 @@ from bmi.samplers._tfp._core import JointDistribution, monte_carlo_mi_estimate
 from bmi.samplers.base import BaseSampler, KeyArray, cast_to_rng
 
 
-class FineSampler(BaseSampler):
-    """Wraps a given fine distribution into a sampler."""
+class BMMSampler(BaseSampler):
+    """Wraps a given Bend and Mix Model (BMM) into a sampler."""
 
     def __init__(
         self,
@@ -21,8 +21,8 @@ class FineSampler(BaseSampler):
         """
 
         Args:
-            dist: fine distribution to be wrapped
-            mi: mutual information of the fine distribution, if already calculated.
+            dist: distribution represented by a BMM to be wrapped
+            mi: mutual information of the distribution, if already calculated.
                 If not provided, it will be estimated via Monte Carlo sampling.
             mi_estimate_seed: seed for the Monte Carlo sampling
             mi_estimate_sample: number of samples for the Monte Carlo sampling

@@ -12,7 +12,7 @@ matplotlib.use('Agg')
 import numpy as np
 
 import bmi
-from bmi.samplers import fine
+from bmi.samplers import bmm
 
 from tensorflow_probability.substrates import jax as tfp
 tfd = tfp.distributions
@@ -35,16 +35,16 @@ def construct_bernoulli(p: float, dtype=jnp.float64) -> tfd.Distribution:
 def define_distribution():
     """Defines the joint distribution P(X, Y)."""
     # Define the distributions for X_k
-    x1 = fine.construct_multivariate_student_distribution(
+    x1 = bmm.construct_multivariate_student_distribution(
         mean=-jnp.ones(2),
         dispersion=0.2 * jnp.eye(2),
         df=8,
     )
-    x2 = fine.construct_multivariate_normal_distribution(
+    x2 = bmm.construct_multivariate_normal_distribution(
         mean=jnp.zeros(2),
         covariance=0.1 * bmi.samplers.canonical_correlation([0.95]),
     )
-    x3 = fine.construct_multivariate_student_distribution(
+    x3 = bmm.construct_multivariate_student_distribution(
         mean=jnp.ones(2),
         dispersion=0.2 * jnp.eye(2),
         df=5,
@@ -57,12 +57,12 @@ def define_distribution():
 
     # Define the mixture distribution
     components = [
-        fine.ProductDistribution(dist_x, dist_y)
+        bmm.ProductDistribution(dist_x, dist_y)
         for dist_x, dist_y in zip([x1, x2, x3], [y1, y2, y3])
     ]
     connect_prob = 0.5
     bulk_prob = 0.5 * (1 - connect_prob)
-    joint_distribution = fine.mixture(proportions=[bulk_prob, connect_prob, bulk_prob], components=components)
+    joint_distribution = bmm.mixture(proportions=[bulk_prob, connect_prob, bulk_prob], components=components)
 
     return joint_distribution
 
@@ -76,7 +76,7 @@ rule estimate_mi:
     output: "estimate.json"
     run:
         key = jax.random.PRNGKey(121)
-        mi, mi_std_err = fine.monte_carlo_mi_estimate(key, dist=define_distribution(), n=1_000_000)
+        mi, mi_std_err = bmm.monte_carlo_mi_estimate(key, dist=define_distribution(), n=1_000_000)
         with open(output[0], "w") as fp:
             json.dump({"estimate": float(mi), "std_err": float(mi_std_err)}, fp=fp)
 
@@ -91,7 +91,7 @@ rule sample_pmi:
     output: "pmi_samples.npz"
     run:
         key = jax.random.PRNGKey(101)
-        profile_samples = fine.pmi_profile(key=key, dist=define_distribution(), n=1_000_000)
+        profile_samples = bmm.pmi_profile(key=key, dist=define_distribution(), n=1_000_000)
         np.savez(output[0], samples=profile_samples)
 
 
