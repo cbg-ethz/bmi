@@ -84,7 +84,36 @@ We defined several benchmark suites with shared structure.
 
 ## Citing
 
-If you find this code useful in your research, consider citing [our manuscript](https://papers.nips.cc/paper_files/paper/2023/hash/36b80eae70ff629d667f210e13497edf-Abstract-Conference.html):
+### ✨ New! ✨ On the properties and estimation of pointwise mutual information profiles
+
+[![arXiv](https://img.shields.io/badge/arXiv-2310.10240-b31b1b.svg)](https://arxiv.org/abs/2310.10240)
+
+In this manuscript we discuss the *pointwise mutual information profile*, an invariant which can be used to diagnose limitations of the previous mutual information benchmark, and a flexible distribution family of *Bend and Mix Models*. These distributions can be used to create *more expressive benchmark tasks* and provide *model-based Bayesian estimates* of mutual information.
+
+Workflows:
+  - To run the updated version of the benchmark, using Bend and Mix Models, see [`workflows/benchmark/v2`](./workflows/benchmark/v2/).
+  - To reproduce the experimental results from the manuscript, see [`workflows/projects/Mixtures`](./workflows/projects/Mixtures/).
+
+```
+@article{pmi-profiles-2023,
+   title={On the properties and estimation of pointwise mutual information profiles},
+   author = {Czy\.{z}, Pawe{\l}  and Grabowski, Frederic and Vogt, Julia and Beerenwinkel, Niko and Marx, Alexander},
+   journal={arXiv preprint arXiv:2310.10240},
+   year={2023}
+}
+```
+
+### Beyond normal: On the evaluation of the mutual information estimators
+
+[![arXiv](https://img.shields.io/badge/arXiv-2306.11078-b31b1b.svg)](https://arxiv.org/abs/2306.11078)
+[![Venue](https://img.shields.io/badge/venue-NeurIPS_2023-darkblue)](https://neurips.cc/virtual/2023/poster/72978)
+[![Manuscript](https://img.shields.io/badge/manuscript-PDF-darkblue)](https://papers.nips.cc/paper_files/paper/2023/hash/36b80eae70ff629d667f210e13497edf-Abstract-Conference.html)
+
+In this manuscript we discuss a benchmark for mutual information estimators.
+
+Workflows:
+  - To run the benchmark, see [`workflows/benchmark/v1`](./workflows/benchmark/v1).
+  - To reproduce the experimental results from the manuscript, see [`workflows/projects/Beyond_Normal`](./workflows/projects/Beyond_Normal/)
 
 ```
 @inproceedings{beyond-normal-2023,
@@ -99,4 +128,3 @@ If you find this code useful in your research, consider citing [our manuscript](
  year = {2023}
 }
 ```
-
