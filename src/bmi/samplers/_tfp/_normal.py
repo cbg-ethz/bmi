@@ -8,6 +8,7 @@ from bmi.samplers._splitmultinormal import SplitMultinormal
 from bmi.samplers._tfp._core import JointDistribution
 
 jtf = tfp.tf2jax
+tfb = tfp.bijectors
 tfd = tfp.distributions
 
 
@@ -55,7 +56,12 @@ class MultivariateNormalDistribution(JointDistribution):
         # Now we need to define the TensorFlow Probability distributions
         # using the information provided
 
-        dist_joint = construct_multivariate_normal_distribution(mean=mean, covariance=covariance)
+        _dist_joint = construct_multivariate_normal_distribution(mean=mean, covariance=covariance)
+        dist_joint = tfd.TransformedDistribution(
+            distribution=_dist_joint,
+            bijector=tfb.Split((dim_x, dim_y)),
+        )
+
         dist_x = construct_multivariate_normal_distribution(
             mean=mean[:dim_x], covariance=covariance[:dim_x, :dim_x]
         )
