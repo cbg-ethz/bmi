@@ -13,7 +13,7 @@ import numpyro.distributions as dist
 from numpyro.infer import MCMC, NUTS
 
 import bmi
-from bmi.samplers import fine
+from bmi.samplers import bmm
 
 from subplots_from_axsize import subplots_from_axsize
 
@@ -79,14 +79,14 @@ def model(data, K: int = 10, alpha: Optional[float] = None, jitter: float = 1e-6
         obs=data)
 
 
-def sample_into_fine_distribution(
+def sample_into_bmm_distribution(
     means: jnp.ndarray,
     covariances: jnp.ndarray,
     proportions: jnp.ndarray,
     dim_x: int,
     dim_y: int,
-) -> fine.JointDistribution:
-    """Builds a fine distribution from a Gaussian mixture model parameters."""
+) -> bmm.JointDistribution:
+    """Builds a BMM from a Gaussian mixture model parameters."""
     # Check if the dimensions are right
     n_components = proportions.shape[0]
     n_dims = dim_x + dim_y
@@ -95,7 +95,7 @@ def sample_into_fine_distribution(
     
     # Build components
     components = [
-        fine.MultivariateNormalDistribution(
+        bmm.MultivariateNormalDistribution(
             dim_x=dim_x,
             dim_y=dim_y,
             mean=mean,
@@ -105,7 +105,7 @@ def sample_into_fine_distribution(
     ]
 
     # Build a mixture model
-    return fine.mixture(proportions=proportions, components=components)
+    return bmm.mixture(proportions=proportions, components=components)
 
 DISTRIBUTIONS = {
     "Galaxy": ed.create_galaxy_distribution(_sample=3),
@@ -286,7 +286,7 @@ rule create_approx_sample:
         
         idx = int(wildcards.sample_index)
 
-        approx_dist = sample_into_fine_distribution(
+        approx_dist = sample_into_bmm_distribution(
             means=samples["mu"][idx],
             covariances=samples["cov"][idx],
             proportions=samples["pi"][idx],
@@ -311,7 +311,7 @@ rule estimate_pmi_in_sample:
         
         idx = int(wildcards.sample_index)
 
-        approx_dist = sample_into_fine_distribution(
+        approx_dist = sample_into_bmm_distribution(
             means=samples["mu"][idx],
             covariances=samples["cov"][idx],
             proportions=samples["pi"][idx],

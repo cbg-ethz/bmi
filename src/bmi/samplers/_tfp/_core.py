@@ -11,9 +11,10 @@ tfb = tfp.bijectors
 
 @dataclasses.dataclass
 class JointDistribution:
-    """The main object of this package.
-    Represents a joint distribution $P_{XY}$ together
-    with the marginal distributions $P_X$ and $P_Y$.
+    """The main object of this package, representing
+    a Bend and Mix Model (BMM), i.e., a joint distribution
+    $P_{XY}$ together with the marginal distributions
+    $P_X$ and $P_Y$.
 
     Attributes:
         dist: $P_{XY}$

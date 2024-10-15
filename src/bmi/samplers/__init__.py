@@ -13,7 +13,7 @@ from bmi.samplers._matrix_utils import (
 )
 
 # isort: on
-import bmi.samplers._tfp as fine
+import bmi.samplers._tfp as bmm
 from bmi.samplers._independent_coordinates import IndependentConcatenationSampler
 from bmi.samplers._split_student_t import SplitStudentT
 from bmi.samplers._splitmultinormal import BivariateNormalSampler, SplitMultinormal
@@ -33,7 +33,7 @@ __all__ = [
     "AdditiveUniformSampler",
     "BaseSampler",
     "canonical_correlation",
-    "fine",
+    "bmm",
     "parametrised_correlation_matrix",
     "BivariateNormalSampler",
     "SplitMultinormal",

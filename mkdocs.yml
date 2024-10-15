@@ -48,7 +48,7 @@ nav:
   - Home: index.md
   - Estimators: estimators.md
   - Benchmark: benchmarking-new-estimator.md
-  - Fine distributions: fine-distributions.md
+  - Bend and Mix Models: bmm.md
   - Contributing: contributing.md
   - API: api/index.md
 

@@ -1,4 +1,4 @@
-"""Demonstration of the capabilities of the fine distribution family."""
+"""Demonstration of the capabilities of the BMM family."""
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -8,7 +8,7 @@ matplotlib.use("agg")
 import jax.numpy as jnp
 
 import bmi
-from bmi.samplers import fine
+from bmi.samplers import bmm
 
 import example_distributions as ed
 
@@ -131,7 +131,7 @@ rule plot_pmi_profiles:
         for dist, task_name, ax in zip(dists, tasks_official, axs):
             import jax
             key = jax.random.PRNGKey(1024)
-            pmi_values = fine.pmi_profile(key=key, dist=dist, n=100_000)
+            pmi_values = bmm.pmi_profile(key=key, dist=dist, n=100_000)
             bins = np.linspace(-5, 5, 101)
             ax.hist(pmi_values, bins=bins, density=True, alpha=0.5)
             ax.set_xlabel(task_name)

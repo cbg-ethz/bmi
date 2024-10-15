@@ -12,8 +12,8 @@
 
 [Samplers](samplers.md) represent joint probability distributions with known mutual information from which one can sample. They are lower level than `Tasks` and can be used to define new tasks by transformations which preserve mutual information.
 
-### Fine distributions
-[Subpackage](fine-distributions.md) implementing distributions in which the ground-truth mutual information may not be known analytically, but can be efficiently approximated using Monte Carlo methods. 
+### Bend and Mix Models
+[Subpackage](bmm.md) implementing distributions known as *Bend and Mix Models*, for which the ground-truth mutual information may not be known analytically, but can be efficiently approximated using Monte Carlo methods. 
 
 ## Interfaces
 [Interfaces](interfaces.md) defines the main interfaces used in the package.

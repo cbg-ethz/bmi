@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "benchmark-mi"
-version = "0.1.2"
+version = "0.1.3"
 description = "Estimators of mutual information and distributions used to benchmark them."
 authors = ["Paweł Czyż <pawelpiotr.czyz@ai.ethz.ch>", "Frederic Grabowski <grabowski.frederic@gmail.com>"]
 license = "MIT"
@@ -22,6 +22,11 @@ scipy = "^1.10.1"
 tqdm = "^4.64.1"
 tensorflow-probability = {extras = ["jax"], version = "^0.20.1"}
 
+[tool.poetry.group.bayes]
+optional = true
+
+[tool.poetry.group.bayes.dependencies]
+numpyro = "^0.14.0"
 
 [tool.poetry.group.dev]
 optional = true

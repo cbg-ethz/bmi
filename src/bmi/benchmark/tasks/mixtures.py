@@ -4,7 +4,7 @@ import numpy as np
 import bmi.samplers as samplers
 import bmi.transforms as transforms
 from bmi.benchmark.task import Task
-from bmi.samplers import fine
+from bmi.samplers import bmm
 
 _MC_MI_ESTIMATE_SAMPLE = 100_000
 
@@ -15,10 +15,10 @@ def task_x(
 ) -> Task:
     """The X distribution."""
 
-    dist = fine.mixture(
+    dist = bmm.mixture(
         proportions=jnp.array([0.5, 0.5]),
         components=[
-            fine.MultivariateNormalDistribution(
+            bmm.MultivariateNormalDistribution(
                 covariance=samplers.canonical_correlation([x * gaussian_correlation]),
                 mean=jnp.zeros(2),
                 dim_x=1,
@@ -27,7 +27,7 @@ def task_x(
             for x in [-1, 1]
         ],
     )
-    sampler = fine.FineSampler(dist, mi_estimate_sample=mi_estimate_sample)
+    sampler = bmm.BMMSampler(dist, mi_estimate_sample=mi_estimate_sample)
 
     return Task(
         sampler=sampler,
@@ -47,36 +47,36 @@ def task_ai(
     corr = 0.95
     var_x = 0.04
 
-    dist = fine.mixture(
+    dist = bmm.mixture(
         proportions=jnp.full(6, fill_value=1 / 6),
         components=[
             # I components
-            fine.MultivariateNormalDistribution(
+            bmm.MultivariateNormalDistribution(
                 dim_x=1,
                 dim_y=1,
                 mean=jnp.array([1.0, 0.0]),
                 covariance=np.diag([0.01, 0.2]),
             ),
-            fine.MultivariateNormalDistribution(
+            bmm.MultivariateNormalDistribution(
                 dim_x=1,
                 dim_y=1,
                 mean=jnp.array([1.0, 1]),
                 covariance=np.diag([0.05, 0.001]),
             ),
-            fine.MultivariateNormalDistribution(
+            bmm.MultivariateNormalDistribution(
                 dim_x=1,
                 dim_y=1,
                 mean=jnp.array([1.0, -1]),
                 covariance=np.diag([0.05, 0.001]),
             ),
             # A components
-            fine.MultivariateNormalDistribution(
+            bmm.MultivariateNormalDistribution(
                 dim_x=1,
                 dim_y=1,
                 mean=jnp.array([-0.8, -0.2]),
                 covariance=np.diag([0.03, 0.001]),
             ),
-            fine.MultivariateNormalDistribution(
+            bmm.MultivariateNormalDistribution(
                 dim_x=1,
                 dim_y=1,
                 mean=jnp.array([-1.2, 0.0]),
@@ -84,7 +84,7 @@ def task_ai(
                     [[var_x, jnp.sqrt(var_x * 0.2) * corr], [jnp.sqrt(var_x * 0.2) * corr, 0.2]]
                 ),
             ),
-            fine.MultivariateNormalDistribution(
+            bmm.MultivariateNormalDistribution(
                 dim_x=1,
                 dim_y=1,
                 mean=jnp.array([-0.4, 0.0]),
@@ -94,7 +94,7 @@ def task_ai(
             ),
         ],
     )
-    sampler = fine.FineSampler(dist, mi_estimate_sample=mi_estimate_sample)
+    sampler = bmm.BMMSampler(dist, mi_estimate_sample=mi_estimate_sample)
 
     return Task(
         sampler=sampler,
@@ -110,10 +110,10 @@ def task_galaxy(
 ) -> Task:
     """The Galaxy distribution."""
 
-    balls_mixt = fine.mixture(
+    balls_mixt = bmm.mixture(
         proportions=jnp.array([0.5, 0.5]),
         components=[
-            fine.MultivariateNormalDistribution(
+            bmm.MultivariateNormalDistribution(
                 covariance=samplers.canonical_correlation([0.0], additional_y=1),
                 mean=jnp.array([x, x, x]) * distance / 2,
                 dim_x=2,
@@ -123,7 +123,7 @@ def task_galaxy(
         ],
     )
 
-    base_sampler = fine.FineSampler(balls_mixt, mi_estimate_sample=mi_estimate_sample)
+    base_sampler = bmm.BMMSampler(balls_mixt, mi_estimate_sample=mi_estimate_sample)
     a = jnp.array([[0, -1], [1, 0]])
     spiral = transforms.Spiral(a, speed=speed)
 
@@ -150,10 +150,10 @@ def task_waves(
 
     assert n_components > 0
 
-    base_dist = fine.mixture(
+    base_dist = bmm.mixture(
         proportions=jnp.ones(n_components) / n_components,
         components=[
-            fine.MultivariateNormalDistribution(
+            bmm.MultivariateNormalDistribution(
                 covariance=jnp.diag(jnp.array([0.1, 1.0, 0.1])),
                 mean=jnp.array([x, 0, x % 4]) * 1.5,
                 dim_x=2,
@@ -162,7 +162,7 @@ def task_waves(
             for x in range(n_components)
         ],
     )
-    base_sampler = fine.FineSampler(base_dist, mi_estimate_sample=mi_estimate_sample)
+    base_sampler = bmm.BMMSampler(base_dist, mi_estimate_sample=mi_estimate_sample)
     aux_sampler = samplers.TransformedSampler(
         base_sampler,
         transform_x=lambda x: x
@@ -193,10 +193,10 @@ def task_concentric_multinormal(
 
     assert n_components > 0
 
-    dist = fine.mixture(
+    dist = bmm.mixture(
         proportions=jnp.ones(n_components) / n_components,
         components=[
-            fine.MultivariateNormalDistribution(
+            bmm.MultivariateNormalDistribution(
                 covariance=jnp.diag(jnp.array(dim_x * [i**2] + [0.0001])),
                 mean=jnp.array(dim_x * [0.0] + [1.0 * i]),
                 dim_x=dim_x,
@@ -205,7 +205,7 @@ def task_concentric_multinormal(
             for i in range(1, 1 + n_components)
         ],
     )
-    sampler = fine.FineSampler(dist, mi_estimate_sample=mi_estimate_sample)
+    sampler = bmm.BMMSampler(dist, mi_estimate_sample=mi_estimate_sample)
 
     return Task(
         sampler=sampler,
@@ -238,23 +238,23 @@ def task_multinormal_sparse_w_inliers(
         eta_x=strength,
     )
 
-    signal_dist = fine.MultivariateNormalDistribution(
+    signal_dist = bmm.MultivariateNormalDistribution(
         dim_x=dim_x,
         dim_y=dim_y,
         covariance=params.correlation,
     )
 
-    noise_dist = fine.ProductDistribution(
+    noise_dist = bmm.ProductDistribution(
         dist_x=signal_dist.dist_x,
         dist_y=signal_dist.dist_y,
     )
 
-    dist = fine.mixture(
+    dist = bmm.mixture(
         proportions=jnp.array([1 - inlier_fraction, inlier_fraction]),
         components=[signal_dist, noise_dist],
     )
 
-    sampler = fine.FineSampler(dist, mi_estimate_sample=mi_estimate_sample)
+    sampler = bmm.BMMSampler(dist, mi_estimate_sample=mi_estimate_sample)
 
     task_id = f"mult-sparse-w-inliers-{dim_x}-{dim_y}-{n_interacting}-{strength}-{inlier_fraction}"
     return Task(

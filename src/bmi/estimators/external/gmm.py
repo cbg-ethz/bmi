@@ -1,3 +1,13 @@
+"""A Gaussian mixture model estimator, allowing for model-based
+Bayesian estimator of mutual information.
+The full description can be found [here](https://arxiv.org/abs/2310.10240).
+
+Note that to use this estimator you need to install external dependencies:
+```bash
+$ pip install benchmark-mi[bayes]
+```
+"""
+
 try:
     import numpyro  # type: ignore
     import numpyro.distributions as dist  # type: ignore
@@ -12,7 +22,7 @@ import jax.numpy as jnp
 from numpy.typing import ArrayLike
 
 from bmi.interface import BaseModel, IMutualInformationPointEstimator
-from bmi.samplers import fine
+from bmi.samplers import bmm
 from bmi.utils import ProductSpace
 
 
@@ -74,14 +84,14 @@ def model(
     )
 
 
-def sample_into_fine_distribution(
+def sample_into_bmm_distribution(
     means: jnp.ndarray,
     covariances: jnp.ndarray,
     proportions: jnp.ndarray,
     dim_x: int,
     dim_y: int,
-) -> fine.JointDistribution:
-    """Builds a fine distribution from a Gaussian mixture model parameters."""
+) -> bmm.JointDistribution:
+    """Builds a bmm distribution from a Gaussian mixture model parameters."""
     # Check if the dimensions are right
     n_components = proportions.shape[0]
     n_dims = dim_x + dim_y
@@ -90,7 +100,7 @@ def sample_into_fine_distribution(
 
     # Build components
     components = [
-        fine.MultivariateNormalDistribution(
+        bmm.MultivariateNormalDistribution(
             dim_x=dim_x,
             dim_y=dim_y,
             mean=mean,
@@ -100,7 +110,7 @@ def sample_into_fine_distribution(
     ]
 
     # Build a mixture model
-    return fine.mixture(proportions=proportions, components=components)
+    return bmm.mixture(proportions=proportions, components=components)
 
 
 class GMMEstimatorParams(BaseModel):
@@ -185,12 +195,12 @@ class GMMEstimator(IMutualInformationPointEstimator):
         self._dim_x = space.dim_x
         self._dim_y = space.dim_y
 
-    def get_fine_distribution(self, idx: int) -> fine.JointDistribution:
+    def get_bmm_distribution(self, idx: int) -> bmm.JointDistribution:
         if self._mcmc is None:
             raise ValueError("You need to run MCMC first. See the `run_mcmc` method.")
 
         samples = self._mcmc.get_samples()
-        return sample_into_fine_distribution(
+        return sample_into_bmm_distribution(
             means=samples["mu"][idx],
             covariances=samples["cov"][idx],
             proportions=samples["pi"][idx],
@@ -204,8 +214,8 @@ class GMMEstimator(IMutualInformationPointEstimator):
         if key is None:
             self.key, key = jax.random.split(self.key)
 
-        distribution = self.get_fine_distribution(idx)
-        mi, _ = fine.monte_carlo_mi_estimate(key=key, dist=distribution, n=mc_samples)
+        distribution = self.get_bmm_distribution(idx)
+        mi, _ = bmm.monte_carlo_mi_estimate(key=key, dist=distribution, n=mc_samples)
         return mi
 
     def get_posterior_mi(

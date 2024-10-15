@@ -19,7 +19,7 @@ from bmi.samplers._tfp._student import (
 
 # isort: on
 from bmi.samplers._tfp._product import ProductDistribution
-from bmi.samplers._tfp._wrapper import FineSampler
+from bmi.samplers._tfp._wrapper import BMMSampler
 
 __all__ = [
     "JointDistribution",
@@ -30,7 +30,7 @@ __all__ = [
     "MultivariateNormalDistribution",
     "MultivariateStudentDistribution",
     "ProductDistribution",
-    "FineSampler",
+    "BMMSampler",
     "construct_multivariate_normal_distribution",
     "construct_multivariate_student_distribution",
 ]
