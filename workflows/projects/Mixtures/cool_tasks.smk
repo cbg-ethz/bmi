@@ -32,7 +32,25 @@ ESTIMATOR_NAMES = {
     "Hist-10": "Histogram",
     "CCA": "CCA",
 }
+ESTIMATOR_COLORS = {
+    "MINE": '#377eb8',
+    "InfoNCE": '#ff7f00',
+    "KSG-10": '#4daf4a',
+    "Hist-10": '#f781bf',
+    "CCA": '#a65628',
+}
+
+ESTIMATOR_MARKERS = {
+    "MINE": 'o',
+    "InfoNCE": 'v',
+    "KSG-10": '^',
+    "Hist-10": 'D',
+    "CCA": 'X',
+}
+
 assert set(ESTIMATOR_NAMES.keys()) == set(ESTIMATORS.keys())
+assert set(ESTIMATOR_COLORS.keys()) == set(ESTIMATORS.keys())
+assert set(ESTIMATOR_MARKERS.keys()) == set(ESTIMATORS.keys())
 
 _SAMPLE_ESTIMATE: int = 200_000
 
@@ -73,7 +91,7 @@ rule all:
         'cool_tasks.pdf',
         'results.csv',
         'cool_tasks-results.pdf',
-        'profiles.pdf'
+        # 'profiles.pdf'
 
 rule plot_distributions:
     output: "cool_tasks.pdf"
@@ -122,21 +140,21 @@ rule plot_distributions:
 
         fig.savefig(str(output), dpi=300)
 
-rule plot_pmi_profiles:
-    output: "profiles.pdf"
-    run:
-        fig, axs = subplots_from_axsize(1, 4, axsize=(4, 3))
-        dists = [x_dist, ai_dist, fence_base_dist, balls_mixt]
-        tasks_official = ['X', 'AI', 'Waves', 'Galaxy']
-        for dist, task_name, ax in zip(dists, tasks_official, axs):
-            import jax
-            key = jax.random.PRNGKey(1024)
-            pmi_values = bmm.pmi_profile(key=key, dist=dist, n=100_000)
-            bins = np.linspace(-5, 5, 101)
-            ax.hist(pmi_values, bins=bins, density=True, alpha=0.5)
-            ax.set_xlabel(task_name)
-        axs[0].set_ylabel("Density")
-        fig.savefig(str(output))
+# rule plot_pmi_profiles:
+#     output: "profiles.pdf"
+#     run:
+#         fig, axs = subplots_from_axsize(1, 4, axsize=(4, 3))
+#         dists = [x_dist, ai_dist, fence_base_dist, balls_mixt]
+#         tasks_official = ['X', 'AI', 'Waves', 'Galaxy']
+#         for dist, task_name, ax in zip(dists, tasks_official, axs):
+#             import jax
+#             key = jax.random.PRNGKey(1024)
+#             pmi_values = bmm.pmi_profile(key=key, dist=dist, n=100_000)
+#             bins = np.linspace(-5, 5, 101)
+#             ax.hist(pmi_values, bins=bins, density=True, alpha=0.5)
+#             ax.set_xlabel(task_name)
+#         axs[0].set_ylabel("Density")
+#         fig.savefig(str(output))
 
 
 rule plot_results:
@@ -155,7 +173,10 @@ rule plot_results:
                 data_est['task_id'].apply(lambda e: tasks.index(e)) + 0.05 * np.random.normal(size=len(data_est)),
                 data_est['mi_estimate'],
                 label=ESTIMATOR_NAMES[estimator_id],
-                alpha=0.4, s=3**2,
+                alpha=0.4, s=5**2,
+                marker=ESTIMATOR_MARKERS[estimator_id],
+                c=ESTIMATOR_COLORS[estimator_id],
+                edgecolor="none",
             )
             
         for task_id, data_task in data_5k.groupby('task_id'):

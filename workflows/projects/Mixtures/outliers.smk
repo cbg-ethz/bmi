@@ -112,13 +112,20 @@ for variance in VARIANCES:
 
 UNSCALED_TASKS = {**MIXING_TASKS, **VARIANCE_TASKS}
 
-
 ESTIMATOR_COLORS = {
-    "InfoNCE": "magenta",
-    "MINE": "red",
-    "KSG": "green",
-    "CCA": "purple",
+    "InfoNCE": '#ff7f00',
+    "MINE": '#377eb8',
+    "KSG": '#4daf4a',
+    "CCA": '#a65628',
 }
+
+ESTIMATOR_MARKERS = {
+    "InfoNCE": 'v',
+    "MINE": '.',
+    "KSG": '^',
+    "CCA": 'X',
+}
+
 
 ESTIMATORS = {
     "KSG": bmi.estimators.KSGEnsembleFirstEstimator(neighborhoods=(10,)),
@@ -162,7 +169,8 @@ def plot_data(ax: plt.Axes, data: pd.DataFrame, key: str = "mixing", use_legend:
         subset = grouped[grouped['estimator_id'] == estimator]
 
         color = ESTIMATOR_COLORS[estimator]
-        ax.plot(subset[key], subset['mean'], color=color, label=estimator)
+        ax.plot(subset[key], subset['mean'], color=color)
+        ax.scatter(subset[key], subset['mean'], color=color, marker=ESTIMATOR_MARKERS[estimator], label=estimator)
         ax.fill_between(subset[key], subset['mean'] - subset['std'], subset['mean'] + subset['std'], alpha=0.3, color=color)
 
     if use_legend:

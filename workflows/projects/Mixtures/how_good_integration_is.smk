@@ -51,11 +51,19 @@ ESTIMATORS: dict[str, Callable] = {
 }
 
 ESTIMATOR_COLORS = {
-    "InfoNCE": "magenta",
-    "DV": "red",
-    "NWJ": "limegreen",
-    "MC": "mediumblue",
+    "InfoNCE": '#ff7f00',
+    "DV": '#984ea3',
+    "NWJ": "#999999",
+    "MC": "#dede00",
 }
+ESTIMATOR_MARKERS = {
+    "InfoNCE": 'v',
+    "DV": 'D',
+    "NWJ": "X",
+    "MC": ".",
+}
+
+
 
 four_balls = bmm.mixture(
     proportions=jnp.array([0.3, 0.3, 0.2, 0.2]),
@@ -210,9 +218,6 @@ def plot_estimates(ax: plt.Axes, estimates_path, ground_truth_path, alpha: float
     with open(ground_truth_path) as fh:
         ground_truth = json.load(fh)
 
-    # Add ground-truth information
-    x_axis =[df["n_points"].min(), df["n_points"].max()] 
-    ax.plot(x_axis, [ground_truth["mi_mean"]] * 2, c="k", linestyle=":")
     # ax.fill_between(
     #     x_axis,
     #     [ground_truth["mi_mean"] - ground_truth["mi_std"]] * 2,
@@ -232,8 +237,14 @@ def plot_estimates(ax: plt.Axes, estimates_path, ground_truth_path, alpha: float
     
         color = ESTIMATOR_COLORS[estimator]
     
-        ax.plot(points, mean, color=color, label=estimator)
+        ax.plot(points, mean, color=color)
+        ax.scatter(points, mean, color=color, marker=ESTIMATOR_MARKERS[estimator], label=estimator)
         ax.fill_between(points, mean - std, mean + std, alpha=alpha, color=color)
+
+
+    # Add ground-truth information
+    x_axis =[df["n_points"].min(), df["n_points"].max()] 
+    ax.plot(x_axis, [ground_truth["mi_mean"]] * 2, c="k", linestyle=":")
 
 
 rule plot_performance_all:
