@@ -41,7 +41,7 @@ ESTIMATOR_COLORS = {
 }
 
 ESTIMATOR_MARKERS = {
-    "MINE": '.',
+    "MINE": 'o',
     "InfoNCE": 'v',
     "KSG-10": '^',
     "Hist-10": 'D',
@@ -173,7 +173,7 @@ rule plot_results:
                 data_est['task_id'].apply(lambda e: tasks.index(e)) + 0.05 * np.random.normal(size=len(data_est)),
                 data_est['mi_estimate'],
                 label=ESTIMATOR_NAMES[estimator_id],
-                alpha=0.4, s=3**2,
+                alpha=0.4, s=5**2,
                 marker=ESTIMATOR_MARKERS[estimator_id],
                 c=ESTIMATOR_COLORS[estimator_id],
                 edgecolor="none",
