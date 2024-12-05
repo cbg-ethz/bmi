@@ -105,3 +105,6 @@ class TransformedSampler(base.BaseSampler):
 
     def mutual_information(self) -> float:
         return self._base_sampler.mutual_information()
+
+    def mutual_information_std(self) -> float:
+        return self._base_sampler.mutual_information_std()

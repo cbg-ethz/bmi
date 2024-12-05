@@ -106,3 +106,8 @@ class ISampler(Protocol):
     def mutual_information(self) -> float:
         """Mutual information MI(X; Y)."""
         raise NotImplementedError
+
+    @abstractmethod
+    def mutual_information_std(self) -> float:
+        """Mutual information uncertainty."""
+        raise NotImplementedError

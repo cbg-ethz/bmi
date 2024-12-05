@@ -53,3 +53,10 @@ class BMMSampler(BaseSampler):
                 key=rng, dist=self._dist, n=self._mi_estimate_sample
             )
             return self._mi
+
+    def mutual_information_std(self) -> float:
+        if self._mi_stderr is not None:
+            return self._mi_stderr
+        else:
+            self.mutual_information()
+            return self._mi_stderr

@@ -32,6 +32,9 @@ class BaseSampler(ISampler):
     def dim_y(self) -> int:
         return self._dim_y
 
+    def mutual_information_std(self) -> float:
+        return 0.0
+
 
 def cast_to_rng(seed: Union[KeyArray, int]) -> KeyArray:
     """Casts `int` to a KeyArray."""
