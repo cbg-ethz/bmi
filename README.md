@@ -86,7 +86,6 @@ We defined several benchmark suites with shared structure.
 
 ### ✨ New! ✨ On the properties and estimation of pointwise mutual information profiles
 
-[![arXiv](https://img.shields.io/badge/arXiv-2310.10240-b31b1b.svg)](https://arxiv.org/abs/2310.10240)
 [![Venue](https://img.shields.io/badge/venue-TMLR_2025-darkblue)](https://openreview.net/forum?id=LdflD41Gn8)
 [![Manuscript](https://img.shields.io/badge/manuscript-PDF-darkblue)](https://openreview.net/pdf?id=LdflD41Gn8)
 
@@ -111,7 +110,6 @@ Workflows:
 
 ### Beyond normal: On the evaluation of the mutual information estimators
 
-[![arXiv](https://img.shields.io/badge/arXiv-2306.11078-b31b1b.svg)](https://arxiv.org/abs/2306.11078)
 [![Venue](https://img.shields.io/badge/venue-NeurIPS_2023-darkblue)](https://neurips.cc/virtual/2023/poster/72978)
 [![Manuscript](https://img.shields.io/badge/manuscript-PDF-darkblue)](https://papers.nips.cc/paper_files/paper/2023/hash/36b80eae70ff629d667f210e13497edf-Abstract-Conference.html)
 
