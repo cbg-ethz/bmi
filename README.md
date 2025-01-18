@@ -1,4 +1,4 @@
-[![arXiv](https://img.shields.io/badge/arXiv-2306.11078-b31b1b.svg)](https://arxiv.org/abs/2306.11078)
+[![Venue](https://img.shields.io/badge/venue-TMLR_2025-darkblue)](https://openreview.net/forum?id=LdflD41Gn8)
 [![Venue](https://img.shields.io/badge/venue-NeurIPS_2023-darkblue)](https://neurips.cc/virtual/2023/poster/72978)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![PyPI Latest Release](https://img.shields.io/pypi/v/benchmark-mi.svg)](https://pypi.org/project/benchmark-mi/)
