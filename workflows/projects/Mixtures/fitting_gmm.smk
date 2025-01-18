@@ -114,6 +114,14 @@ DISTRIBUTIONS = {
     "X": ed.create_x_distribution(_sample=3),
 }
 
+POSTERIOR_RANGES = {
+    "X": (0, 1),
+    "AI": (0, 1),
+    "Waves": (0, 1.5),
+    "Galaxy": (0, 1),
+}
+
+
 rule all:
     # For the main part of the manuscript
     input:
@@ -220,8 +228,11 @@ rule plot_pdf:
         mi_true = np.mean(pmi_true)
         mi_approx = np.mean(pmi_approx, axis=1)  # (num_mcmc_samples,)
         ax.set_xlabel("MI")
-
-        ax.hist(mi_approx, bins=50, density=True, alpha=0.5, color="red", rasterized=True)
+        
+        # TODO BINS should depend on distribution
+        left, right = POSTERIOR_RANGES[wildcards.dist_name]
+        n_bins = 100
+        ax.hist(mi_approx, bins=np.linspace(left, right, n_bins + 1), density=True, alpha=0.5, color="red", rasterized=True)
         ax.axvline(mi_approx.mean(), color="red")  # Visualise posterior mean
         ax.axvline(mi_true, color="k", linestyle=":")  # Visualise true value
 
