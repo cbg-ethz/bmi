@@ -1,0 +1,920 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../benchmarking-new-estimator/">
+      
+      
+        <link rel="next" href="../contributing/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.50">
+    
+    
+      
+        <title>Bend and Mix Models - Benchmarking Mutual Information</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.a40c8224.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#bend-and-mix-models" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Benchmarking Mutual Information" class="md-header__button md-logo" aria-label="Benchmarking Mutual Information" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 7h-4v2h1v6h-1v2h4v-2h-1V9h1zM5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Benchmarking Mutual Information
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Bend and Mix Models
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="lime"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/cbg-ethz/bmi" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    BMI
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../estimators/" class="md-tabs__link">
+        
+  
+    
+  
+  Estimators
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../benchmarking-new-estimator/" class="md-tabs__link">
+        
+  
+    
+  
+  Benchmark
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+    
+  
+  Bend and Mix Models
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../contributing/" class="md-tabs__link">
+        
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../api/" class="md-tabs__link">
+        
+  
+    
+  
+  API
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Benchmarking Mutual Information" class="md-nav__button md-logo" aria-label="Benchmarking Mutual Information" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 7h-4v2h1v6h-1v2h4v-2h-1V9h1zM5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2"/></svg>
+
+    </a>
+    Benchmarking Mutual Information
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/cbg-ethz/bmi" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    BMI
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../estimators/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Estimators
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmarking-new-estimator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Benchmark
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Bend and Mix Models
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Bend and Mix Models
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#basic-operations-supported-by-bmms" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic operations supported by BMMs
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Basic operations supported by BMMs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#combining-and-transforming-bmms" class="md-nav__link">
+    <span class="md-ellipsis">
+      Combining and transforming BMMs
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Combining and transforming BMMs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#transformation-by-a-diffeomorphism" class="md-nav__link">
+    <span class="md-ellipsis">
+      Transformation by a diffeomorphism
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#constructing-a-mixture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Constructing a mixture
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discrete-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      Discrete variables
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connecting-bmms-and-samplers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Connecting BMMs and samplers
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#estimating-mutual-information-with-bmms" class="md-nav__link">
+    <span class="md-ellipsis">
+      Estimating mutual information with BMMs
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#faq" class="md-nav__link">
+    <span class="md-ellipsis">
+      FAQ
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="FAQ">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#where-is-the-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      Where is the API?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-is-the-difference-between-a-bmm-and-a-sampler" class="md-nav__link">
+    <span class="md-ellipsis">
+      What is the difference between a BMM and a sampler?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-should-i-choose-the-number-of-samples-for-the-mutual-information-estimation" class="md-nav__link">
+    <span class="md-ellipsis">
+      How should I choose the number of samples for the mutual information estimation?
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contributing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="bend-and-mix-models">Bend and Mix Models</h1>
+<p>In this tutorial we will take a closer look at the family of <em>Bend and Mix Models (BMMs)</em>, proposed in <a href="https://arxiv.org/abs/2310.10240"><em>On the properties and estimation of pointwise mutual information profiles</em></a> manuscript.</p>
+<p>A distribution <span class="arithmatex">\(P_{XY}\)</span> is a BMM, if it is possible to evaluate the densities <span class="arithmatex">\(\log p_{XY}(x, y)\)</span>, <span class="arithmatex">\(\log p_X(x)\)</span>, and <span class="arithmatex">\(\log p_Y(y)\)</span> for arbitrary points and to efficiently generate samples from <span class="arithmatex">\(P_{XY}\)</span>.
+In particular, one can evaluate <a href="https://en.wikipedia.org/wiki/Pointwise_mutual_information">pointwise mutual information</a> </p>
+<p><span class="arithmatex">\(\mathrm{PMI}(x, y) = \log \frac{p_{XY}(x, y)}{p_X(x)p_Y(y)}\)</span></p>
+<p>and use a Monte Carlo approximation of the mutual information <span class="arithmatex">\(I(X; Y) = \mathbb E_{(x, y)\sim P_{XY}}[\mathrm{PMI}(x, y)]\)</span>.</p>
+<p>A BMM can therefore be implemented as a triple of <a href="https://www.tensorflow.org/probability/examples/TensorFlow_Probability_on_JAX">TensorFlow Probability on JAX</a> distributions: the joint distribution <span class="arithmatex">\(P_{XY}\)</span> and marginals <span class="arithmatex">\(P_X\)</span> and <span class="arithmatex">\(P_Y\)</span>.</p>
+<p>For example, let's create a multivariate normal distribution:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">bmi.samplers</span><span class="w"> </span><span class="kn">import</span> <span class="n">bmm</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Define a BMM</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">cov</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]])</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">dist</span> <span class="o">=</span> <span class="n">bmm</span><span class="o">.</span><span class="n">MultivariateNormalDistribution</span><span class="p">(</span><span class="n">dim_x</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dim_y</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">covariance</span><span class="o">=</span><span class="n">cov</span><span class="p">)</span>
+</code></pre></div>
+<p>To see how BMMs can be used in the benchmark, see <a href="#connecting-bmms-and-samplers">this section</a>.</p>
+<h2 id="basic-operations-supported-by-bmms">Basic operations supported by BMMs</h2>
+<p>A BMM <span class="arithmatex">\(P_{XY}\)</span> can be used to sample from <span class="arithmatex">\(P_{XY}\)</span> or evaluate the pointwise mutual information <span class="arithmatex">\(\mathrm{PMI}(x, y)\)</span> at any point.
+The distribution of <span class="arithmatex">\(\mathrm{PMI}(x, y)\)</span>, where <span class="arithmatex">\((x, y)\sim P_{XY}\)</span> is called the <em>PMI profile</em> and can be approximated via the histograms from the samples.
+Similarly, sample-based Monte Carlo approximation can be used to estimate the mutual information <span class="arithmatex">\(I(X; Y)\)</span>, which is the mean of the PMI profile.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">jax</span><span class="w"> </span><span class="kn">import</span> <span class="n">random</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">bmi.samplers</span><span class="w"> </span><span class="kn">import</span> <span class="n">bmm</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># Define a Bend and Mix model:</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">cov</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]])</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">dist</span> <span class="o">=</span> <span class="n">bmm</span><span class="o">.</span><span class="n">MultivariateNormalDistribution</span><span class="p">(</span><span class="n">dim_x</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dim_y</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">covariance</span><span class="o">=</span><span class="n">cov</span><span class="p">)</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c1"># Sample 100_000 points from the distribution:</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">key</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="n">n_samples</span> <span class="o">=</span> <span class="mi">100_000</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="c1"># Calculate the PMI, obtaining the sample from the PMI profile:</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="n">pmis</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">pmi</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="c1"># If one wants only the samples from the PMI profile,</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="c1"># one can use a helper function.</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="c1"># We use the same key to get the same output as in the previous example.</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="n">pmis</span> <span class="o">=</span> <span class="n">bmm</span><span class="o">.</span><span class="n">pmi_profile</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">dist</span><span class="o">=</span><span class="n">dist</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="c1"># Estimate mutual information from samples:</span>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="nb">print</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pmis</span><span class="p">))</span>  <span class="c1"># 0.51192063</span>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a><span class="c1"># One can also estimate the mutual information</span>
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="c1"># and the associated Monte Carlo Standard Error (MCSE)</span>
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span class="c1"># using the helper function:</span>
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a><span class="n">mi_estimate</span><span class="p">,</span> <span class="n">mi_mcse</span> <span class="o">=</span> <span class="n">bmm</span><span class="o">.</span><span class="n">estimate_mutual_information</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">dist</span><span class="o">=</span><span class="n">dist</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n_samples</span><span class="p">)</span>
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a><span class="nb">print</span><span class="p">(</span><span class="n">mi_estimate</span><span class="p">)</span>  <span class="c1"># 0.51192063</span>
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a><span class="nb">print</span><span class="p">(</span><span class="n">mi_mcse</span><span class="p">)</span>  <span class="c1"># 0.00252177</span>
+</code></pre></div>
+<h3 id="combining-and-transforming-bmms">Combining and transforming BMMs</h3>
+<p>One can construct new Bend and Mix Models from the existing ones by two basic operations: bending (transforming with a diffeomorphism) or constructing a mixture of given BMMs.</p>
+<h4 id="transformation-by-a-diffeomorphism">Transformation by a diffeomorphism</h4>
+<p>A BMM <span class="arithmatex">\(P_{XY}\)</span> can be bent, i.e. transformed by a diffeomorphism of the form <span class="arithmatex">\(f\times g\)</span> to obtain a new BMM <span class="arithmatex">\(P_{f(X)g(Y)}\)</span>.
+Any diffeomorphism supported by <a href="https://www.tensorflow.org/probability/examples/TensorFlow_Probability_on_JAX#bijectors">TensorFlow Probability on JAX</a> can be used.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">tensorflow_probability.substrates</span><span class="w"> </span><span class="kn">import</span> <span class="n">jax</span> <span class="k">as</span> <span class="n">tfp</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">bmi.samplers</span><span class="w"> </span><span class="kn">import</span> <span class="n">bmm</span><span class="p">,</span> <span class="n">SparseLVMParametrization</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1"># Define a normal distribution</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">cov</span> <span class="o">=</span> <span class="n">SparseLVMParametrization</span><span class="p">(</span><span class="n">dim_x</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim_y</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_interacting</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">covariance</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="n">normal</span> <span class="o">=</span> <span class="n">bmm</span><span class="o">.</span><span class="n">MultivariateNormalDistribution</span><span class="p">(</span><span class="n">dim_x</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim_y</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">covariance</span><span class="o">=</span><span class="n">cov</span><span class="p">)</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="c1"># Use a TensorFlow Probability bijector to transform the distribution</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="n">transformed_normal</span> <span class="o">=</span> <span class="n">bmm</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">dist</span><span class="o">=</span><span class="n">normal</span><span class="p">,</span> <span class="n">x_transform</span><span class="o">=</span><span class="n">tfp</span><span class="o">.</span><span class="n">bijectors</span><span class="o">.</span><span class="n">Sigmoid</span><span class="p">(),</span> <span class="n">y_transform</span><span class="o">=</span><span class="n">tfp</span><span class="o">.</span><span class="n">bijectors</span><span class="o">.</span><span class="n">Sigmoid</span><span class="p">())</span>
+</code></pre></div>
+<p>Note that samplers can be transformed by arbitrary continuous injective functions, not only diffeomorphisms, which preserve mutual information. However, this comes at the cost of losing the ability to compute pointwise mutual information.
+To wrap a BMM into a sampler, see <a href="#connecting-bmms-and-samplers">this section</a>.</p>
+<h4 id="constructing-a-mixture">Constructing a mixture</h4>
+<p>If <span class="arithmatex">\(P_{X_1Y_1}, \dotsc, P_{X_KY_K}\)</span> are arbitrary BMMs defined on the same space <span class="arithmatex">\(\mathcal X\times \mathcal Y\)</span>, and <span class="arithmatex">\(w_1, \dotsc, w_K\)</span> are positive numbers such that <span class="arithmatex">\(w_1 + \dotsc + w_K=1\)</span>, then the mixture</p>
+<div class="arithmatex">\[P_{XY} = \sum_{k=1}^K w_k P_{X_kY_K}\]</div>
+<p>is also a BMM.
+Note that even if the component distributions do not encode any information (<span class="arithmatex">\(I(X_k; Y_k) = 0\)</span>), the mixture <span class="arithmatex">\(P_{XY}\)</span> can have <span class="arithmatex">\(I(X; Y) &gt; 0\)</span> and be as large as <span class="arithmatex">\(\log K\)</span>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">tensorflow_probability.substrates</span><span class="w"> </span><span class="kn">import</span> <span class="n">jax</span> <span class="k">as</span> <span class="n">tfp</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">bmi.samplers</span><span class="w"> </span><span class="kn">import</span> <span class="n">bmm</span><span class="p">,</span> <span class="n">SparseLVMParametrization</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="c1"># Define a normal distribution</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">cov1</span> <span class="o">=</span> <span class="n">SparseLVMParametrization</span><span class="p">(</span><span class="n">dim_x</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim_y</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_interacting</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">covariance</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">normal1</span> <span class="o">=</span> <span class="n">bmm</span><span class="o">.</span><span class="n">MultivariateNormalDistribution</span><span class="p">(</span><span class="n">dim_x</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim_y</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">covariance</span><span class="o">=</span><span class="n">cov1</span><span class="p">)</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="n">cov2</span> <span class="o">=</span> <span class="n">SparseLVMParametrization</span><span class="p">(</span><span class="n">dim_x</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim_y</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_interacting</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">covariance</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="n">normal2</span> <span class="o">=</span> <span class="n">bmm</span><span class="o">.</span><span class="n">MultivariateNormalDistribution</span><span class="p">(</span><span class="n">dim_x</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim_y</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">covariance</span><span class="o">=</span><span class="n">cov2</span><span class="p">)</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="n">mixture</span> <span class="o">=</span> <span class="n">bmm</span><span class="o">.</span><span class="n">mixture</span><span class="p">(</span><span class="n">proportions</span><span class="o">=</span><span class="p">[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">],</span> <span class="n">components</span><span class="o">=</span><span class="p">[</span><span class="n">normal1</span><span class="p">,</span> <span class="n">normal2</span><span class="p">])</span>
+</code></pre></div>
+<h2 id="discrete-variables">Discrete variables</h2>
+<p>When both variables are discrete (and over an alphabet which is not too large), the joint distribution <span class="arithmatex">\(P_{XY}\)</span> can be represented by a probability table, and the mutual information can be computed exactly and the <a href="https://github.com/dit/dit"><code>dit</code></a> package is an excellent choice for these applications.</p>
+<p>However, discrete distributions <span class="arithmatex">\(P_{XY}\)</span> are also BMMs and a Monte Carlo approximation can be used.
+Moreover, the BMMs are flexible enough to model some cases where one of the variables is discrete and the other is continuous.</p>
+<p>Consider a family of distributions <span class="arithmatex">\(P_{X_z}\otimes P_{Y_z}\)</span>, where each variable <span class="arithmatex">\(X_z\)</span> is a continuous variable and <span class="arithmatex">\(Y_z\)</span> is a discrete variable. Although we have <span class="arithmatex">\(I(X_z; Y_z) = 0\)</span>, by mixing the distributions <span class="arithmatex">\(P_{X_z}\otimes P_{Y_z}\)</span> with different <span class="arithmatex">\(z\)</span> we can obtain a distribution with non-zero mutual information, represented by a Bayesian network <span class="arithmatex">\(X \leftarrow Z\rightarrow Y\)</span>.</p>
+<p>Below we will show an example: </p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">bmi.samplers</span><span class="w"> </span><span class="kn">import</span> <span class="n">bmm</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">tensorflow_probability.substrates</span><span class="w"> </span><span class="kn">import</span> <span class="n">jax</span> <span class="k">as</span> <span class="n">tfp</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="n">tfd</span> <span class="o">=</span> <span class="n">tfp</span><span class="o">.</span><span class="n">distributions</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="k">def</span><span class="w"> </span><span class="nf">construct_bernoulli</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tfd</span><span class="o">.</span><span class="n">Distribution</span><span class="p">:</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Constructs a Bernoulli distribution, as</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="sd">    TensorFlow Probability disallows products of continuous</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="sd">    and discrete distributions.&quot;&quot;&quot;</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>    <span class="k">return</span> <span class="n">tfd</span><span class="o">.</span><span class="n">Independent</span><span class="p">(</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>            <span class="n">tfd</span><span class="o">.</span><span class="n">Bernoulli</span><span class="p">(</span><span class="n">probs</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">p</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>            <span class="n">reinterpreted_batch_ndims</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>    <span class="p">)</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="c1"># Define the distributions X_k. Each of them is a continuous distribution on R^2.</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="n">x1</span> <span class="o">=</span> <span class="n">bmm</span><span class="o">.</span><span class="n">construct_multivariate_student_distribution</span><span class="p">(</span><span class="n">mean</span><span class="o">=-</span><span class="n">jnp</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">dispersion</span><span class="o">=</span><span class="mf">0.2</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">df</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="n">x2</span> <span class="o">=</span> <span class="n">bmmm</span><span class="o">.</span><span class="n">construct_multivariate_normal_distribution</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">covariance</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]]))</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="n">x3</span> <span class="o">=</span> <span class="n">bmm</span><span class="o">.</span><span class="n">construct_multivariate_student_distribution</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">dispersion</span><span class="o">=</span><span class="mf">0.2</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">df</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="c1"># Define the distributions for Y_k. Each of them is a discrete distribution over the alphabet {0, 1}.</span>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="n">y1</span> <span class="o">=</span> <span class="n">construct_bernoulli</span><span class="p">(</span><span class="mf">0.95</span><span class="p">)</span>
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a><span class="n">y2</span> <span class="o">=</span> <span class="n">construct_bernoulli</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="n">y3</span> <span class="o">=</span> <span class="n">construct_bernoulli</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
+<a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a>
+<a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a><span class="c1"># Define the product distributions P(X_k, Y_k).</span>
+<a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="n">components</span> <span class="o">=</span> <span class="p">[</span><span class="n">bmm</span><span class="o">.</span><span class="n">ProductDistribution</span><span class="p">(</span><span class="n">dist_x</span><span class="p">,</span> <span class="n">dist_y</span><span class="p">)</span> <span class="k">for</span> <span class="n">dist_x</span><span class="p">,</span> <span class="n">dist_y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">x3</span><span class="p">],</span> <span class="p">[</span><span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">y3</span><span class="p">])]</span>
+<a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a>
+<a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a><span class="c1"># Construct the distribution P(X, Y) distribution.</span>
+<a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a><span class="c1"># As this is a BMM, one can construct the PMI profile, approximate MI, etc.</span>
+<a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a><span class="n">joint_distribution</span> <span class="o">=</span> <span class="n">bmm</span><span class="o">.</span><span class="n">mixture</span><span class="p">(</span><span class="n">proportions</span><span class="o">=</span><span class="p">[</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">],</span> <span class="n">components</span><span class="o">=</span><span class="n">components</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="connecting-bmms-and-samplers">Connecting BMMs and samplers</h2>
+<p>One of the main abstractions of the proposed package is the <a href="../api/interfaces/#bmi.interface.ISampler"><code>ISampler</code></a> class, which holds a joint probability distribution with known mutual information.
+As such, samplers can be <a href="../api/samplers/#bmi.samplers.TransformedSampler">transformed with arbitrary continuous injective functions</a>, <a href="../api/samplers/#bmi.samplers.IndependentConcatenationSampler">combined with other samplers</a> or used to <a href="../api/tasks/">define named benchmark tasks</a>.</p>
+<p>Fine distributions can be used to create samplers using the <a href="../api/bmm/#bmi.samplers._tfp.BMMSampler"><code>BMMSampler</code></a> wrapper. For example, let's create a sampler for a bivariate normal distribution:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">bmi.samplers</span><span class="w"> </span><span class="kn">import</span> <span class="n">bmm</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Define a BMM</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">cov</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]])</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="n">dist</span> <span class="o">=</span> <span class="n">bmm</span><span class="o">.</span><span class="n">MultivariateNormalDistribution</span><span class="p">(</span><span class="n">dim_x</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dim_y</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">covariance</span><span class="o">=</span><span class="n">cov</span><span class="p">)</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="c1"># Wrap the distribution into a sampler.</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="c1"># We will use 10 000 samples to estimate ground-truth mutual information.</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="c1"># Generally, the more samples, the better.</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="n">sampler</span> <span class="o">=</span> <span class="n">bmm</span><span class="o">.</span><span class="n">FineSampler</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">mi_estimate_sample</span><span class="o">=</span><span class="mi">10_000</span><span class="p">,</span> <span class="n">mi_estimate_seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="nb">print</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">mutual_information</span><span class="p">())</span>  <span class="c1"># 0.5178049</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="c1"># Created sampler can be used as usual (transformed, used to create tasks, combined, etc.)</span>
+</code></pre></div>
+<h2 id="estimating-mutual-information-with-bmms">Estimating mutual information with BMMs</h2>
+<p>Consider a parametric family of BMMs, <span class="arithmatex">\(\{P_\theta \mid \theta \in \mathcal T\}\)</span>, where <span class="arithmatex">\(P_{\theta}\)</span> is a model for a joint distribution <span class="arithmatex">\(P(X, Y\mid \theta)\)</span>.
+For example, if <span class="arithmatex">\(X\)</span> and <span class="arithmatex">\(Y\)</span> are assumed to be jointly multivariate norrmal, each <span class="arithmatex">\(P_\theta\)</span> will be a multivariate norrmal distribution with <span class="arithmatex">\(\theta\)</span> representing the mean vector and covariance matrix.
+As each <span class="arithmatex">\(P_\theta\)</span> is a BMM, one can calculate the mutual information between the idealised variables <span class="arithmatex">\(X\)</span> and <span class="arithmatex">\(Y\)</span> for different parameters <span class="arithmatex">\(\theta\)</span>.</p>
+<p>Hence, once a data set <span class="arithmatex">\((x_1, y_1), \dotsc, (x_N, y_N)\)</span> is available, one can construct the Bayesian posterior on the parameters <span class="arithmatex">\(P(\theta \mid (x_1, y_1),\dotsc, (x_N, y_N))\)</span> and use it to obtain the posterior distribution on <span class="arithmatex">\(I(X; Y)\)</span>.</p>
+<p>Hence, the workflow for model-based estimation of mutual information is as follows:</p>
+<ol>
+<li>
+<p>Construct a parametric family of distributions in a probabilistic programming language (e.g., 
+<a href="https://www.tensorflow.org/probability/examples/TensorFlow_Probability_on_JAX">TensorFlow Probability on JAX</a> or <a href="https://num.pyro.ai/">NumPyro</a>).</p>
+</li>
+<li>
+<p>Ensure that for each parameter <span class="arithmatex">\(\theta\)</span>, you can construct the distribution <span class="arithmatex">\(P_\theta\)</span> (e.g., by implementing a simple wrapper).</p>
+</li>
+<li>Use the data set to construct the posterior distribution <span class="arithmatex">\(P(\theta \mid (x_1, y_1),\dotsc, (x_N, y_N))\)</span>.</li>
+<li>Ensure that the model is well-specified and does not underfit or overfit the data.</li>
+<li>Wrap the samples from the posterior in BMMs and use Monte Carlo approximation to estimate the mutual information to obtain the samples from the mutual information posterior.</li>
+</ol>
+<p>As an example using NumPyro to fit a mixture of multivariate normal distributions, see <a href="https://github.com/cbg-ethz/bmi/blob/main/workflows/Mixtures/fitting_gmm.smk"><code>workflows/Mixtures/fitting_gmm.smk</code></a>.</p>
+<h2 id="faq">FAQ</h2>
+<h3 id="where-is-the-api">Where is the API?</h3>
+<p>The API is <a href="../api/bmm/">here</a>.</p>
+<h3 id="what-is-the-difference-between-a-bmm-and-a-sampler">What is the difference between a BMM and a sampler?</h3>
+<p>Samplers are more general than BMMs. <a href="#connecting-bmms-and-samplers">This section</a> explains how to wrap a given BMM into a sampler.</p>
+<h3 id="how-should-i-choose-the-number-of-samples-for-the-mutual-information-estimation">How should I choose the number of samples for the mutual information estimation?</h3>
+<p>If variance of the PMI profile is finite and equal to <span class="arithmatex">\(V\)</span>, then the Monte Carlo Standard Error (MCSE) of the mutual information estimate is equal to <span class="arithmatex">\(\sqrt{V/n}\)</span>.
+We suggest to obtain an estimate for e.g., 10,000 samples (which should be fast) and observing whether the MCSE is small enough.
+Additionally, we suggest to repeat sampling several times and observing whether the MCSE is stable: it may be possible that for some problems the variance of the PMI profile may be infinite and MCSE is not a valid uncertainty estimate.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/cbg-ethz/bmi" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M186.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M480 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.indexes", "navigation.sections", "navigation.top", "toc.integrate", "search.suggest", "search.highlight", "content.tabs.link", "content.code.annotation", "content.code.copy"], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.60a45f97.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
