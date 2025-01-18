@@ -87,7 +87,7 @@ We defined several benchmark suites with shared structure.
 ### ✨ New! ✨ On the properties and estimation of pointwise mutual information profiles
 
 [![Venue](https://img.shields.io/badge/venue-TMLR_2025-darkblue)](https://openreview.net/forum?id=LdflD41Gn8)
-[![Manuscript](https://img.shields.io/badge/manuscript-PDF-darkblue)](https://openreview.net/pdf?id=LdflD41Gn8)
+[![Manuscript](https://img.shields.io/badge/manuscript-PDF-green)](https://openreview.net/pdf?id=LdflD41Gn8)
 
 In this manuscript we discuss the *pointwise mutual information profile*, an invariant which can be used to diagnose limitations of the previous mutual information benchmark, and a flexible distribution family of *Bend and Mix Models*. These distributions can be used to create *more expressive benchmark tasks* and provide *model-based Bayesian estimates* of mutual information.
 
@@ -99,7 +99,7 @@ Workflows:
 @article{
   pmi-profiles-2025,
   title={On the Properties and Estimation of Pointwise Mutual Information Profiles},
-  author={Pawe{\l} Czy{\.z} and Frederic Grabowski and Julia E Vogt and Niko Beerenwinkel and Alexander Marx},
+  author={Czy{\.z}, Pawe{\l} and Grabowski, Frederic and Vogt, Julia and Beerenwinkel, Niko and Marx, Alexander},
   journal={Transactions on Machine Learning Research},
   issn={2835-8856},
   year={2025},
@@ -111,7 +111,7 @@ Workflows:
 ### Beyond normal: On the evaluation of the mutual information estimators
 
 [![Venue](https://img.shields.io/badge/venue-NeurIPS_2023-darkblue)](https://neurips.cc/virtual/2023/poster/72978)
-[![Manuscript](https://img.shields.io/badge/manuscript-PDF-darkblue)](https://papers.nips.cc/paper_files/paper/2023/hash/36b80eae70ff629d667f210e13497edf-Abstract-Conference.html)
+[![Manuscript](https://img.shields.io/badge/manuscript-PDF-green)](https://papers.nips.cc/paper_files/paper/2023/hash/36b80eae70ff629d667f210e13497edf-Abstract-Conference.html)
 
 In this manuscript we discuss a benchmark for mutual information estimators.
 
