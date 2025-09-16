@@ -31,7 +31,8 @@ $ pip install "bmi @ https://github.com/cbg-ethz/bmi"
 ```
 
 Note: BMI uses [JAX](https://github.com/google/jax) and by default installs the CPU version of it.
-If you have a device supporting CUDA, you can [install the CUDA version of JAX](https://github.com/google/jax#pip-installation-gpu-cuda-installed-via-pip-easier).
+If you have a device supporting CUDA, you can [install the CUDA version of JAX](https://github.com/google/jax#pip-installation-gpu-cuda-installed-via-pip-easier). 
+Note BMI requires JAX==0.4.33.
 
 Now let's take one of the predefined distributions included in the benchmark (named "tasks") and sample 1,000 data points.
 Then, we will run two estimators on this task.
