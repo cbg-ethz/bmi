@@ -54,6 +54,7 @@ class MLP(eqx.Module):
         self.layers.append(eqx.nn.Linear(dims[-1], 1, key=key_final))
 
     def __call__(self, x: Point, y: Point) -> jax.Array:
+        # print(f"Critic - x shape {x.shape}, y shape {y.shape}")
         z = jnp.concatenate([x, y])
 
         for layer in self.layers[:-1]:

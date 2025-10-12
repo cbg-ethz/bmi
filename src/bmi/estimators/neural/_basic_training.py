@@ -9,6 +9,7 @@ import optax
 from bmi.estimators.neural._training_log import TrainingLog
 from bmi.estimators.neural._types import BatchedPoints, Critic, Point
 
+import gc 
 
 def get_batch(xs: BatchedPoints, ys: BatchedPoints, key: jax.Array, batch_size: Optional[int]):
     if batch_size is not None:
@@ -37,7 +38,7 @@ def basic_training(
     max_n_steps: int = 2_000,
     early_stopping: bool = True,
     learning_rate: float = 0.1,
-    verbose: bool = True,
+    verbose: bool = True
 ) -> tuple[TrainingLog, eqx.Module]:
     """Simple training loop, which samples mini-batches
     from (xs, ys) and maximizes mutual information according to
@@ -72,10 +73,15 @@ def basic_training(
     training_log = TrainingLog(
         max_n_steps=max_n_steps, early_stopping=early_stopping, verbose=verbose
     )
-    keys = jax.random.split(rng, max_n_steps)
-    for n_step, key in enumerate(keys, start=1):
+    # We no longer use the following line here and in '_mine_estimator.py':
+    # keys = jax.random.split(rng, max_n_steps) 
+    # Due to memory leaks outlined in:
+    # https://github.com/jax-ml/jax/issues/17432
+    key = rng 
+    for n_step in range(1, max_n_steps+1):
         # run step
-        batch_xs, batch_ys = get_batch(xs, ys, key, batch_size)
+        key, subkey = jax.random.split(key) # new
+        batch_xs, batch_ys = get_batch(xs, ys, subkey, batch_size)
         critic, opt_state, mi_train = step(critic, opt_state, batch_xs, batch_ys)
 
         # logging train
@@ -90,6 +96,13 @@ def basic_training(
         if training_log.early_stop():
             break
 
+        batch_xs.delete()
+        batch_ys.delete()
+
+        del batch_xs, batch_ys
+
     training_log.finish()
+    jax.clear_caches()   # clears jit/compilation & staging caches
+    gc.collect()         # free Python objects if you dropped all refs
 
     return training_log, critic
