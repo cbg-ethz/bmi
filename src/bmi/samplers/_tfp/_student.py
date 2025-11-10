@@ -8,6 +8,7 @@ from bmi.samplers._split_student_t import SplitStudentT
 from bmi.samplers._tfp._core import JointDistribution
 
 jtf = tfp.tf2jax
+tfb = tfp.bijectors
 tfd = tfp.distributions
 
 
@@ -78,9 +79,14 @@ class MultivariateStudentDistribution(JointDistribution):
         # Now we need to define the TensorFlow Probability distributions
         # using the information provided
 
-        dist_joint = construct_multivariate_student_distribution(
+        _dist_joint = construct_multivariate_student_distribution(
             mean=mean, dispersion=dispersion, df=df
         )
+        dist_joint = tfd.TransformedDistribution(
+            distribution=_dist_joint,
+            bijector=tfb.Split((dim_x, dim_y)),
+        )
+
         dist_x = construct_multivariate_student_distribution(
             mean=mean[:dim_x], dispersion=dispersion[:dim_x, :dim_x], df=df
         )

@@ -17,9 +17,11 @@ class JointDistribution:
     $P_X$ and $P_Y$.
 
     Attributes:
-        dist: $P_{XY}$
-        dist_x: $P_X$
-        dist_y: $P_Y$
+        dist_joint: $P_{XY}$. Each sample is a *tuple* `(xs, ys)`
+            where `xs` is of shape `(n_samples, dim_x)` and
+            `ys` is of shape `(n_samples, dim_y)`.
+        dist_x: $P_X$. Samples are of shape `(n_samples, dim_x)`
+        dist_y: $P_Y$. Samples are of shape `(n_samples, dim_y,)`
         dim_x: dimension of the support of $X$
         dim_y: dimension of the support of $Y$
         analytic_mi: analytical mutual information.
@@ -43,8 +45,7 @@ class JointDistribution:
         if n_points < 1:
             raise ValueError("n must be positive")
 
-        xy = self.dist_joint.sample(seed=key, sample_shape=(n_points,))
-        return xy[..., : self.dim_x], xy[..., self.dim_x :]  # noqa: E203 (formatting discrepancy)
+        return self.dist_joint.sample(n_points, key)
 
     def pmi(self, x: jnp.ndarray, y: jnp.ndarray) -> jnp.ndarray:
         """Calculates pointwise mutual information at specified points.
@@ -60,7 +61,7 @@ class JointDistribution:
         Note:
             This function is vectorized, i.e. it can calculate PMI for multiple points at once.
         """
-        log_pxy = self.dist_joint.log_prob(jnp.hstack([x, y]))
+        log_pxy = self.dist_joint.log_prob((x, y))
         log_px = self.dist_x.log_prob(x)
         log_py = self.dist_y.log_prob(y)
 
@@ -136,9 +137,8 @@ def transform(
     if y_transform is None:
         y_transform = tfb.Identity()
 
-    product_bijector = tfb.Blockwise(
-        bijectors=[x_transform, y_transform], block_sizes=[dist.dim_x, dist.dim_y]
-    )
+    product_bijector = tfb.JointMap((x_transform, y_transform))
+
     return JointDistribution(
         dim_x=dist.dim_x,
         dim_y=dist.dim_y,
